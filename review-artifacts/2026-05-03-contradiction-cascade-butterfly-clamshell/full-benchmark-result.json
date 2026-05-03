@@ -1,0 +1,2885 @@
+{
+  "run_timestamp": "2026-05-03T23:20:09.690957+00:00",
+  "benchmark_count": 48,
+  "summary": {
+    "PASS": 34,
+    "SOFT_PASS": 10,
+    "FAIL": 4,
+    "SKIP": 0,
+    "ERROR": 0
+  },
+  "results": [
+    {
+      "benchmark_id": "athletic_rim_sculpt",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "athletic_rim_sculpt",
+          "expected": "athletic_rim_sculpt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 2,
+          "expected": 2
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "athletic_rim_sculpt",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 2,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.587,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'athletic_rim_sculpt' selected by specialty:reference_read (confidence 95%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.88
+    },
+    {
+      "benchmark_id": "beauty_dish_clean",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "clamshell",
+          "expected": "clamshell"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 2,
+          "expected": 2
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "clamshell",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.84,
+        "light_count": 2,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.565,
+        "weak_signals": [
+          "primary_shadow_direction",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'clamshell' selected by lighting_inference (confidence 84%). shadow edge hardness indicates hard.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.25
+    },
+    {
+      "benchmark_id": "bottle_backlight",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "insufficient",
+          "expected": "insufficient"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "low_key",
+          "expected": "low_key"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "unknown",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "low_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.7,
+        "light_count": 1,
+        "key_direction": "unknown",
+        "mode": "insufficient",
+        "mode_confidence": 0.7,
+        "mode_rationale": "Insufficient evidence: no face detected"
+      },
+      "expected": {
+        "mode": "insufficient"
+      },
+      "diagnostics": {
+        "face_quality": "none",
+        "face_detected": false,
+        "signals_available": 19,
+        "signals_total": 24,
+        "signal_strength": 0.429,
+        "weak_signals": [
+          "primary_shadow_direction",
+          "vertical_light_angle",
+          "highlight_symmetry",
+          "pose_induced_shadow_interference",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [
+          "catchlight_position",
+          "catchlight_shape",
+          "catchlight_topology",
+          "highlight_axis_map",
+          "reflection_architecture"
+        ],
+        "ambiguity_flags": [
+          "no_face_detected"
+        ],
+        "pattern_reasoning": "Pattern 'low_key' selected by specialty:reference_read (confidence 95%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "no_face"
+        ]
+      },
+      "timing_s": 1.08
+    },
+    {
+      "benchmark_id": "bounded_butterfly_vs_clamshell_beauty",
+      "verdict": "FAIL",
+      "checks": {
+        "mode": {
+          "status": "FAIL",
+          "detected": "classical",
+          "expected": "bounded"
+        },
+        "pattern": {
+          "status": "FAIL",
+          "detected": "broad",
+          "expected": "butterfly",
+          "acceptable": [
+            "butterfly",
+            "clamshell"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "FAIL",
+          "detected": "upper_left",
+          "expected": "top_center"
+        }
+      },
+      "detected": {
+        "pattern": "broad",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.46,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "bounded"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.597,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'broad' selected by lighting_inference (confidence 46%). primary shadow direction indicates upper_right.",
+        "edge_cases": []
+      },
+      "timing_s": 1.19
+    },
+    {
+      "benchmark_id": "bounded_loop_vs_rembrandt_bw_t1",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "bounded",
+          "expected": "bounded"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "loop",
+          "expected": "loop"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "light_structure",
+        "pattern_confidence": 0.704,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "bounded",
+        "mode_confidence": 0.8,
+        "mode_rationale": "Bounded long-term (credibility): 'loop' (70%) vs 'rembrandt' (70%) \u2014 both classical, same key zone, max upstream support 3"
+      },
+      "expected": {
+        "mode": "bounded"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.552,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'loop' selected by light_structure (confidence 70%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.17
+    },
+    {
+      "benchmark_id": "bounded_loop_vs_short_jewelry_t1",
+      "verdict": "FAIL",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "bounded",
+          "expected": "bounded"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "short",
+          "expected": "loop",
+          "acceptable": [
+            "loop",
+            "short"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "FAIL",
+          "detected": "upper_left",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "short",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.88,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "bounded",
+        "mode_confidence": 0.8,
+        "mode_rationale": "Bounded long-term (credibility): 'loop' (60%) vs 'short' (55%) \u2014 both classical, same key zone, max upstream support 2"
+      },
+      "expected": {
+        "mode": "bounded"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.552,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'short' selected by reference_read (confidence 88%). shadow edge hardness indicates soft.",
+        "edge_cases": []
+      },
+      "timing_s": 1.12
+    },
+    {
+      "benchmark_id": "bounded_loop_vs_short_rihanna_t1",
+      "verdict": "FAIL",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "bounded",
+          "expected": "bounded"
+        },
+        "pattern": {
+          "status": "FAIL",
+          "detected": "window_portrait",
+          "expected": "loop",
+          "acceptable": [
+            "loop",
+            "short",
+            "rembrandt"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "FAIL",
+          "detected": "upper_left",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "window_portrait",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "bounded",
+        "mode_confidence": 0.8,
+        "mode_rationale": "Bounded long-term (credibility): 'loop' (70%) vs 'short' (60%) \u2014 both classical, same key zone, max upstream support 2"
+      },
+      "expected": {
+        "mode": "bounded"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.555,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'window_portrait' selected by specialty:reference_read (confidence 94%). primary shadow direction indicates upper_right.",
+        "edge_cases": []
+      },
+      "timing_s": 1.13
+    },
+    {
+      "benchmark_id": "broad",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "broad",
+          "expected": "broad"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "upper_right"
+        }
+      },
+      "detected": {
+        "pattern": "broad",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.538,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'broad' selected by lighting_inference (confidence 95%). light structure indicates loop.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.28
+    },
+    {
+      "benchmark_id": "butterfly",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "butterfly",
+          "expected": "butterfly"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "butterfly",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.81,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.605,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'butterfly' selected by reference_read (confidence 81%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.29
+    },
+    {
+      "benchmark_id": "clamshell_clean",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "clamshell",
+          "expected": "clamshell"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 2,
+          "expected": 2
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "center",
+          "expected": "top_center"
+        }
+      },
+      "detected": {
+        "pattern": "clamshell",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.71,
+        "light_count": 2,
+        "key_direction": "center",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.546,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'clamshell' selected by reference_read (confidence 71%). shadow edge hardness indicates soft.",
+        "edge_cases": []
+      },
+      "timing_s": 1.29
+    },
+    {
+      "benchmark_id": "editorial_rim_key",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rim",
+          "expected": "rim"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rim",
+        "pattern_source": "definitive_signature",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.565,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rim' selected by definitive_signature (confidence 95%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 0.95
+    },
+    {
+      "benchmark_id": "high_key",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "high_key",
+          "expected": "high_key"
+        },
+        "light_count": {
+          "status": "SOFT_PASS",
+          "detected": 2,
+          "expected": 3,
+          "range": [
+            1,
+            4
+          ]
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "high_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.28,
+        "light_count": 2,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.588,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'high_key' selected by specialty:reference_read (confidence 28%). light structure indicates loop.",
+        "edge_cases": [
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.16
+    },
+    {
+      "benchmark_id": "high_key_beauty",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "high_key",
+          "expected": "high_key"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 2,
+          "expected": 2
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "center",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "high_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 2,
+        "key_direction": "center",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.601,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'high_key' selected by specialty:reference_read (confidence 95%). shadow edge hardness indicates hard.",
+        "edge_cases": [
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.2
+    },
+    {
+      "benchmark_id": "hurley_triangle",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "triangle",
+          "expected": "triangle"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 3,
+          "expected": 3
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "triangle",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.55,
+        "light_count": 3,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.557,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'triangle' selected by lighting_inference (confidence 55%). light structure indicates loop.",
+        "edge_cases": [
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.29
+    },
+    {
+      "benchmark_id": "hybrid_key_plus_hair_light_corporate_t1",
+      "verdict": "FAIL",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "hybrid",
+          "expected": "hybrid"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "loop",
+          "expected": "loop"
+        },
+        "light_count": {
+          "status": "FAIL",
+          "detected": 1,
+          "expected": 2,
+          "range": [
+            2,
+            3
+          ]
+        },
+        "key_direction": {
+          "status": "FAIL",
+          "detected": "upper_left",
+          "expected": "center"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "hybrid",
+        "mode_confidence": 0.75,
+        "mode_rationale": "Hybrid decomposition: load_bearing=4; rim_load_bearing"
+      },
+      "expected": {
+        "mode": "hybrid"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.613,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'loop' selected by reference_read (confidence 95%). light structure indicates loop.",
+        "edge_cases": []
+      },
+      "timing_s": 1.29
+    },
+    {
+      "benchmark_id": "insufficient_glasses_corporate_t1",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "insufficient",
+          "expected": "insufficient"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "loop",
+          "expected": "unknown",
+          "acceptable": [
+            "butterfly",
+            "clamshell",
+            "flat",
+            "loop",
+            "unknown"
+          ]
+        },
+        "light_count": {
+          "status": "SOFT_PASS",
+          "detected": 2,
+          "expected": 1,
+          "range": [
+            1,
+            2
+          ]
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "lighting_inference_demoted",
+        "pattern_confidence": 0.15,
+        "light_count": 2,
+        "key_direction": "left",
+        "mode": "insufficient",
+        "mode_confidence": 0.7,
+        "mode_rationale": "Insufficient evidence: catchlight reliability blocked (low_confidence_demoted_winner_with_many_catchlights)"
+      },
+      "expected": {
+        "mode": "insufficient"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.581,
+        "weak_signals": [
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Most likely loop or rembrandt \u2014 classifiers disagree. Top read: loop (15%) from lighting_inference_demoted. Alternate: rembrandt (36%) from cue_inference_demoted. Conflict: classifier disagreement \u2014 signal contradiction (0.90) demoted reference_read 'loop'. Review recommended.",
+        "edge_cases": []
+      },
+      "timing_s": 1.34
+    },
+    {
+      "benchmark_id": "loop_standard",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "loop",
+          "expected": "loop"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "upper_right"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.64,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'loop' selected by reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.54
+    },
+    {
+      "benchmark_id": "low_key",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "loop",
+          "expected": "butterfly",
+          "acceptable": [
+            "butterfly",
+            "low_key",
+            "rembrandt",
+            "loop",
+            "split",
+            "short"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "upper_right"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.533,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'loop' selected by reference_read (confidence 95%). light structure indicates loop.",
+        "edge_cases": []
+      },
+      "timing_s": 0.95
+    },
+    {
+      "benchmark_id": "mixed_light_failure",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "insufficient",
+          "expected": "insufficient"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "loop",
+          "expected": "unknown",
+          "acceptable": [
+            "unknown",
+            "flat",
+            "hybrid",
+            "rembrandt",
+            "loop",
+            "split",
+            "projected",
+            "projected"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.7,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "insufficient",
+        "mode_confidence": 0.7,
+        "mode_rationale": "Insufficient evidence: outcome trust risk: winner='loop'@83% from reference_read with single-classifier support; geometry says 'rembrandt' corroborated by another classifier; no catchlight paradox to anchor BOUNDED"
+      },
+      "expected": {
+        "mode": "insufficient"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 21,
+        "signals_total": 24,
+        "signal_strength": 0.533,
+        "weak_signals": [
+          "continuous_source_signals",
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [
+          "catchlight_position",
+          "catchlight_shape",
+          "catchlight_topology"
+        ],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'loop' selected by reference_read (confidence 83%). light structure indicates rembrandt.",
+        "edge_cases": []
+      },
+      "timing_s": 1.29
+    },
+    {
+      "benchmark_id": "overcast_natural",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "broad",
+          "expected": "broad"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "upper_right"
+        }
+      },
+      "detected": {
+        "pattern": "broad",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.87,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.585,
+        "weak_signals": [
+          "environmental_shadow_continuity",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'broad' selected by specialty:reference_read (confidence 87%). light structure indicates loop.",
+        "edge_cases": [
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.11
+    },
+    {
+      "benchmark_id": "overfill_flat",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "flat",
+          "expected": "flat"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 2,
+          "expected": 2
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "center",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "flat",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.71,
+        "light_count": 2,
+        "key_direction": "center",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.559,
+        "weak_signals": [
+          "primary_shadow_direction",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'flat' selected by specialty:reference_read (confidence 71%). light structure indicates loop.",
+        "edge_cases": [
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.1
+    },
+    {
+      "benchmark_id": "projected",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "insufficient",
+          "expected": "insufficient"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "projected",
+          "expected": "projected"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "unknown",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "projected",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.7,
+        "light_count": 1,
+        "key_direction": "unknown",
+        "mode": "insufficient",
+        "mode_confidence": 0.7,
+        "mode_rationale": "Insufficient evidence: no face detected"
+      },
+      "expected": {
+        "mode": "insufficient"
+      },
+      "diagnostics": {
+        "face_quality": "none",
+        "face_detected": false,
+        "signals_available": 19,
+        "signals_total": 24,
+        "signal_strength": 0.413,
+        "weak_signals": [
+          "primary_shadow_direction",
+          "vertical_light_angle",
+          "highlight_symmetry",
+          "pose_induced_shadow_interference",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [
+          "catchlight_position",
+          "catchlight_shape",
+          "catchlight_topology",
+          "highlight_axis_map",
+          "reflection_architecture"
+        ],
+        "ambiguity_flags": [
+          "no_face_detected",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'projected' selected by specialty:reference_read (confidence 95%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "no_face",
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 0.98
+    },
+    {
+      "benchmark_id": "rembrandt_classic",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "upper_left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.59,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.536,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by lighting_inference (confidence 59%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.3
+    },
+    {
+      "benchmark_id": "rembrandt_t1_0aec889aedc9d6c6155b6bba28138929",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "lighting_inference",
+        "pattern_confidence": 0.8,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.595,
+        "weak_signals": [
+          "shadow_edge_hardness",
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by lighting_inference (confidence 80%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.01
+    },
+    {
+      "benchmark_id": "rembrandt_t1_download",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.621,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 94%). light structure indicates loop.",
+        "edge_cases": [
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.27
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_beauty_woman_keyleft",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.557,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.26
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_editorial_man_keyright",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.535,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.23
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_highcontrast_woman_white_bg",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.636,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing",
+          "blown_highlights"
+        ]
+      },
+      "timing_s": 1.11
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_lowkey_turned_woman",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "low_key",
+          "expected": "rembrandt",
+          "acceptable": [
+            "rembrandt",
+            "loop",
+            "split",
+            "short",
+            "low_key",
+            "short_fashion_key"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "low_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.77,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.545,
+        "weak_signals": [
+          "shadow_edge_hardness"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'low_key' selected by specialty:reference_read (confidence 77%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.11
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_man_short_light_turned",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "short_fashion_key",
+          "expected": "rembrandt",
+          "acceptable": [
+            "rembrandt",
+            "loop",
+            "split",
+            "short",
+            "low_key",
+            "short_fashion_key"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "short_fashion_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.569,
+        "weak_signals": [
+          "shadow_edge_hardness"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'short_fashion_key' selected by specialty:reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.13
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_woman_long_hair_keyleft",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.89,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.63,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 89%). primary shadow direction indicates upper_right.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.45
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_bw_woman_scarf_keyright",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.621,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.18
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_color_closeup_green_eyes_woman",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.591,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": []
+      },
+      "timing_s": 1.32
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_color_dark_skin_woman_updo",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "cue_inference",
+        "pattern_confidence": 0.9,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.587,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by cue_inference (confidence 90%). light structure indicates rembrandt.",
+        "edge_cases": []
+      },
+      "timing_s": 1.2
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_color_editorial_blonde_ocean",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "bounded",
+          "expected": "bounded"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "loop",
+          "expected": "rembrandt",
+          "acceptable": [
+            "rembrandt",
+            "loop",
+            "split",
+            "short",
+            "low_key",
+            "short_fashion_key"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "loop",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.89,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "bounded",
+        "mode_confidence": 0.8,
+        "mode_rationale": "Bounded long-term (credibility): 'rembrandt' (70%) vs 'loop' (60%) \u2014 both classical, same key zone, max upstream support 2"
+      },
+      "expected": {
+        "mode": "bounded"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.549,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'loop' selected by reference_read (confidence 89%). primary shadow direction indicates upper_left.",
+        "edge_cases": []
+      },
+      "timing_s": 1.19
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_color_fashion_woman_latex_coll",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "cue_inference",
+        "pattern_confidence": 0.88,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.605,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by cue_inference (confidence 88%). primary shadow direction indicates upper_left.",
+        "edge_cases": []
+      },
+      "timing_s": 1.08
+    },
+    {
+      "benchmark_id": "rembrandt_t1_rembrandt_lowkey_dark_skin_woman",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rembrandt",
+          "expected": "rembrandt"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.609,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). light structure indicates rembrandt.",
+        "edge_cases": [
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.04
+    },
+    {
+      "benchmark_id": "rim_only",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "rim",
+          "expected": "rim"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "rim",
+        "pattern_source": "definitive_signature",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.587,
+        "weak_signals": [
+          "shadow_edge_hardness"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'rim' selected by definitive_signature (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.2
+    },
+    {
+      "benchmark_id": "ring_light",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "ring_light",
+          "expected": "ring_light"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "ring_light",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.562,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'ring_light' selected by specialty:reference_read (confidence 95%). light structure indicates butterfly.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.21
+    },
+    {
+      "benchmark_id": "short",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "short_fashion_key",
+          "expected": "short_fashion_key"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "upper_left"
+        }
+      },
+      "detected": {
+        "pattern": "short_fashion_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.572,
+        "weak_signals": [],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'short_fashion_key' selected by specialty:reference_read (confidence 94%). shadow edge hardness indicates soft.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.47
+    },
+    {
+      "benchmark_id": "short_fashion_key",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "low_key",
+          "expected": "short",
+          "acceptable": [
+            "short",
+            "short_fashion_key",
+            "split",
+            "rembrandt",
+            "rim",
+            "low_key",
+            "projected",
+            "unknown"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "low_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.586,
+        "weak_signals": [
+          "shadow_edge_hardness"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'low_key' selected by specialty:reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": [
+          "bw_processing",
+          "extreme_low_key"
+        ]
+      },
+      "timing_s": 1.58
+    },
+    {
+      "benchmark_id": "soft_editorial_key",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "window_portrait",
+          "expected": "window_portrait"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "window_portrait",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "left",
+        "mode": "classical",
+        "mode_confidence": 0.75,
+        "mode_rationale": "Bounded long-term suppressed (high ambient): ambient_contamination=0.60 \u2014 diffuse fill blurs 'loop' vs 'short' geometric boundary"
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.533,
+        "weak_signals": [
+          "continuous_source_signals"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence"
+        ],
+        "pattern_reasoning": "Pattern 'window_portrait' selected by specialty:reference_read (confidence 94%). light structure indicates loop.",
+        "edge_cases": [
+          "window_light_gradient"
+        ]
+      },
+      "timing_s": 1.08
+    },
+    {
+      "benchmark_id": "split_strong",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "split",
+          "expected": "split"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "lower_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "split",
+        "pattern_source": "light_structure",
+        "pattern_confidence": 0.516,
+        "light_count": 1,
+        "key_direction": "lower_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.6,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'split' selected by light_structure (confidence 52%). primary shadow direction indicates lower_left.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.33
+    },
+    {
+      "benchmark_id": "tabletop_soft_product",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "insufficient",
+          "expected": "insufficient"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "tabletop_soft_product",
+          "expected": "tabletop_soft_product"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "unknown",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "tabletop_soft_product",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.7,
+        "light_count": 1,
+        "key_direction": "unknown",
+        "mode": "insufficient",
+        "mode_confidence": 0.7,
+        "mode_rationale": "Insufficient evidence: no face detected"
+      },
+      "expected": {
+        "mode": "insufficient"
+      },
+      "diagnostics": {
+        "face_quality": "none",
+        "face_detected": false,
+        "signals_available": 19,
+        "signals_total": 24,
+        "signal_strength": 0.429,
+        "weak_signals": [
+          "primary_shadow_direction",
+          "vertical_light_angle",
+          "highlight_symmetry",
+          "pose_induced_shadow_interference",
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [
+          "catchlight_position",
+          "catchlight_shape",
+          "catchlight_topology",
+          "highlight_axis_map",
+          "reflection_architecture"
+        ],
+        "ambiguity_flags": [
+          "no_face_detected"
+        ],
+        "pattern_reasoning": "Pattern 'tabletop_soft_product' selected by specialty:reference_read (confidence 95%). light structure indicates loop.",
+        "edge_cases": [
+          "no_face",
+          "outdoor_foliage_shadows",
+          "window_light_gradient"
+        ]
+      },
+      "timing_s": 1.08
+    },
+    {
+      "benchmark_id": "white_seamless_catalog",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "high_key",
+          "expected": "high_key"
+        },
+        "light_count": {
+          "status": "SOFT_PASS",
+          "detected": 4,
+          "expected": 1,
+          "range": [
+            1,
+            4
+          ]
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "unknown"
+        }
+      },
+      "detected": {
+        "pattern": "high_key",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.91,
+        "light_count": 4,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.75,
+        "mode_rationale": "Bounded long-term suppressed (uniform_seamless): catalog/product signature overrides pose-relative classifier disagreement on 'loop' vs 'short'"
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.604,
+        "weak_signals": [
+          "shadow_interruption_pattern"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "multiple_patterns_close_confidence",
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'high_key' selected by specialty:reference_read (confidence 91%). light structure indicates loop.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.11
+    },
+    {
+      "benchmark_id": "window_light_side",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "window_portrait",
+          "expected": "window_portrait"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_left",
+          "expected": "left"
+        }
+      },
+      "detected": {
+        "pattern": "window_portrait",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "upper_left",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.585,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'window_portrait' selected by specialty:reference_read (confidence 94%). primary shadow direction indicates upper_right.",
+        "edge_cases": []
+      },
+      "timing_s": 1.04
+    },
+    {
+      "benchmark_id": "window_negative_fill",
+      "verdict": "SOFT_PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "SOFT_PASS",
+          "detected": "rembrandt",
+          "expected": "projected",
+          "acceptable": [
+            "projected",
+            "window_portrait",
+            "window_negative_fill",
+            "split",
+            "rembrandt",
+            "unknown"
+          ]
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "right"
+        }
+      },
+      "detected": {
+        "pattern": "rembrandt",
+        "pattern_source": "reference_read",
+        "pattern_confidence": 0.95,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.85,
+        "mode_rationale": ""
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 23,
+        "signals_total": 24,
+        "signal_strength": 0.606,
+        "weak_signals": [],
+        "missing_signals": [
+          "catchlight_position"
+        ],
+        "ambiguity_flags": [],
+        "pattern_reasoning": "Pattern 'rembrandt' selected by reference_read (confidence 95%). primary shadow direction indicates upper_left.",
+        "edge_cases": []
+      },
+      "timing_s": 1.4
+    },
+    {
+      "benchmark_id": "window_soft_side",
+      "verdict": "PASS",
+      "checks": {
+        "mode": {
+          "status": "PASS",
+          "detected": "classical",
+          "expected": "classical"
+        },
+        "pattern": {
+          "status": "PASS",
+          "detected": "window_portrait",
+          "expected": "window_portrait"
+        },
+        "light_count": {
+          "status": "PASS",
+          "detected": 1,
+          "expected": 1
+        },
+        "key_direction": {
+          "status": "PASS",
+          "detected": "upper_right",
+          "expected": "upper_right"
+        }
+      },
+      "detected": {
+        "pattern": "window_portrait",
+        "pattern_source": "specialty:reference_read",
+        "pattern_confidence": 0.94,
+        "light_count": 1,
+        "key_direction": "upper_right",
+        "mode": "classical",
+        "mode_confidence": 0.75,
+        "mode_rationale": "Bounded long-term suppressed (environmental): window/natural-light scene \u2014 specialty resolver pattern overrides geometric credibility disagreement on 'loop' vs 'short'"
+      },
+      "expected": {
+        "mode": "classical"
+      },
+      "diagnostics": {
+        "face_quality": "good",
+        "face_detected": true,
+        "signals_available": 24,
+        "signals_total": 24,
+        "signal_strength": 0.56,
+        "weak_signals": [
+          "environmental_shadow_continuity"
+        ],
+        "missing_signals": [],
+        "ambiguity_flags": [
+          "bw_limits_color_cues"
+        ],
+        "pattern_reasoning": "Pattern 'window_portrait' selected by specialty:reference_read (confidence 94%). light structure indicates loop.",
+        "edge_cases": [
+          "bw_processing"
+        ]
+      },
+      "timing_s": 1.11
+    }
+  ]
+}
