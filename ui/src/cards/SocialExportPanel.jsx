@@ -19,6 +19,7 @@ import { postSignal } from '../data/signalsApi';
 import { getToken } from '../data/authApi';
 import { getSessionId } from '../data/analytics';
 import CorrectionSheet from '../screens/studio/_core/components/CorrectionSheet';
+import { startStripeCheckout } from '../data/stripeCheckout';
 
 const FONT_SMOOTH = { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' };
 
@@ -64,6 +65,8 @@ function buildHashtags(judgment) {
   tags.push('#LightingBreakdown', '#StudioLighting', '#PortraitLighting', '#BehindTheShot', '#PhotographyTips');
   return tags.join(' ');
 }
+
+const FREE_HASHTAGS = '#LightRead #NoGuessworkLighting #PortraitLighting';
 
 // Mirrors ResultScreen parseClockHour — returns true if str encodes a valid 1–12 hour.
 function parseCatchlightPresence(str) {
@@ -221,6 +224,7 @@ export default function SocialExportPanel({
   diagramCanvas,
   isStudio = false,
   isAdmin = false,
+  freeMode = false,
   layout = 'compact',
 }) {
   const appDispatch = useDispatch();
@@ -230,6 +234,7 @@ export default function SocialExportPanel({
     const rec = recommendExportFormat(result, !!imagePreview);
     return rec === 'blueprint' ? 'summary' : 'bts';
   });
+  useEffect(() => { if (freeMode) { setTemplate('bts'); setCaptionVariant('technical'); } }, [freeMode]); // eslint-disable-line react-hooks/exhaustive-deps
   const [carouselIdx, setCarouselIdx] = useState(0);
   const canvasRef = useRef(null);
   const photoRef = useRef(null);
@@ -454,9 +459,19 @@ export default function SocialExportPanel({
         const idx = Math.min(carouselIdx, lights.length - 1);
         renderCarouselSlide(eCtx, { light: lights[idx], index: idx, total: lights.length, pattern, format: fmt, branded });
       }
+      if (freeMode) {
+        const S = fmt.w / 1080;
+        eCtx.save();
+        eCtx.font = `500 ${Math.round(14 * S)}px system-ui, -apple-system, sans-serif`;
+        eCtx.fillStyle = 'rgba(255,255,255,0.32)';
+        eCtx.textAlign = 'right';
+        eCtx.textBaseline = 'bottom';
+        eCtx.fillText('noguesswork.systems', fmt.w - Math.round(20 * S), fmt.h - Math.round(18 * S));
+        eCtx.restore();
+      }
       downloadCanvas(exportCanvas, `NGW_${Pat}_${tplLabel}_${fmtLabel}.png`);
     }
-  }, [template, lights, pattern, branded, confidence, camera, diagramCanvas, result?.mood, carouselIdx, environment, confEvidence, judgment]);
+  }, [template, lights, pattern, branded, confidence, camera, diagramCanvas, result?.mood, carouselIdx, environment, confEvidence, judgment, freeMode]);
 
   const handleDownloadReel = useCallback(async () => {
     setReelRecording(true);
@@ -582,6 +597,7 @@ export default function SocialExportPanel({
 
 
         {/* ── CONTACT STRIP ── */}
+        {!freeMode && (
         <div style={{ padding: '14px 20px 0', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
           {TEMPLATES.map((t, idx) => {
             const isSel = template === t.id;
@@ -626,6 +642,31 @@ export default function SocialExportPanel({
             );
           })}
         </div>
+        )}
+
+        {/* ── UPGRADE STRIP — free users only ── */}
+        {freeMode && (
+          <div style={{ margin: '14px 20px 0', padding: '12px 14px', borderRadius: 10, background: steel(0.04), border: `1px solid ${steel(0.10)}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: steel(0.72), letterSpacing: '0.04em', marginBottom: 4 }}>
+              Free plan · Light Card only.
+            </div>
+            <div style={{ fontSize: 11, color: steel(0.40), lineHeight: 1.45, marginBottom: 10 }}>
+              Unlock the full Plate Set: Story, Blueprint, Carousel, Reel, caption styles, and tags.
+            </div>
+            <button
+              onClick={() => startStripeCheckout().catch(e => { console.error('[checkout]', e.message); alert(e.message || 'Checkout failed. Please try again.'); })}
+              style={{
+                width: '100%', padding: '9px 14px', borderRadius: 8, border: 'none',
+                fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', cursor: 'pointer',
+                background: `linear-gradient(141.71deg, ${C.ctaFrom} 0%, ${C.ctaMid} 50%, ${C.ctaTo} 100%)`,
+                color: steel(0.88), boxShadow: `2px 2px 6px rgba(0,0,0,0.45), 0 0 0 0.5px ${steel(0.18)}`,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              Upgrade
+            </button>
+          </div>
+        )}
 
         {/* ── JUDGMENT — "Did we nail the light?" ── */}
         <div style={{ padding: '16px 20px 0' }}>
@@ -727,8 +768,9 @@ export default function SocialExportPanel({
           >
             {template === 'carousel' && lights.length > 1
               ? `Save ${lights.length} plates`
-              : 'Save plate'}
+              : freeMode ? 'Save Light Card' : 'Save plate'}
           </button>
+          {!freeMode && (
           <button
             onClick={handleDownloadReel}
             disabled={reelRecording}
@@ -747,6 +789,7 @@ export default function SocialExportPanel({
           >
             {reelRecording ? 'Recording reel…' : 'Save with reel video →'}
           </button>
+          )}
         </div>
 
         {/* ── SHARE COPY BLOCK — caption + hashtags, shown after first Issue ── */}
@@ -761,6 +804,7 @@ export default function SocialExportPanel({
               </div>
             </div>
 
+            {!freeMode && (
             <div style={{ display: 'flex', gap: 4, marginBottom: 9, flexWrap: 'wrap' }}>
               {CAPTION_VARIANTS.map(v => (
                 <button key={v.id} onClick={() => setCaptionVariant(v.id)} style={{
@@ -779,6 +823,7 @@ export default function SocialExportPanel({
                 </button>
               ))}
             </div>
+            )}
 
             <div style={{ background: steel(0.04), borderRadius: 8, border: `1px solid ${steel(0.08)}`, padding: '10px 13px', marginBottom: 9 }}>
               <p style={{ margin: 0, fontSize: 12, color: steel(0.68), lineHeight: 1.55, whiteSpace: 'pre-wrap', userSelect: 'all' }}>
@@ -794,7 +839,7 @@ export default function SocialExportPanel({
                 Optional. Use these only if you post publicly.
               </div>
               <div style={{ fontSize: 11, color: steel(0.50), lineHeight: 1.6, background: steel(0.03), borderRadius: 6, border: `1px solid ${steel(0.07)}`, padding: '8px 10px', userSelect: 'all' }}>
-                {hashtags}
+                {freeMode ? FREE_HASHTAGS : hashtags}
               </div>
             </div>
 
@@ -806,7 +851,7 @@ export default function SocialExportPanel({
                 Copy Caption
               </button>
               <button
-                onClick={() => navigator.clipboard?.writeText(hashtags)}
+                onClick={() => navigator.clipboard?.writeText(freeMode ? FREE_HASHTAGS : hashtags)}
                 style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${steel(0.14)}`, background: steel(0.05), fontSize: 11, fontWeight: 600, color: steel(0.62), cursor: 'pointer', letterSpacing: '0.02em', WebkitTapHighlightColor: 'transparent' }}
               >
                 Copy Tags
@@ -923,6 +968,7 @@ export default function SocialExportPanel({
       )}
 
       {/* ── EXPORT FORMAT STRIP — visual chip selector ── */}
+      {!freeMode && (
       <div style={{ padding: '12px 12px 0', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <div style={{ display: 'inline-flex', gap: 8, paddingBottom: 4, minWidth: 'max-content' }}>
           {TEMPLATES.map(t => {
@@ -997,8 +1043,10 @@ export default function SocialExportPanel({
           })}
         </div>
       </div>
+      )}
 
       {/* ── ACTIVE FORMAT CONTEXT ── single line, desc + dimensions */}
+      {!freeMode && (
       <div style={{
         padding: '8px 14px 12px',
         display: 'flex',
@@ -1013,6 +1061,7 @@ export default function SocialExportPanel({
           {activeTpl?.formatLabel}
         </span>
       </div>
+      )}
 
       {/* ── COMPACT JUDGMENT ── */}
       <div style={{ padding: '12px 12px 0' }}>
@@ -1119,6 +1168,7 @@ export default function SocialExportPanel({
         </button>
 
         {/* Secondary: animated reel */}
+        {!freeMode && (
         <button
           onClick={handleDownloadReel}
           disabled={reelRecording}
@@ -1157,8 +1207,33 @@ export default function SocialExportPanel({
             </>
           )}
         </button>
+        )}
 
       </div>
+
+      {/* ── UPGRADE STRIP — free users only ── */}
+      {freeMode && (
+        <div style={{ margin: '0 12px 14px', padding: '12px 14px', borderRadius: 10, background: steel(0.04), border: `1px solid ${steel(0.10)}` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: steel(0.72), letterSpacing: '0.04em', marginBottom: 4 }}>
+            Free plan · Light Card only.
+          </div>
+          <div style={{ fontSize: 11, color: steel(0.40), lineHeight: 1.45, marginBottom: 10 }}>
+            Unlock the full Plate Set: Story, Blueprint, Carousel, Reel, and caption styles.
+          </div>
+          <button
+            onClick={() => startStripeCheckout().catch(e => { console.error('[checkout]', e.message); alert(e.message || 'Checkout failed. Please try again.'); })}
+            style={{
+              width: '100%', padding: '9px 14px', borderRadius: 8, border: 'none',
+              fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', cursor: 'pointer',
+              background: `linear-gradient(141.71deg, ${C.ctaFrom} 0%, ${C.ctaMid} 50%, ${C.ctaTo} 100%)`,
+              color: steel(0.88), boxShadow: `2px 2px 6px rgba(0,0,0,0.45), 0 0 0 0.5px ${steel(0.18)}`,
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            Upgrade to Unlock
+          </button>
+        </div>
+      )}
 
       {/* ── SHARE COPY BLOCK — caption + hashtags, shown after first Issue ── */}
       {issued && (
@@ -1172,6 +1247,7 @@ export default function SocialExportPanel({
             </div>
           </div>
 
+          {!freeMode && (
           <div style={{ display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
             {CAPTION_VARIANTS.map(v => (
               <button key={v.id} onClick={() => setCaptionVariant(v.id)} style={{
@@ -1190,6 +1266,7 @@ export default function SocialExportPanel({
               </button>
             ))}
           </div>
+          )}
 
           <div style={{ background: steel(0.04), borderRadius: 8, border: `1px solid ${steel(0.08)}`, padding: '9px 12px', marginBottom: 8 }}>
             <p style={{ margin: 0, fontSize: 12, color: steel(0.68), lineHeight: 1.55, whiteSpace: 'pre-wrap', userSelect: 'all' }}>
@@ -1205,7 +1282,7 @@ export default function SocialExportPanel({
               Optional. Use these only if you post publicly.
             </div>
             <div style={{ fontSize: 11, color: steel(0.48), lineHeight: 1.6, background: steel(0.03), borderRadius: 6, border: `1px solid ${steel(0.07)}`, padding: '8px 10px', userSelect: 'all' }}>
-              {hashtags}
+              {freeMode ? FREE_HASHTAGS : hashtags}
             </div>
           </div>
 
@@ -1217,7 +1294,7 @@ export default function SocialExportPanel({
               Copy Caption
             </button>
             <button
-              onClick={() => navigator.clipboard?.writeText(hashtags)}
+              onClick={() => navigator.clipboard?.writeText(freeMode ? FREE_HASHTAGS : hashtags)}
               style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${steel(0.14)}`, background: steel(0.05), fontSize: 11, fontWeight: 600, color: steel(0.62), cursor: 'pointer', letterSpacing: '0.02em', WebkitTapHighlightColor: 'transparent' }}
             >
               Copy Tags
