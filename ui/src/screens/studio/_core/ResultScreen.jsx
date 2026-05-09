@@ -3007,7 +3007,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
       )}
 
       {/* ── DISPATCH — mobile: immediately after verdict, before technical details ── */}
-      {!isDesktop && isPaid && (
+      {!isDesktop && (
         <div style={{
           marginLeft: 25, marginRight: 25,
           opacity: infoVisible ? 1 : 0,
@@ -3021,6 +3021,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
               diagramCanvas={socialDiagramCanvas}
               isStudio={plan === 'studio' || plan === 'enterprise'}
               isAdmin={isAdmin}
+              freeMode={!isPaid}
               layout="compact"
             />
           </SafeRender>
@@ -3191,7 +3192,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
             PatternBars (alternate candidates) moved to DETAIL drawer.
             ═══════════════════════════════════════════════════════════════ */}
         {/* ── DISPATCH — desktop: first item in right panel, action surface immediately after verdict ── */}
-        {isDesktop && isPaid && (
+        {isDesktop && (
           <SafeRender>
             <SocialExportPanel
               result={result}
@@ -3199,6 +3200,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
               diagramCanvas={socialDiagramCanvas}
               isStudio={plan === 'studio' || plan === 'enterprise'}
               isAdmin={isAdmin}
+              freeMode={!isPaid}
               layout="workbench"
             />
           </SafeRender>
