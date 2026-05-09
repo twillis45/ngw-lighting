@@ -66,6 +66,8 @@ function buildHashtags(judgment) {
   return tags.join(' ');
 }
 
+const FREE_HASHTAGS = '#LightRead #NoGuessworkLighting #PortraitLighting';
+
 // Mirrors ResultScreen parseClockHour — returns true if str encodes a valid 1–12 hour.
 function parseCatchlightPresence(str) {
   if (str == null) return false;
@@ -837,7 +839,7 @@ export default function SocialExportPanel({
                 Optional. Use these only if you post publicly.
               </div>
               <div style={{ fontSize: 11, color: steel(0.50), lineHeight: 1.6, background: steel(0.03), borderRadius: 6, border: `1px solid ${steel(0.07)}`, padding: '8px 10px', userSelect: 'all' }}>
-                {hashtags}
+                {freeMode ? FREE_HASHTAGS : hashtags}
               </div>
             </div>
 
@@ -849,7 +851,7 @@ export default function SocialExportPanel({
                 Copy Caption
               </button>
               <button
-                onClick={() => navigator.clipboard?.writeText(hashtags)}
+                onClick={() => navigator.clipboard?.writeText(freeMode ? FREE_HASHTAGS : hashtags)}
                 style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${steel(0.14)}`, background: steel(0.05), fontSize: 11, fontWeight: 600, color: steel(0.62), cursor: 'pointer', letterSpacing: '0.02em', WebkitTapHighlightColor: 'transparent' }}
               >
                 Copy Tags
@@ -1280,7 +1282,7 @@ export default function SocialExportPanel({
               Optional. Use these only if you post publicly.
             </div>
             <div style={{ fontSize: 11, color: steel(0.48), lineHeight: 1.6, background: steel(0.03), borderRadius: 6, border: `1px solid ${steel(0.07)}`, padding: '8px 10px', userSelect: 'all' }}>
-              {hashtags}
+              {freeMode ? FREE_HASHTAGS : hashtags}
             </div>
           </div>
 
@@ -1292,7 +1294,7 @@ export default function SocialExportPanel({
               Copy Caption
             </button>
             <button
-              onClick={() => navigator.clipboard?.writeText(hashtags)}
+              onClick={() => navigator.clipboard?.writeText(freeMode ? FREE_HASHTAGS : hashtags)}
               style={{ flex: 1, padding: '8px 4px', borderRadius: 8, border: `1px solid ${steel(0.14)}`, background: steel(0.05), fontSize: 11, fontWeight: 600, color: steel(0.62), cursor: 'pointer', letterSpacing: '0.02em', WebkitTapHighlightColor: 'transparent' }}
             >
               Copy Tags
