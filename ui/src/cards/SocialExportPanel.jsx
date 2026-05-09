@@ -651,7 +651,7 @@ export default function SocialExportPanel({
               Free plan · Light Card only.
             </div>
             <div style={{ fontSize: 11, color: steel(0.40), lineHeight: 1.45, marginBottom: 10 }}>
-              Unlock the full Plate Set: Story, Blueprint, Carousel, Reel, and caption styles.
+              Unlock the full Plate Set: Story, Blueprint, Carousel, Reel, caption styles, and tags.
             </div>
             <button
               onClick={() => startStripeCheckout().catch(e => { console.error('[checkout]', e.message); alert(e.message || 'Checkout failed. Please try again.'); })}
@@ -663,7 +663,7 @@ export default function SocialExportPanel({
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              Upgrade to Unlock
+              Upgrade
             </button>
           </div>
         )}
@@ -768,7 +768,7 @@ export default function SocialExportPanel({
           >
             {template === 'carousel' && lights.length > 1
               ? `Save ${lights.length} plates`
-              : 'Save plate'}
+              : freeMode ? 'Save Light Card' : 'Save plate'}
           </button>
           {!freeMode && (
           <button
