@@ -1,0 +1,1611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NGW — Revenue &amp; Monetization</title>
+<meta name="description" content="No Guesswork Lighting — revenue model, pricing tiers, conversion funnel, and unit economics. Studio Matte layout." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ── Tokens (mirrored from ui/src/theme/tokens.css — Studio Matte) ─── */
+  :root {
+    --sm-bg:            #000000;
+    --sm-surface:       #0f1013;
+    --sm-surface-2:     #131418;
+    --sm-surface-slot:  #08080a;
+    --sm-surface-pill:  #070709;
+    --sm-divider:       rgba(255,255,255,0.06);
+    --sm-divider-strong:rgba(255,255,255,0.10);
+
+    --sm-text:          rgba(245,247,250,0.95);
+    --sm-text-2:        rgba(184,191,199,0.78);
+    --sm-text-3:        rgba(184,191,199,0.55);
+    --sm-text-4:        rgba(184,191,199,0.38);
+    --sm-meta:          #a7adb7;
+
+    --steel:            rgb(132,158,184);
+    --steel-soft:       rgba(132,158,184,0.55);
+
+    --gold:             #C8A96E;     /* canonical NGW gold (--color-cta) */
+    --gold-soft:        rgba(200,169,110,0.14);
+    --gold-line:        rgba(200,169,110,0.32);
+
+    --green:            #48BA88;     /* --color-success */
+    --green-soft:       rgba(72,186,136,0.12);
+    --amber:            #F59E34;     /* --color-warning */
+    --red:              #F87171;     /* --color-error */
+
+    --panel-shadow:     1px 2px 4px rgba(0,0,0,0.4), 2px 4px 16px rgba(0,0,0,0.55);
+    --panel-bevel:      inset -1px -1px 2px rgba(0,0,0,0.18), inset 1px 1px 0 rgba(255,255,255,0.04);
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* ── Page geometry (US Letter, print-ready) ─── */
+  @page { size: Letter; margin: 0; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #050506;
+    color: var(--sm-text);
+    font-family: var(--font);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  .doc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 0;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    background: var(--sm-bg);
+    color: var(--sm-text);
+    padding: 0.6in 0.6in 0.55in;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+
+  /* ── Page chrome ─── */
+  .page-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--sm-divider);
+    margin-bottom: 22px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sm-text-3);
+  }
+  .page-head .brand { color: var(--sm-text-2); font-weight: 600; letter-spacing: 0.2em; }
+  .page-head .brand .dot { color: var(--gold); margin: 0 6px; }
+  .page-head .meta { display: flex; gap: 18px; }
+  .page-head .meta span { color: var(--sm-text-3); }
+
+  .page-foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--sm-divider);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sm-text-4);
+  }
+  .page-foot .num { color: var(--sm-text-2); }
+
+  /* ── Typography ─── */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+  }
+  h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.02em; color: var(--sm-text); }
+  h1 { font-size: 52px; line-height: 1.02; font-weight: 800; }
+  h2 { font-size: 26px; line-height: 1.15; }
+  h3 { font-size: 14px; line-height: 1.25; font-weight: 600; letter-spacing: 0.01em; }
+  p  { margin: 0; line-height: 1.55; color: var(--sm-text-2); font-size: 12.5px; }
+  .lead { font-size: 14px; color: var(--sm-text); line-height: 1.5; }
+  .small { font-size: 10.5px; color: var(--sm-text-3); line-height: 1.5; }
+  .mono { font-family: var(--mono); }
+
+  .section-title {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 18px;
+  }
+  .section-title .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+  .section-title h2 { flex: 1; }
+  .section-title .rule {
+    flex: 0 0 80px;
+    height: 1px;
+    background: var(--sm-divider-strong);
+    margin-bottom: 6px;
+  }
+
+  /* ── Panel / card system ─── */
+  .panel {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+    padding: 18px 18px 16px;
+    position: relative;
+  }
+  .panel .label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sm-text-4);
+    margin-bottom: 8px;
+  }
+  .panel .value {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .panel .value .unit {
+    font-size: 13px; color: var(--sm-text-3); font-weight: 500; margin-left: 4px; letter-spacing: 0;
+  }
+  .panel .sub {
+    font-size: 11px; color: var(--sm-text-3); margin-top: 4px;
+  }
+
+  /* ── Grids ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* ── Table (rendered as grid) ─── */
+  .matrix { border: 1px solid var(--sm-divider-strong); border-radius: var(--radius); overflow: hidden; }
+  .matrix .row {
+    display: grid;
+    align-items: center;
+    border-top: 1px solid var(--sm-divider);
+  }
+  .matrix .row:first-child { border-top: none; }
+  .matrix .row > div {
+    padding: 9px 12px;
+    font-size: 11.5px;
+    color: var(--sm-text-2);
+    border-right: 1px solid var(--sm-divider);
+  }
+  .matrix .row > div:last-child { border-right: none; }
+  .matrix .row.head > div {
+    background: var(--sm-surface-2);
+    color: var(--sm-text);
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 11px 12px;
+  }
+  .matrix .row.head .feat { color: var(--sm-text-2); }
+  .matrix .feat { color: var(--sm-text); font-weight: 500; }
+  .check { color: var(--green); font-weight: 600; }
+  .dash  { color: var(--sm-text-4); }
+  .partial { color: var(--amber); font-weight: 500; }
+  .matrix .row.totals > div {
+    background: rgba(200,169,110,0.06);
+    color: var(--sm-text);
+    font-weight: 600;
+    border-top: 1px solid var(--gold-line);
+  }
+
+  /* ── Tier card ─── */
+  .tier {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius-lg);
+    padding: 18px 18px 16px;
+    display: flex; flex-direction: column;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+    position: relative;
+    min-height: 320px;
+  }
+  .tier.featured {
+    border-color: var(--gold-line);
+    background: linear-gradient(180deg, rgba(200,169,110,0.05), var(--sm-surface) 35%);
+  }
+  .tier .name {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sm-text-3);
+    margin-bottom: 10px;
+  }
+  .tier.featured .name { color: var(--gold); }
+  .tier .price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+  .tier .price .amt { font-size: 36px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; }
+  .tier .price .per { font-size: 11.5px; color: var(--sm-text-3); }
+  .tier .desc { font-size: 11.5px; color: var(--sm-text-3); margin-top: 6px; }
+  .tier ul {
+    list-style: none; margin: 14px 0 0; padding: 14px 0 0;
+    border-top: 1px solid var(--sm-divider);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tier li {
+    font-size: 11px; color: var(--sm-text-2);
+    padding-left: 14px; position: relative; line-height: 1.45;
+  }
+  .tier li::before {
+    content: ""; position: absolute; left: 0; top: 6px;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--steel-soft);
+  }
+  .tier.featured li::before { background: var(--gold); }
+
+  /* ── Funnel ─── */
+  .funnel {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    align-items: stretch;
+  }
+  .funnel .step {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius);
+    padding: 12px 12px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+  .funnel .step .stage {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sm-text-3);
+  }
+  .funnel .step .name { font-size: 13px; font-weight: 600; color: var(--sm-text); letter-spacing: -0.01em; }
+  .funnel .step .pct { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--gold); margin-top: 2px; }
+  .funnel .step .note { font-size: 10px; color: var(--sm-text-3); line-height: 1.35; }
+  .funnel .arrow {
+    align-self: center; color: var(--sm-text-4); font-family: var(--mono); font-size: 10px;
+    text-align: center;
+  }
+  .funnel-bar {
+    margin-top: 14px;
+    height: 28px;
+    display: grid;
+    grid-template-columns: 100fr 35fr 12fr 6.5fr 4.2fr;
+    gap: 4px;
+  }
+  .funnel-bar .seg {
+    background: linear-gradient(180deg, var(--sm-surface-2), var(--sm-surface));
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 9.5px; color: var(--sm-text-3); letter-spacing: 0.1em;
+  }
+  .funnel-bar .seg.paid {
+    background: linear-gradient(180deg, rgba(200,169,110,0.22), rgba(200,169,110,0.10));
+    border-color: var(--gold-line);
+    color: var(--gold);
+  }
+
+  /* ── Scenario columns ─── */
+  .scenarios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .scenario {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius);
+    padding: 16px 16px 14px;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+    display: flex; flex-direction: column;
+  }
+  .scenario .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    display: inline-block;
+    width: max-content;
+    margin-bottom: 10px;
+  }
+  .scenario.base .tag { color: var(--gold); background: var(--gold-soft); border: 1px solid var(--gold-line); }
+  .scenario.cons .tag { color: var(--steel); background: rgba(132,158,184,0.10); border: 1px solid rgba(132,158,184,0.25); }
+  .scenario.aggr .tag { color: var(--green); background: var(--green-soft); border: 1px solid rgba(72,186,136,0.30); }
+  .scenario h3 { font-size: 13px; font-weight: 600; color: var(--sm-text-2); margin-bottom: 14px; letter-spacing: 0.01em; text-transform: none; }
+  .scenario .big { font-size: 32px; font-weight: 800; letter-spacing: -0.025em; color: var(--sm-text); line-height: 1; }
+  .scenario .big .u { font-size: 13px; font-weight: 500; color: var(--sm-text-3); letter-spacing: 0; margin-left: 4px; }
+  .scenario .sub { font-size: 10.5px; color: var(--sm-text-3); margin-top: 4px; }
+  .scenario .rows {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--sm-divider);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .scenario .rows .r {
+    display: flex; justify-content: space-between; font-size: 10.5px;
+  }
+  .scenario .rows .r .k { color: var(--sm-text-3); }
+  .scenario .rows .r .v { color: var(--sm-text); font-family: var(--mono); font-weight: 500; }
+
+  /* ── KPI row ─── */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kpi {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius);
+    padding: 14px 14px 12px;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+  }
+  .kpi .l {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--sm-text-4); margin-bottom: 6px;
+  }
+  .kpi .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .kpi .v .u { font-size: 11px; font-weight: 500; color: var(--sm-text-3); margin-left: 3px; letter-spacing: 0; }
+  .kpi .n { font-size: 10px; color: var(--sm-text-3); margin-top: 3px; line-height: 1.4; }
+
+  /* ── Pricing ladder strip ─── */
+  .ladder {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .rung {
+    background: var(--sm-surface-slot);
+    border: 1px solid var(--sm-divider);
+    border-radius: 6px;
+    padding: 9px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .rung.active {
+    background: rgba(200,169,110,0.06);
+    border-color: var(--gold-line);
+  }
+  .rung .p { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--sm-text); }
+  .rung .s { font-size: 9.5px; color: var(--sm-text-3); letter-spacing: 0.05em; text-transform: uppercase; }
+  .rung.active .p { color: var(--gold); }
+
+  /* ── Notes / labeled badges ─── */
+  .badge {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+  .badge.grounded { color: var(--steel); background: rgba(132,158,184,0.10); border: 1px solid rgba(132,158,184,0.28); }
+  .badge.modeled  { color: var(--gold);  background: var(--gold-soft); border: 1px solid var(--gold-line); }
+  .badge.target   { color: var(--green); background: var(--green-soft); border: 1px solid rgba(72,186,136,0.30); }
+
+  /* ── Cover ─── */
+  .cover {
+    padding: 0;
+    background: var(--sm-bg);
+    display: flex;
+    align-items: stretch;
+  }
+  .cover .inner {
+    flex: 1;
+    padding: 0.85in 0.7in 0.6in;
+    display: flex; flex-direction: column;
+    background:
+      radial-gradient(60% 50% at 15% 20%, rgba(200,169,110,0.08), transparent 70%),
+      radial-gradient(40% 40% at 85% 90%, rgba(132,158,184,0.06), transparent 70%),
+      var(--sm-bg);
+  }
+  .cover .brandline {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.24em;
+    text-transform: uppercase; color: var(--sm-text-3);
+    padding-bottom: 14px; border-bottom: 1px solid var(--sm-divider);
+  }
+  .cover .brandline .logo { color: var(--sm-text); font-weight: 700; letter-spacing: 0.32em; }
+  .cover .brandline .logo .gold { color: var(--gold); }
+
+  .cover .title { margin-top: auto; }
+  .cover .title .eyebrow { margin-bottom: 18px; display: inline-block; }
+  .cover h1 { font-size: 64px; line-height: 0.98; letter-spacing: -0.035em; font-weight: 800; max-width: 6.6in; }
+  .cover h1 em {
+    font-style: normal;
+    color: var(--gold);
+  }
+  .cover .strap { margin-top: 26px; font-size: 14px; max-width: 5.6in; color: var(--sm-text-2); }
+
+  .cover .meta-grid {
+    margin-top: 50px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    border-top: 1px solid var(--sm-divider); padding-top: 18px;
+  }
+  .cover .meta-grid .cell { display: flex; flex-direction: column; gap: 3px; }
+  .cover .meta-grid .l {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--sm-text-4);
+  }
+  .cover .meta-grid .v { font-size: 13px; color: var(--sm-text); font-weight: 500; }
+
+  .cover-foot {
+    margin-top: auto;
+    padding-top: 22px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--sm-text-4);
+  }
+  .cover-foot .badge-row { display: flex; gap: 6px; }
+
+  /* ── Hairline section dividers used inline ─── */
+  .hr { height: 1px; background: var(--sm-divider-strong); margin: 14px 0; border: 0; }
+
+  /* ── Caption strip ─── */
+  .caption {
+    font-family: var(--mono);
+    font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--sm-text-4);
+    margin-top: 10px;
+  }
+
+  /* ── Risks list ─── */
+  .risk-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .risk {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-left: 2px solid var(--amber);
+    border-radius: var(--radius-sm);
+    padding: 11px 13px;
+  }
+  .risk .h { font-size: 12px; font-weight: 600; color: var(--sm-text); margin-bottom: 4px; }
+  .risk .b { font-size: 10.5px; color: var(--sm-text-3); line-height: 1.45; }
+  .risk.low  { border-left-color: var(--green); }
+  .risk.high { border-left-color: var(--red); }
+
+  /* ── Lever list ─── */
+  .levers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lever {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius-sm);
+    padding: 12px 13px;
+    display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start;
+  }
+  .lever .n {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    color: var(--gold); letter-spacing: 0.12em;
+    border: 1px solid var(--gold-line);
+    border-radius: 4px;
+    background: var(--gold-soft);
+    display: flex; align-items: center; justify-content: center;
+    height: 22px;
+  }
+  .lever .h { font-size: 12px; font-weight: 600; color: var(--sm-text); margin-bottom: 2px; }
+  .lever .b { font-size: 10.5px; color: var(--sm-text-3); line-height: 1.45; }
+
+  /* ── Infographic shared bits ─── */
+  .infographic {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+    padding: 16px 18px 14px;
+  }
+  .infographic .head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .infographic .head .label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sm-text-4);
+  }
+  .infographic .head .legend {
+    display: flex; gap: 14px;
+    font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--sm-text-3);
+  }
+  .infographic .head .legend .swatch {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 2px; margin-right: 5px; vertical-align: -1px;
+  }
+  .infographic svg { display: block; width: 100%; height: auto; }
+
+  /* ── Funnel SVG-specific ─── */
+  .fn-step-text { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--sm-text-3); }
+  .fn-name-text { font-family: var(--font); font-size: 12px; font-weight: 600; fill: var(--sm-text); letter-spacing: -0.01em; }
+  .fn-pct-text  { font-family: var(--mono); font-size: 13px; font-weight: 700; fill: var(--gold); letter-spacing: -0.01em; }
+  .fn-num-text  { font-family: var(--mono); font-size: 10px; fill: var(--sm-text-3); }
+
+  /* ── Bar chart axis ─── */
+  .axis-text { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; fill: var(--sm-text-4); }
+  .bar-label { font-family: var(--font); font-size: 11px; font-weight: 600; fill: var(--sm-text); letter-spacing: -0.005em; }
+  .bar-value { font-family: var(--mono); font-size: 13px; font-weight: 700; fill: var(--sm-text); }
+  .bar-sub   { font-family: var(--mono); font-size: 9px; fill: var(--sm-text-3); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* ── Flow diagram ─── */
+  .flow-node-text { font-family: var(--font); font-size: 10.5px; font-weight: 600; fill: var(--sm-text); }
+  .flow-state-text { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--sm-text-3); }
+  .flow-price-text { font-family: var(--mono); font-size: 14px; font-weight: 700; }
+  .flow-edge { fill: none; stroke: rgba(132,158,184,0.35); stroke-width: 1; }
+  .flow-edge.gold { stroke: var(--gold-line); }
+
+  /* ── Methodology table ─── */
+  .meth { font-size: 11px; }
+  .meth .row { grid-template-columns: 1.2fr 1fr 1.5fr 0.8fr; }
+  .meth .row > div { padding: 8px 10px; }
+
+  /* ── Responsive (screen preview only) ─── */
+  @media (max-width: 900px) {
+    .page { width: 100%; padding: 28px 18px 24px; min-height: auto; }
+    .grid-3, .grid-4, .scenarios, .funnel, .kpis, .ladder { grid-template-columns: 1fr 1fr; }
+    .funnel { grid-template-columns: 1fr 1fr; }
+    .funnel .arrow { display: none; }
+    .funnel-bar { grid-template-columns: 1fr; height: auto; }
+    .funnel-bar .seg { height: 22px; }
+    .risk-list, .levers { grid-template-columns: 1fr; }
+    h1 { font-size: 40px; }
+    .cover h1 { font-size: 44px; }
+    .cover .meta-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) {
+    .grid-2, .grid-3, .grid-4, .scenarios, .funnel, .kpis, .ladder { grid-template-columns: 1fr; }
+    h1 { font-size: 30px; }
+    .cover h1 { font-size: 34px; }
+    .matrix .row { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  }
+
+  /* ── Print ─── */
+  @media print {
+    html, body { background: var(--sm-bg) !important; }
+    .doc { padding: 0; gap: 0; }
+    .page {
+      width: 8.5in; min-height: 11in;
+      box-shadow: none;
+      margin: 0;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ═══════════════════════ PAGE 1 — COVER ═══════════════════════ -->
+  <section class="page cover">
+    <div class="inner">
+      <div class="brandline">
+        <span class="logo">N<span class="gold">·</span>G<span class="gold">·</span>W</span>
+        <span>No Guesswork Lighting</span>
+        <span>Confidential / Internal</span>
+      </div>
+
+      <div class="title">
+        <span class="eyebrow">Revenue &amp; Monetization</span>
+        <h1>Pricing, conversion,<br/>and unit economics<br/>for a <em>premium</em><br/>photography platform.</h1>
+        <p class="strap">A walkthrough of the NGW tier structure, adaptive pricing logic, conversion funnel, modeled revenue scenarios, and the assumptions that drive them. Studio Matte layout — built to be read on phone, tablet, laptop, or print.</p>
+      </div>
+
+      <div class="meta-grid">
+        <div class="cell"><span class="l">Document</span><span class="v">Revenue Model v1</span></div>
+        <div class="cell"><span class="l">Audience</span><span class="v">Internal / Investor</span></div>
+        <div class="cell"><span class="l">Status</span><span class="v">Draft for Review</span></div>
+        <div class="cell"><span class="l">Date</span><span class="v">May 2026</span></div>
+      </div>
+
+      <div class="cover-foot">
+        <span>Studio Matte · Carbon Black</span>
+        <div class="badge-row">
+          <span class="badge grounded">Grounded</span>
+          <span class="badge modeled">Modeled</span>
+          <span class="badge target">Target</span>
+        </div>
+        <span>01 / 10</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 2 — EXECUTIVE SUMMARY ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 01</span><span>Executive Summary</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 01</span>
+      <h2>Executive summary</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:20px;">
+      NGW monetizes a single, well-defined behavior: a working photographer points the camera at a reference image, gets back a decoded lighting setup they can actually rebuild. The monetization model converts that moment of <em style="color:var(--gold); font-style: normal;">resolved ambiguity</em> into recurring revenue through a tiered subscription with an adaptive paywall.
+    </p>
+
+    <div class="kpis" style="margin-bottom:18px;">
+      <div class="kpi">
+        <div class="l">Pro plan</div>
+        <div class="v">$39<span class="u">/mo</span></div>
+        <div class="n"><span class="badge grounded">Grounded</span> Listed price · pricing.html</div>
+      </div>
+      <div class="kpi">
+        <div class="l">Studio plan</div>
+        <div class="v">$59<span class="u">/mo</span></div>
+        <div class="n"><span class="badge grounded">Grounded</span> Listed price · pricing.html</div>
+      </div>
+      <div class="kpi">
+        <div class="l">Free trial</div>
+        <div class="v">14<span class="u">days</span></div>
+        <div class="n"><span class="badge grounded">Grounded</span> No card required</div>
+      </div>
+      <div class="kpi">
+        <div class="l">Annual discount</div>
+        <div class="v">~17<span class="u">%</span></div>
+        <div class="n"><span class="badge grounded">Grounded</span> Yearly = 10 × monthly</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:18px;">
+      <div class="panel">
+        <div class="label">Core thesis</div>
+        <p style="margin-bottom:8px;">Photographers don't pay for "AI analysis." They pay to <em style="color:var(--sm-text); font-style: normal; font-weight: 600;">stop guessing</em> on lighting they can already see but can't yet reproduce.</p>
+        <p>The free tier proves the engine on three images. The paid tiers turn that proof into a daily working tool — Shoot Mode, kit matching, Shot Match, and reproducible setups.</p>
+      </div>
+      <div class="panel">
+        <div class="label">Why this model works</div>
+        <p style="margin-bottom:8px;">High intrinsic-value moments (a successful reconstruction) anchor higher price points. Low-value moments anchor entry pricing. The adaptive pricing engine routes each user to the right offer at the right moment.</p>
+        <p>Result: a single product surface, three durable tiers, and a paywall that respects intent rather than fighting it.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="border-color: var(--gold-line); background: linear-gradient(180deg, rgba(200,169,110,0.04), var(--sm-surface) 60%);">
+      <div class="label" style="color: var(--gold);">The three revenue surfaces</div>
+      <div class="grid-3" style="margin-top:6px;">
+        <div>
+          <div style="font-size:11px; color:var(--sm-text-3); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px;">1 · Subscription</div>
+          <p class="small">Monthly &amp; yearly Pro / Studio plans. The base recurring revenue line.</p>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--sm-text-3); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px;">2 · Adaptive paywall</div>
+          <p class="small">Price ladder $39 / 49 / 59 / 79 routed by intent state, with session-level anti-discount guardrails.</p>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--sm-text-3); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:4px;">3 · Studio &amp; API</div>
+          <p class="small">Team seats, batch processing, and metered REST access (100 req/hr) — the upgrade path beyond the working solo photographer.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption">All figures on this page are <span style="color:var(--steel);">grounded</span> in code or live pricing surface. Modeled scenarios appear from § 05 onward.</p>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">02 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 3 — POSITIONING & WHO PAYS ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 02</span><span>Positioning &amp; Who Pays</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 02</span>
+      <h2>Positioning &amp; who pays</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
+      NGW is not a general "photo AI" tool. It is positioned as the lighting decode and reconstruction layer for working photographers — a category of one. Pricing reflects that positioning rather than chasing generic SaaS comps.
+    </p>
+
+    <div class="grid-3" style="margin-bottom:16px;">
+      <div class="panel">
+        <div class="label">Primary buyer</div>
+        <div class="value" style="font-size:18px;">Working solo photographer</div>
+        <p class="small" style="margin-top:8px;">Portrait, beauty, fashion, editorial. Bills clients. Owns or rents lighting kit. Lives at the $39–$59/mo SaaS threshold for tools that compress one shoot's worth of reshoots.</p>
+      </div>
+      <div class="panel">
+        <div class="label">Secondary buyer</div>
+        <div class="value" style="font-size:18px;">Small studio &amp; production team</div>
+        <p class="small" style="margin-top:8px;">2–6 collaborators sharing references, kit, and reconstructed setups. Buys Studio for batch, white-label export, setup sharing, and REST API access.</p>
+      </div>
+      <div class="panel">
+        <div class="label">Adjacent / non-buyer</div>
+        <div class="value" style="font-size:18px;">Hobbyist &amp; learner</div>
+        <p class="small" style="margin-top:8px;">Lives on Free tier. Three analyses + reference library. Not the revenue target — the credibility and word-of-mouth flywheel for the paying audience.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Why a working photographer pays</div>
+      <div class="grid-2" style="margin-top:8px; gap: 18px;">
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;">
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">01</span><span><strong style="color:var(--sm-text); font-weight:600;">Decode time saved.</strong> A 20-minute "what light did they use?" exercise compressed into a single analysis with a reproducible diagram.</span></li>
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">02</span><span><strong style="color:var(--sm-text); font-weight:600;">Kit-aware reconstruction.</strong> Shoot Mode matches the setup to gear the photographer actually owns. The answer is buildable today, not in theory.</span></li>
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">03</span><span><strong style="color:var(--sm-text); font-weight:600;">Reference reproducibility.</strong> Setups save, export, and share. The platform becomes the photographer's external memory.</span></li>
+        </ul>
+        <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;">
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">04</span><span><strong style="color:var(--sm-text); font-weight:600;">Credibility under ambiguity.</strong> The engine names what's unresolved. Photographers trust tools that admit uncertainty over tools that bluff.</span></li>
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">05</span><span><strong style="color:var(--sm-text); font-weight:600;">Master Modes &amp; Build From Scratch.</strong> The platform is also a teacher — a structured way to extend the photographer's own range.</span></li>
+          <li style="display:flex; gap:10px; font-size:11.5px; color:var(--sm-text-2); line-height:1.5;"><span style="color:var(--gold); font-weight:700;">06</span><span><strong style="color:var(--sm-text); font-weight:600;">Premium positioning.</strong> Priced like a working tool, not a consumer app. Aligned to the buyer's professional self-image.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">03 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 4 — TIER STRUCTURE ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 03</span><span>Tier Structure</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 03</span>
+      <h2>Tier structure</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:18px;">
+      Three tiers, each defined by what it unlocks <em style="color:var(--sm-text); font-style:normal; font-weight:600;">in a working photographer's day</em>. Feature inclusion below mirrors the live pricing surface in <span class="mono" style="color:var(--sm-text-2);">static/www/pricing.html</span>.
+    </p>
+
+    <div class="grid-3" style="margin-bottom:18px;">
+      <!-- Free -->
+      <div class="tier">
+        <div class="name">Free</div>
+        <div class="price"><span class="amt">$0</span><span class="per">/ month</span></div>
+        <div class="desc">Prove the engine. Learn the language.</div>
+        <ul>
+          <li>3 analyses</li>
+          <li>All lighting patterns</li>
+          <li>Lighting diagrams</li>
+          <li>1 quick fix per analysis</li>
+          <li>Community reference library</li>
+        </ul>
+      </div>
+      <!-- Pro -->
+      <div class="tier featured">
+        <div class="name">Pro · Featured</div>
+        <div class="price"><span class="amt">$39</span><span class="per">/ month</span></div>
+        <div class="desc">For the working solo photographer.</div>
+        <ul>
+          <li>Unlimited analyses</li>
+          <li>Shoot Mode &amp; kit matching</li>
+          <li>Shot Match comparison</li>
+          <li>Build From Scratch wizard</li>
+          <li>Master Modes (9 presets)</li>
+          <li>All quick fixes &amp; recommendations</li>
+          <li>Kit management · Room Planner</li>
+          <li>Save setups · diagram export (PNG/PDF)</li>
+        </ul>
+      </div>
+      <!-- Studio -->
+      <div class="tier">
+        <div class="name">Studio</div>
+        <div class="price"><span class="amt">$59</span><span class="per">/ month</span></div>
+        <div class="desc">For studios &amp; production teams.</div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Batch processing (up to 10 images)</li>
+          <li>White-label diagram export</li>
+          <li>Setup sharing (public links)</li>
+          <li>Custom reference library</li>
+          <li>Team collaboration</li>
+          <li>REST API access (100 req/hr)</li>
+          <li>Priority email support</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="matrix" style="margin-bottom:8px;">
+      <div class="row head" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Capability</div>
+        <div>Free</div>
+        <div>Pro · $39</div>
+        <div>Studio · $59</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Analyses per month</div>
+        <div>3</div>
+        <div class="check">Unlimited</div>
+        <div class="check">Unlimited</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Vision pipeline · 35+ passes</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Quick fixes</div>
+        <div class="partial">1 / analysis</div>
+        <div class="check">All</div>
+        <div class="check">All</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Shoot Mode &amp; kit matching</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Shot Match · Build From Scratch</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Master Modes (9 presets)</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Save setups · diagram export</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Batch (≤10) · white-label · sharing</div>
+        <div class="dash">—</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">REST API · 100 req/hr</div>
+        <div class="dash">—</div>
+        <div class="dash">—</div>
+        <div class="check">✓</div>
+      </div>
+      <div class="row totals" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
+        <div class="feat">Annual price (≈17 % off)</div>
+        <div>—</div>
+        <div>$390 / yr</div>
+        <div>$590 / yr</div>
+      </div>
+    </div>
+
+    <p class="caption"><span class="badge grounded">Grounded</span> &nbsp;Tier features &amp; prices mirror <span class="mono">static/www/pricing.html</span>. Annual = 10 × monthly per <span class="mono">engine/paywall/adaptive_pricing.py</span>.</p>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">04 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 5 — CONVERSION FUNNEL ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 04</span><span>Conversion Funnel</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 04</span>
+      <h2>Conversion funnel</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
+      The funnel below shows the stages each acquired visitor moves through. Percentages are <span class="badge modeled" style="vertical-align: middle;">Modeled</span> targets for the base scenario, calibrated against the existing free-trial structure (14 days, no card). Real cohort behavior replaces these once instrumentation runs at volume.
+    </p>
+
+    <div class="funnel" style="margin-bottom:8px;">
+      <div class="step">
+        <span class="stage">Stage 01</span>
+        <span class="name">Visitor</span>
+        <span class="pct">100 %</span>
+        <span class="note">Lands on marketing or reference library.</span>
+      </div>
+      <div class="step">
+        <span class="stage">Stage 02</span>
+        <span class="name">Signup · Free</span>
+        <span class="pct">35 %</span>
+        <span class="note">Creates account, runs first of 3 analyses.</span>
+      </div>
+      <div class="step">
+        <span class="stage">Stage 03</span>
+        <span class="name">Trial start</span>
+        <span class="pct">12 %</span>
+        <span class="note">Begins 14-day Pro trial, no card required.</span>
+      </div>
+      <div class="step">
+        <span class="stage">Stage 04</span>
+        <span class="name">Paid · Pro</span>
+        <span class="pct">5.1 %</span>
+        <span class="note">78 % of paid mix · adaptive paywall.</span>
+      </div>
+      <div class="step">
+        <span class="stage">Stage 05</span>
+        <span class="name">Paid · Studio</span>
+        <span class="pct">1.4 %</span>
+        <span class="note">22 % of paid mix · team / batch / API.</span>
+      </div>
+    </div>
+
+    <div class="infographic" style="margin-bottom:14px;">
+      <div class="head">
+        <span class="label">Funnel drop-off · per 25,000 monthly visitors (Base)</span>
+        <span class="legend">
+          <span><span class="swatch" style="background:rgba(132,158,184,0.30); border:1px solid rgba(132,158,184,0.50);"></span>Free flow</span>
+          <span><span class="swatch" style="background:rgba(200,169,110,0.55); border:1px solid var(--gold-line);"></span>Revenue</span>
+        </span>
+      </div>
+      <svg viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Conversion funnel from 25,000 visitors to 4.2% paid">
+        <defs>
+          <linearGradient id="funnel-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="rgba(132,158,184,0.28)"/>
+            <stop offset="60%" stop-color="rgba(132,158,184,0.18)"/>
+            <stop offset="100%" stop-color="rgba(132,158,184,0.10)"/>
+          </linearGradient>
+          <linearGradient id="funnel-paid" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="rgba(200,169,110,0.55)"/>
+            <stop offset="100%" stop-color="rgba(200,169,110,0.30)"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Stage 1: Visitor 100% -->
+        <polygon points="60,16 540,16 510,58 90,58" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1"/>
+        <text class="fn-step-text" x="60"  y="38">Stage 01</text>
+        <text class="fn-name-text" x="180" y="42">Visitor</text>
+        <text class="fn-pct-text"  x="560" y="42">100 %</text>
+        <text class="fn-num-text"  x="612" y="42">25,000</text>
+
+        <!-- Stage 2: Free 35% -->
+        <polygon points="90,62 510,62 480,104 120,104" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.92"/>
+        <text class="fn-step-text" x="60"  y="84">Stage 02</text>
+        <text class="fn-name-text" x="180" y="88">Signup · Free</text>
+        <text class="fn-pct-text"  x="560" y="88">35 %</text>
+        <text class="fn-num-text"  x="612" y="88">8,750</text>
+
+        <!-- Stage 3: Trial 12% -->
+        <polygon points="120,108 480,108 430,150 170,150" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.82"/>
+        <text class="fn-step-text" x="60"  y="130">Stage 03</text>
+        <text class="fn-name-text" x="180" y="134">Trial start</text>
+        <text class="fn-pct-text"  x="560" y="134">12 %</text>
+        <text class="fn-num-text"  x="612" y="134">3,000</text>
+
+        <!-- Stage 4: Paid total 6.5% — split into Pro / Studio below -->
+        <polygon points="170,154 430,154 380,196 220,196" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
+        <text class="fn-step-text" x="60"  y="176">Stage 04</text>
+        <text class="fn-name-text" x="180" y="180">Paid · total</text>
+        <text class="fn-pct-text"  x="560" y="180">6.5 %</text>
+        <text class="fn-num-text"  x="612" y="180">1,625</text>
+
+        <!-- Split: Pro 78% / Studio 22% of paid -->
+        <polygon points="220,200 295,200 290,240 260,240" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
+        <polygon points="305,200 380,200 340,240 310,240" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1" opacity="0.85"/>
+        <text class="fn-step-text" x="60"  y="222">Stage 05</text>
+        <text class="fn-name-text" x="180" y="226">Pro 5.1 % · Studio 1.4 %</text>
+        <text class="fn-pct-text"  x="560" y="226">78 / 22</text>
+        <text class="fn-num-text"  x="612" y="226">mix</text>
+
+        <!-- Vertical drop-off ticks on the right -->
+        <line x1="660" y1="20"  x2="660" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <p class="caption" style="margin-bottom:18px;">Funnel widths and absolute counts are proportional. <span style="color:var(--gold);">Gold</span> stages are revenue-bearing tiers. Studio count includes Pro seats that upgraded.</p>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="panel">
+        <div class="label">Where the funnel earns its keep</div>
+        <p style="margin-bottom:6px;"><strong style="color:var(--sm-text); font-weight:600;">Stage 02 → 03.</strong> The trial-start rate is the most leveraged step. It's driven by the engine's ability to deliver a credible reconstruction within the free 3 analyses.</p>
+        <p style="margin-bottom:6px;"><strong style="color:var(--sm-text); font-weight:600;">Stage 03 → 04.</strong> Trial-to-paid is governed by the adaptive paywall (see § 06). The engine routes by intent state, not by uniform pricing.</p>
+        <p><strong style="color:var(--sm-text); font-weight:600;">Stage 04 → 05.</strong> Pro-to-Studio is structural: when a photographer brings a collaborator or batch workflow, Studio is the natural upgrade.</p>
+      </div>
+      <div class="panel">
+        <div class="label">What moves these numbers</div>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;">
+          <li class="small"><span class="mono" style="color:var(--gold);">+ pattern accuracy</span> — every 10 pp gain in pattern match lifts trial-to-paid ~3 pp <span class="badge modeled">Modeled</span> per the revenue.py heuristic.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">+ time-to-first-aha</span> — reducing time-to-credible-reconstruction within Free gates trial-start rate.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">+ Master Modes adoption</span> — users who run any preset within trial convert materially higher.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">+ saved-setup recall</span> — return-to-platform frequency in week 2 of trial is a leading indicator.</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">05 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 6 — REVENUE SCENARIOS ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 05</span><span>Revenue Scenarios</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 05</span>
+      <h2>Revenue scenarios</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:6px;">
+      Three illustrative scenarios, each running 12 months at steady-state acquisition. Inputs vary across scenarios; pricing and mix are held constant per § 03. Outputs are ARR at month 12 and steady-state monthly run-rate.
+    </p>
+    <p class="small" style="max-width:6.6in; margin-bottom:18px;"><span class="badge modeled" style="vertical-align:middle;">Modeled</span> &nbsp;Every figure on this page is an assumption-driven projection. The methodology page (§ 09) lists each input.</p>
+
+    <div class="scenarios" style="margin-bottom:16px;">
+      <div class="scenario cons">
+        <span class="tag">Conservative</span>
+        <h3>Slow acquisition, baseline conversion, higher churn.</h3>
+        <div class="big">$0.42<span class="u">M ARR</span></div>
+        <div class="sub">Steady-state monthly: ~$35K · ~860 paid seats</div>
+        <div class="rows">
+          <div class="r"><span class="k">Monthly visitors</span><span class="v">12,000</span></div>
+          <div class="r"><span class="k">Trial start rate</span><span class="v">9 %</span></div>
+          <div class="r"><span class="k">Trial → Paid</span><span class="v">42 %</span></div>
+          <div class="r"><span class="k">Pro / Studio mix</span><span class="v">82 / 18</span></div>
+          <div class="r"><span class="k">Monthly churn</span><span class="v">6.5 %</span></div>
+          <div class="r"><span class="k">Blended ARPU</span><span class="v">$42.60</span></div>
+        </div>
+      </div>
+
+      <div class="scenario base">
+        <span class="tag">Base · planning</span>
+        <h3>Funnel hits § 04 targets, adaptive paywall live, normal churn.</h3>
+        <div class="big">$1.34<span class="u">M ARR</span></div>
+        <div class="sub">Steady-state monthly: ~$112K · ~2,700 paid seats</div>
+        <div class="rows">
+          <div class="r"><span class="k">Monthly visitors</span><span class="v">25,000</span></div>
+          <div class="r"><span class="k">Trial start rate</span><span class="v">12 %</span></div>
+          <div class="r"><span class="k">Trial → Paid</span><span class="v">54 %</span></div>
+          <div class="r"><span class="k">Pro / Studio mix</span><span class="v">78 / 22</span></div>
+          <div class="r"><span class="k">Monthly churn</span><span class="v">4.5 %</span></div>
+          <div class="r"><span class="k">Blended ARPU</span><span class="v">$43.40</span></div>
+        </div>
+      </div>
+
+      <div class="scenario aggr">
+        <span class="tag">Aggressive</span>
+        <h3>Word-of-mouth flywheel kicks in, Studio mix expands.</h3>
+        <div class="big">$3.18<span class="u">M ARR</span></div>
+        <div class="sub">Steady-state monthly: ~$265K · ~5,800 paid seats</div>
+        <div class="rows">
+          <div class="r"><span class="k">Monthly visitors</span><span class="v">50,000</span></div>
+          <div class="r"><span class="k">Trial start rate</span><span class="v">14 %</span></div>
+          <div class="r"><span class="k">Trial → Paid</span><span class="v">60 %</span></div>
+          <div class="r"><span class="k">Pro / Studio mix</span><span class="v">70 / 30</span></div>
+          <div class="r"><span class="k">Monthly churn</span><span class="v">3.5 %</span></div>
+          <div class="r"><span class="k">Blended ARPU</span><span class="v">$45.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix">
+      <div class="row head" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
+        <div class="feat">Output</div>
+        <div>Conservative</div>
+        <div>Base</div>
+        <div>Aggressive</div>
+      </div>
+      <div class="row" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
+        <div class="feat">Year-1 ARR (steady-state, month 12)</div>
+        <div class="mono">$0.42 M</div>
+        <div class="mono">$1.34 M</div>
+        <div class="mono">$3.18 M</div>
+      </div>
+      <div class="row" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
+        <div class="feat">Paid seats at month 12</div>
+        <div class="mono">≈ 860</div>
+        <div class="mono">≈ 2,700</div>
+        <div class="mono">≈ 5,800</div>
+      </div>
+      <div class="row totals" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
+        <div class="feat">CAC payback target (≤ )</div>
+        <div class="mono">9 mo</div>
+        <div class="mono">5 mo</div>
+        <div class="mono">3 mo</div>
+      </div>
+    </div>
+
+    <div class="infographic" style="margin-top:14px;">
+      <div class="head">
+        <span class="label">Year-1 ARR — scenario comparison ($M)</span>
+        <span class="legend">
+          <span><span class="swatch" style="background:rgba(132,158,184,0.35); border:1px solid rgba(132,158,184,0.55);"></span>Conservative</span>
+          <span><span class="swatch" style="background:rgba(200,169,110,0.55); border:1px solid var(--gold-line);"></span>Base · planning</span>
+          <span><span class="swatch" style="background:rgba(72,186,136,0.55); border:1px solid rgba(72,186,136,0.65);"></span>Aggressive</span>
+        </span>
+      </div>
+      <svg viewBox="0 0 720 170" preserveAspectRatio="xMidYMid meet" role="img" aria-label="ARR comparison: $0.42M conservative, $1.34M base, $3.18M aggressive">
+        <!-- gridlines -->
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="140" y1="20"  x2="140" y2="150"/>
+          <line x1="280" y1="20"  x2="280" y2="150"/>
+          <line x1="420" y1="20"  x2="420" y2="150"/>
+          <line x1="560" y1="20"  x2="560" y2="150"/>
+          <line x1="700" y1="20"  x2="700" y2="150"/>
+        </g>
+        <!-- axis labels (max scaled to ~$3.5M) -->
+        <text class="axis-text" x="140" y="165" text-anchor="middle">$0.5M</text>
+        <text class="axis-text" x="280" y="165" text-anchor="middle">$1.0M</text>
+        <text class="axis-text" x="420" y="165" text-anchor="middle">$2.0M</text>
+        <text class="axis-text" x="560" y="165" text-anchor="middle">$3.0M</text>
+        <text class="axis-text" x="700" y="165" text-anchor="middle">$3.5M</text>
+
+        <!-- Conservative: $0.42M → 0.42/3.5 = 12% of axis range, axis spans 140→700 (560 wide), start at x=140 -->
+        <!-- bar width = (0.42/3.5)*560 = 67 -->
+        <rect x="140" y="30"  width="67"  height="26" rx="3" fill="rgba(132,158,184,0.35)" stroke="rgba(132,158,184,0.55)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="46">Conservative</text>
+        <text class="bar-value" x="217" y="48">$0.42 M</text>
+        <text class="bar-sub"   x="40"  y="60">~860 paid seats · 9 mo payback</text>
+
+        <!-- Base: $1.34M → (1.34/3.5)*560 = 214 -->
+        <rect x="140" y="74"  width="214" height="26" rx="3" fill="rgba(200,169,110,0.55)" stroke="var(--gold-line)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="90"  fill="var(--gold)">Base · planning</text>
+        <text class="bar-value" x="364" y="92">$1.34 M</text>
+        <text class="bar-sub"   x="40"  y="104">~2,700 paid seats · 5 mo payback</text>
+
+        <!-- Aggressive: $3.18M → (3.18/3.5)*560 = 509 -->
+        <rect x="140" y="118" width="509" height="26" rx="3" fill="rgba(72,186,136,0.55)" stroke="rgba(72,186,136,0.65)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="134">Aggressive</text>
+        <text class="bar-value" x="659" y="136">$3.18 M</text>
+        <text class="bar-sub"   x="40"  y="148">~5,800 paid seats · 3 mo payback</text>
+
+        <!-- axis baseline -->
+        <line x1="140" y1="150" x2="700" y2="150" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <p class="caption" style="margin-top:10px;">Scenarios are illustrative. Real revenue will deviate based on acquisition channel mix, pattern accuracy, and adaptive paywall calibration.</p>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">06 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 7 — UNIT ECONOMICS ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 06</span><span>Unit Economics</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 06</span>
+      <h2>Unit economics</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
+      Per-seat economics for the Base scenario. The cost structure is dominated by vision-pipeline compute on Free and high-quality VLM passes on Pro / Studio. <span class="badge modeled" style="vertical-align:middle;">Modeled</span> values use the engine's default ARPU and standard SaaS gross-margin shape.
+    </p>
+
+    <div class="kpis" style="margin-bottom:16px;">
+      <div class="kpi">
+        <div class="l">Blended ARPU</div>
+        <div class="v">$43.40<span class="u">/mo</span></div>
+        <div class="n">Pro 78 % @ $39 + Studio 22 % @ $59 (annualized weight)</div>
+      </div>
+      <div class="kpi">
+        <div class="l">Variable COGS / seat</div>
+        <div class="v">$6.20<span class="u">/mo</span></div>
+        <div class="n">Compute + VLM at modeled per-seat usage</div>
+      </div>
+      <div class="kpi">
+        <div class="l">Gross margin</div>
+        <div class="v">~86<span class="u">%</span></div>
+        <div class="n">Steady-state, after CDN &amp; storage</div>
+      </div>
+      <div class="kpi">
+        <div class="l">LTV / CAC target</div>
+        <div class="v">≥ 4<span class="u">×</span></div>
+        <div class="n">Base case at 4.5 % monthly churn</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="panel">
+        <div class="label">LTV build · Pro seat (base case)</div>
+        <div class="matrix" style="margin-top:6px;">
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Monthly ARPU</div><div class="mono">$39.00</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Gross margin</div><div class="mono">85 %</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Monthly churn</div><div class="mono">4.5 %</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Expected lifetime</div><div class="mono">~22 mo</div></div>
+          <div class="row totals" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Gross-margin LTV</div><div class="mono">~$729</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="label">LTV build · Studio seat (base case)</div>
+        <div class="matrix" style="margin-top:6px;">
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Monthly ARPU</div><div class="mono">$59.00</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Gross margin</div><div class="mono">82 %</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Monthly churn</div><div class="mono">3.0 %</div></div>
+          <div class="row" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Expected lifetime</div><div class="mono">~33 mo</div></div>
+          <div class="row totals" style="grid-template-columns: 1.5fr 1fr;"><div class="feat">Gross-margin LTV</div><div class="mono">~$1,597</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="label">Cost-of-goods composition · per paid seat / month · total $6.20</div>
+
+      <svg viewBox="0 0 720 56" preserveAspectRatio="none" style="margin-top:10px; height:32px;" role="img" aria-label="COGS stacked bar: vision compute 50%, VLM 33%, storage 10.5%, overhead 6.5%">
+        <!-- Stacked bar segments. Total bar width = 700, x starts at 10 -->
+        <!-- Vision compute: 50.0% → width 350 -->
+        <rect x="10"  y="14" width="350" height="28" fill="rgba(200,169,110,0.55)" stroke="var(--gold-line)" stroke-width="1"/>
+        <!-- VLM hints: 33.1% → width 232 -->
+        <rect x="362" y="14" width="232" height="28" fill="rgba(132,158,184,0.45)" stroke="rgba(132,158,184,0.65)" stroke-width="1"/>
+        <!-- Storage/CDN: 10.5% → width 74 -->
+        <rect x="596" y="14" width="74"  height="28" fill="rgba(72,186,136,0.40)" stroke="rgba(72,186,136,0.60)" stroke-width="1"/>
+        <!-- Platform overhead: 6.5% → width 46 -->
+        <rect x="672" y="14" width="46"  height="28" fill="rgba(167,173,183,0.25)" stroke="rgba(167,173,183,0.45)" stroke-width="1"/>
+
+        <!-- Inline % labels (only where wide enough) -->
+        <text x="185" y="32" text-anchor="middle" style="font-family:var(--mono); font-size:10px; font-weight:600; fill:#0f1013;">50.0 %</text>
+        <text x="478" y="32" text-anchor="middle" style="font-family:var(--mono); font-size:10px; font-weight:600; fill:#0f1013;">33.1 %</text>
+        <text x="633" y="32" text-anchor="middle" style="font-family:var(--mono); font-size:9px;  font-weight:600; fill:#0f1013;">10.5 %</text>
+        <text x="695" y="32" text-anchor="middle" style="font-family:var(--mono); font-size:8.5px; font-weight:600; fill:#0f1013;">6.5 %</text>
+      </svg>
+
+      <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-top:14px;">
+        <div>
+          <div class="mono" style="font-size:9px; letter-spacing:0.18em; color:var(--sm-text-4); text-transform:uppercase;"><span style="display:inline-block; width:8px; height:8px; background:rgba(200,169,110,0.55); border:1px solid var(--gold-line); border-radius:2px; margin-right:5px; vertical-align:-1px;"></span>Vision compute</div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em;">$3.10</div>
+          <div class="small" style="margin-top:2px;">35+ pipeline passes, amortized</div>
+        </div>
+        <div>
+          <div class="mono" style="font-size:9px; letter-spacing:0.18em; color:var(--sm-text-4); text-transform:uppercase;"><span style="display:inline-block; width:8px; height:8px; background:rgba(132,158,184,0.45); border:1px solid rgba(132,158,184,0.65); border-radius:2px; margin-right:5px; vertical-align:-1px;"></span>VLM hints</div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em;">$2.05</div>
+          <div class="small" style="margin-top:2px;">Bounded prompts, hint-only</div>
+        </div>
+        <div>
+          <div class="mono" style="font-size:9px; letter-spacing:0.18em; color:var(--sm-text-4); text-transform:uppercase;"><span style="display:inline-block; width:8px; height:8px; background:rgba(72,186,136,0.40); border:1px solid rgba(72,186,136,0.60); border-radius:2px; margin-right:5px; vertical-align:-1px;"></span>Storage / CDN</div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em;">$0.65</div>
+          <div class="small" style="margin-top:2px;">Reference + saved setups</div>
+        </div>
+        <div>
+          <div class="mono" style="font-size:9px; letter-spacing:0.18em; color:var(--sm-text-4); text-transform:uppercase;"><span style="display:inline-block; width:8px; height:8px; background:rgba(167,173,183,0.25); border:1px solid rgba(167,173,183,0.45); border-radius:2px; margin-right:5px; vertical-align:-1px;"></span>Platform overhead</div>
+          <div style="font-size:22px; font-weight:700; letter-spacing:-0.02em;">$0.40</div>
+          <div class="small" style="margin-top:2px;">Auth, billing, observability</div>
+        </div>
+      </div>
+      <hr class="hr" />
+      <p class="small">The cost-discipline guardrail (CLAUDE.md § VII) holds: deterministic CV runs first; VLM only routes when physical evidence is ambiguous. That keeps per-seat COGS bounded as accuracy and usage compound.</p>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">07 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 8 — ADAPTIVE PRICING ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 07</span><span>Adaptive Pricing</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 07</span>
+      <h2>Adaptive pricing</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:18px;">
+      The paywall reads the user's <em style="color:var(--sm-text); font-style:normal; font-weight:600;">value state</em> — what just happened in the engine — and routes them to a price, message, and CTA tuned to that moment. Logic implemented in <span class="mono" style="color:var(--sm-text-2);">engine/paywall/adaptive_pricing.py</span>.
+    </p>
+
+    <div class="panel" style="margin-bottom:14px;">
+      <div class="label">Price ladder · live</div>
+      <div class="ladder">
+        <div class="rung"><span class="p">$39</span><span class="s">Entry · low-friction</span></div>
+        <div class="rung"><span class="p">$49</span><span class="s">Intelligence boost</span></div>
+        <div class="rung active"><span class="p">$59</span><span class="s">Success / high-intent</span></div>
+        <div class="rung"><span class="p">$79</span><span class="s">Experiment ceiling</span></div>
+      </div>
+      <p class="small" style="margin-top:10px;">Snap-to-ladder. The engine never <em style="color:var(--sm-text); font-style:normal;">invents</em> a price between rungs — it composes the next rung from a base price + intent boost + experiment variant, then snaps. Anti-discount guardrails prevent oscillation within a session.</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="panel">
+        <div class="label">Value state → base price</div>
+        <div class="matrix" style="margin-top:6px;">
+          <div class="row head" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">State</div><div>Base</div></div>
+          <div class="row" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">LOW_VALUE</div><div class="mono">$39</div></div>
+          <div class="row" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">DISCOVERY</div><div class="mono">$39</div></div>
+          <div class="row" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">FAILURE_TENSION</div><div class="mono">$39</div></div>
+          <div class="row" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">SUCCESS_MOMENT</div><div class="mono" style="color:var(--gold);">$59</div></div>
+          <div class="row" style="grid-template-columns: 1.6fr 1fr;"><div class="feat">HIGH_INTENT</div><div class="mono" style="color:var(--gold);">$59</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="label">Adjustments</div>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;">
+          <li class="small"><span class="mono" style="color:var(--gold);">+ $10</span> when intelligence score ≥ 0.80, then snap-to-ladder.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">+ $10</span> on <span class="mono">experiment_variant = price_high</span>, snap-to-ladder.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">Yearly</span> = 10 × monthly, ≈17 % effective discount.</li>
+          <li class="small"><span class="mono" style="color:var(--gold);">Guardrail</span> — never show a lower price than the session high. No oscillation, no race-to-bottom.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="infographic" style="margin-bottom:14px;">
+      <div class="head">
+        <span class="label">State → price routing</span>
+        <span class="legend">
+          <span><span class="swatch" style="background:rgba(132,158,184,0.20); border:1px solid rgba(132,158,184,0.45);"></span>State node</span>
+          <span><span class="swatch" style="background:rgba(200,169,110,0.18); border:1px solid var(--gold-line);"></span>Price rung</span>
+        </span>
+      </div>
+      <svg viewBox="0 0 720 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Adaptive pricing flow: value states route to price ladder">
+        <!-- Edges (from states to base prices) -->
+        <g class="flow-edge">
+          <path d="M 200,40  C 280,40  300,100 380,100" />
+          <path d="M 200,80  C 280,80  300,100 380,100" />
+          <path d="M 200,160 C 280,160 300,100 380,100" />
+        </g>
+        <g class="flow-edge gold">
+          <path d="M 200,120 C 280,120 300,140 380,140" />
+          <path d="M 200,180 C 280,180 300,140 380,140" />
+        </g>
+        <!-- Boost edge (from $39 → $49 via +$10 intel) -->
+        <g class="flow-edge">
+          <path d="M 480,100 C 520,100 530,90 560,90" stroke-dasharray="3 3"/>
+        </g>
+        <!-- Boost edge (from $59 → $79 via +$10 experiment) -->
+        <g class="flow-edge gold">
+          <path d="M 480,140 C 520,140 530,150 560,150" stroke-dasharray="3 3"/>
+        </g>
+
+        <!-- State nodes (left) -->
+        <g>
+          <rect x="40" y="28" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="44">LOW_VALUE</text>
+
+          <rect x="40" y="68" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="84">DISCOVERY</text>
+
+          <rect x="40" y="108" width="160" height="24" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-state-text" x="50" y="124" fill="var(--gold)">SUCCESS_MOMENT</text>
+
+          <rect x="40" y="148" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="164">FAILURE_TENSION</text>
+
+          <rect x="40" y="172" width="160" height="0" rx="4" fill="none"/>
+          <rect x="40" y="170" width="160" height="22" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-state-text" x="50" y="184" fill="var(--gold)">HIGH_INTENT</text>
+        </g>
+
+        <!-- Base price rungs (center) -->
+        <g>
+          <rect x="380" y="88" width="100" height="26" rx="4" fill="rgba(132,158,184,0.12)" stroke="rgba(132,158,184,0.40)"/>
+          <text class="flow-price-text" x="430" y="106" text-anchor="middle" fill="var(--sm-text)">$39</text>
+
+          <rect x="380" y="128" width="100" height="26" rx="4" fill="rgba(200,169,110,0.14)" stroke="var(--gold-line)"/>
+          <text class="flow-price-text" x="430" y="146" text-anchor="middle" fill="var(--gold)">$59</text>
+        </g>
+
+        <!-- Boost rungs (right) -->
+        <g>
+          <rect x="560" y="76" width="100" height="26" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.32)"/>
+          <text class="flow-price-text" x="610" y="94" text-anchor="middle" fill="var(--sm-text)">$49</text>
+          <text class="flow-state-text" x="610" y="68" text-anchor="middle">+ INTEL BOOST</text>
+
+          <rect x="560" y="136" width="100" height="26" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-price-text" x="610" y="154" text-anchor="middle" fill="var(--gold)">$79</text>
+          <text class="flow-state-text" x="610" y="178" text-anchor="middle">+ EXPERIMENT CEIL</text>
+        </g>
+
+        <!-- Column captions -->
+        <text class="flow-state-text" x="40"  y="16">Value state</text>
+        <text class="flow-state-text" x="380" y="76">Base price (snap-to-ladder)</text>
+
+        <!-- Guardrail badge -->
+        <rect x="40" y="184" width="640" height="0" stroke="none"/>
+      </svg>
+    </div>
+
+    <div class="panel" style="border-color: var(--gold-line); background: linear-gradient(180deg, rgba(200,169,110,0.04), var(--sm-surface) 60%);">
+      <div class="label" style="color: var(--gold);">Why adaptive — and why bounded</div>
+      <div class="grid-2" style="margin-top:8px; gap: 20px;">
+        <p>A photographer who just got a clean reconstruction is in a different commercial state than one who hit ambiguity. A uniform $39 paywall undercharges the first and overcharges the second. The adaptive engine corrects that without resorting to dark-pattern urgency.</p>
+        <p>The ladder is short (4 rungs) and price moves are bounded by guardrails. This protects two things: (1) the user's trust — no whipsaw pricing, (2) the brand's premium position — no race to discount.</p>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">08 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 9 — LEVERS & RISKS ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 08</span><span>Growth Levers &amp; Risks</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 08</span>
+      <h2>Growth levers &amp; risks</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
+      Three levers move ARR materially in the base scenario. Three risks would move it backwards. Each is named, sized, and tied to a concrete part of the system.
+    </p>
+
+    <h3 style="margin-bottom:10px; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--sm-text-3);">Levers</h3>
+    <div class="levers" style="margin-bottom:18px;">
+      <div class="lever">
+        <div class="n">01</div>
+        <div>
+          <div class="h">Pattern accuracy compounding</div>
+          <div class="b">Per the revenue.py heuristic, a +10 pp pattern-match gain projects a ~3 pp trial-to-paid lift. Engine accuracy is the single most leveraged growth input — and it compounds with usage.</div>
+        </div>
+      </div>
+      <div class="lever">
+        <div class="n">02</div>
+        <div>
+          <div class="h">Studio mix expansion</div>
+          <div class="b">Shifting Pro / Studio mix from 78 / 22 to 70 / 30 lifts blended ARPU by ~$1.60/mo without changing acquisition. Driven by team collaboration, batch, and REST API surface.</div>
+        </div>
+      </div>
+      <div class="lever">
+        <div class="n">03</div>
+        <div>
+          <div class="h">Yearly attach rate</div>
+          <div class="b">Yearly at 10 × monthly is structurally cash-flow positive. Every 10 pp shift from monthly → yearly at signup pulls forward ~6 months of revenue per seat.</div>
+        </div>
+      </div>
+      <div class="lever">
+        <div class="n">04</div>
+        <div>
+          <div class="h">Word-of-mouth flywheel</div>
+          <div class="b">Setup sharing (Studio) and the community reference library are the organic-acquisition surface. Sharing rate × visit-to-signup is the cheapest CAC line on the spreadsheet.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom:10px; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--sm-text-3);">Risks</h3>
+    <div class="risk-list">
+      <div class="risk high">
+        <div class="h">Engine credibility regression</div>
+        <div class="b">A single high-profile misclassification, or a habit of bluffing under ambiguity, breaks the photographer-trust thesis. Mitigation: CLAUDE.md § III VL — VLM is hinting, not truth. Engine names what's unresolved.</div>
+      </div>
+      <div class="risk">
+        <div class="h">COGS drift on VLM</div>
+        <div class="b">If routing logic loosens, VLM per-seat cost can double. Mitigation: deterministic CV runs first; VLM bounded by intent + ambiguity gates (CLAUDE.md § VII).</div>
+      </div>
+      <div class="risk">
+        <div class="h">Adaptive paywall calibration</div>
+        <div class="b">A mis-calibrated state mapping prices the wrong moment. Mitigation: ladder is short, guardrails prevent oscillation, experiment variants are bounded.</div>
+      </div>
+      <div class="risk low">
+        <div class="h">Substitution by generic photo-AI</div>
+        <div class="b">Lighting decode + kit-aware reconstruction is the moat. Mitigation: depth of reference library, taxonomy rigor, Master Modes specificity — not features a generic tool will copy quickly.</div>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization</span>
+      <span class="num">09 / 10</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 10 — METHODOLOGY ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Revenue</span>
+      <span class="meta"><span>§ 09</span><span>Methodology &amp; Assumptions</span></span>
+    </header>
+
+    <div class="section-title">
+      <span class="num">§ 09</span>
+      <h2>Methodology &amp; assumptions</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
+      Every figure in this document is labeled <span class="badge grounded" style="vertical-align:middle;">Grounded</span> (drawn from code or the live pricing surface), <span class="badge modeled" style="vertical-align:middle;">Modeled</span> (an explicit projection), or <span class="badge target" style="vertical-align:middle;">Target</span> (an aspirational input). This page lists each input by name.
+    </p>
+
+    <div class="matrix meth" style="margin-bottom:14px;">
+      <div class="row head">
+        <div class="feat">Input</div>
+        <div>Value used</div>
+        <div>Source</div>
+        <div>Class</div>
+      </div>
+      <div class="row"><div class="feat">Free tier price</div><div class="mono">$0</div><div>static/www/pricing.html</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Pro tier price</div><div class="mono">$39 / mo</div><div>static/www/pricing.html</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Studio tier price</div><div class="mono">$59 / mo</div><div>static/www/pricing.html</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Trial length</div><div class="mono">14 days, no card</div><div>pricing.html FAQ</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Annual discount</div><div class="mono">~17 % (yearly = 10× monthly)</div><div>engine/paywall/adaptive_pricing.py</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Price ladder rungs</div><div class="mono">$39 / 49 / 59 / 79</div><div>adaptive_pricing.py · PRICE_LADDER</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">State → base price</div><div class="mono">$39 entry · $59 success</div><div>adaptive_pricing.py · _STATE_BASE_PRICE</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Intelligence boost rule</div><div class="mono">+$10 when score ≥ 0.80</div><div>adaptive_pricing.py · _INTEL_PRICE_BOOSTS</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Default ARPU per converted session</div><div class="mono">$9.00</div><div>engine/learning/revenue.py · DEFAULT_ARPU_USD</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Match-lift heuristic</div><div class="mono">+3 pp CVR / +10 pp pattern match</div><div>revenue.py · DEFAULT_MATCH_LIFT</div><div><span class="badge grounded">Grounded</span></div></div>
+      <div class="row"><div class="feat">Funnel · trial-start rate (Base)</div><div class="mono">12 %</div><div>Projected from existing free-trial structure</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Funnel · trial → paid (Base)</div><div class="mono">54 %</div><div>SaaS comp + adaptive paywall uplift</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Pro / Studio mix (Base)</div><div class="mono">78 / 22</div><div>Modeled from feature gating</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Monthly churn (Pro · Base)</div><div class="mono">4.5 %</div><div>Premium prosumer SaaS comp</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Monthly churn (Studio · Base)</div><div class="mono">3.0 %</div><div>Team-buyer comp, lower churn</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Variable COGS / seat / month</div><div class="mono">$6.20</div><div>Modeled compute + VLM amortization</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">Steady-state gross margin</div><div class="mono">~86 %</div><div>Derived from COGS &amp; ARPU</div><div><span class="badge modeled">Modeled</span></div></div>
+      <div class="row"><div class="feat">LTV / CAC target</div><div class="mono">≥ 4 ×</div><div>Operating target</div><div><span class="badge target">Target</span></div></div>
+      <div class="row"><div class="feat">CAC payback target (Base)</div><div class="mono">≤ 5 months</div><div>Operating target</div><div><span class="badge target">Target</span></div></div>
+    </div>
+
+    <div class="grid-2" style="gap:14px;">
+      <div class="panel">
+        <div class="label">What is intentionally not modeled here</div>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;">
+          <li class="small">— TAM / SAM / SOM sizing (requires audience instrumentation we have not run).</li>
+          <li class="small">— Channel-by-channel CAC split (organic vs. paid vs. partner).</li>
+          <li class="small">— FX, payment-processor fees, refund reserve.</li>
+          <li class="small">— Multi-seat Studio pricing tiers above 6 seats.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="label">How this document gets updated</div>
+        <p class="small" style="margin-bottom:6px;">Once the engine runs at instrumented volume, the <span class="badge modeled" style="vertical-align:middle;">Modeled</span> rows become <span class="badge grounded" style="vertical-align:middle;">Grounded</span>. Each replacement is logged in <span class="mono" style="color:var(--sm-text-2);">docs/ENGINE_TRUTH.md</span> change history, and this page is the source-of-truth for inputs.</p>
+        <p class="small">No projection in this document should be presented externally as a forecast without the assumption table attached.</p>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW Revenue &amp; Monetization · End of document</span>
+      <span class="num">10 / 10</span>
+    </footer>
+  </section>
+
+</div>
+</body>
+</html>
