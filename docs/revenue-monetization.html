@@ -76,7 +76,7 @@
     min-height: 11in;
     background: var(--sm-bg);
     color: var(--sm-text);
-    padding: 0.6in 0.6in 0.55in;
+    padding: 0.5in 0.55in 0.42in;
     box-sizing: border-box;
     position: relative;
     box-shadow: 0 8px 40px rgba(0,0,0,0.7);
@@ -91,9 +91,9 @@
   /* ── Page chrome ─── */
   .page-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding-bottom: 12px;
+    padding-bottom: 9px;
     border-bottom: 1px solid var(--sm-divider);
-    margin-bottom: 22px;
+    margin-bottom: 16px;
     font-family: var(--mono);
     font-size: 9.5px;
     letter-spacing: 0.14em;
@@ -107,7 +107,7 @@
 
   .page-foot {
     margin-top: auto;
-    padding-top: 12px;
+    padding-top: 8px;
     border-top: 1px solid var(--sm-divider);
     display: flex; justify-content: space-between; align-items: center;
     font-family: var(--mono);
@@ -129,7 +129,7 @@
   }
   h1, h2, h3 { margin: 0; font-weight: 700; letter-spacing: -0.02em; color: var(--sm-text); }
   h1 { font-size: 52px; line-height: 1.02; font-weight: 800; }
-  h2 { font-size: 26px; line-height: 1.15; }
+  h2 { font-size: 23px; line-height: 1.15; }
   h3 { font-size: 14px; line-height: 1.25; font-weight: 600; letter-spacing: 0.01em; }
   p  { margin: 0; line-height: 1.55; color: var(--sm-text-2); font-size: 12.5px; }
   .lead { font-size: 14px; color: var(--sm-text); line-height: 1.5; }
@@ -138,7 +138,7 @@
 
   .section-title {
     display: flex; align-items: baseline; gap: 14px;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
   }
   .section-title .num {
     font-family: var(--mono);
@@ -161,7 +161,7 @@
     border: 1px solid var(--sm-divider-strong);
     border-radius: var(--radius);
     box-shadow: var(--panel-shadow), var(--panel-bevel);
-    padding: 18px 18px 16px;
+    padding: 14px 16px 13px;
     position: relative;
   }
   .panel .label {
@@ -199,8 +199,8 @@
   }
   .matrix .row:first-child { border-top: none; }
   .matrix .row > div {
-    padding: 9px 12px;
-    font-size: 11.5px;
+    padding: 6.5px 11px;
+    font-size: 11px;
     color: var(--sm-text-2);
     border-right: 1px solid var(--sm-divider);
   }
@@ -212,7 +212,7 @@
     font-size: 9.5px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    padding: 11px 12px;
+    padding: 8px 11px;
   }
   .matrix .row.head .feat { color: var(--sm-text-2); }
   .matrix .feat { color: var(--sm-text); font-weight: 500; }
@@ -231,11 +231,11 @@
     background: var(--sm-surface);
     border: 1px solid var(--sm-divider-strong);
     border-radius: var(--radius-lg);
-    padding: 18px 18px 16px;
+    padding: 12px 14px 12px;
     display: flex; flex-direction: column;
     box-shadow: var(--panel-shadow), var(--panel-bevel);
     position: relative;
-    min-height: 320px;
+    min-height: 230px;
   }
   .tier.featured {
     border-color: var(--gold-line);
@@ -255,13 +255,13 @@
   .tier .price .per { font-size: 11.5px; color: var(--sm-text-3); }
   .tier .desc { font-size: 11.5px; color: var(--sm-text-3); margin-top: 6px; }
   .tier ul {
-    list-style: none; margin: 14px 0 0; padding: 14px 0 0;
+    list-style: none; margin: 10px 0 0; padding: 10px 0 0;
     border-top: 1px solid var(--sm-divider);
-    display: flex; flex-direction: column; gap: 6px;
+    display: flex; flex-direction: column; gap: 4px;
   }
   .tier li {
-    font-size: 11px; color: var(--sm-text-2);
-    padding-left: 14px; position: relative; line-height: 1.45;
+    font-size: 10.5px; color: var(--sm-text-2);
+    padding-left: 12px; position: relative; line-height: 1.4;
   }
   .tier li::before {
     content: ""; position: absolute; left: 0; top: 6px;
@@ -348,9 +348,9 @@
   .scenario .big .u { font-size: 13px; font-weight: 500; color: var(--sm-text-3); letter-spacing: 0; margin-left: 4px; }
   .scenario .sub { font-size: 10.5px; color: var(--sm-text-3); margin-top: 4px; }
   .scenario .rows {
-    margin-top: 14px; padding-top: 12px;
+    margin-top: 10px; padding-top: 10px;
     border-top: 1px solid var(--sm-divider);
-    display: flex; flex-direction: column; gap: 6px;
+    display: flex; flex-direction: column; gap: 5px;
   }
   .scenario .rows .r {
     display: flex; justify-content: space-between; font-size: 10.5px;
@@ -563,9 +563,11 @@
   .flow-edge.gold { stroke: var(--gold-line); }
 
   /* ── Methodology table ─── */
-  .meth { font-size: 11px; }
+  .meth { font-size: 10.5px; }
   .meth .row { grid-template-columns: 1.2fr 1fr 1.5fr 0.8fr; }
-  .meth .row > div { padding: 8px 10px; }
+  .meth .row > div { padding: 4.5px 9px; font-size: 10px; }
+  .meth .row.head > div { padding: 6px 9px; }
+  .meth .badge { font-size: 8px; padding: 2px 6px; }
 
   /* ── Responsive (screen preview only) ─── */
   @media (max-width: 900px) {
@@ -596,6 +598,21 @@
       box-shadow: none;
       margin: 0;
     }
+    /* Force desktop grids in print — the print viewport is narrow
+       (≈816px at Letter) but layout must NOT collapse to mobile. */
+    .grid-2 { grid-template-columns: 1fr 1fr !important; }
+    .grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+    .grid-4 { grid-template-columns: repeat(4, 1fr) !important; }
+    .funnel { grid-template-columns: repeat(5, 1fr) !important; }
+    .funnel-bar { grid-template-columns: 100fr 35fr 12fr 6.5fr 4.2fr !important; height: 28px !important; }
+    .funnel .arrow { display: block !important; }
+    .scenarios { grid-template-columns: repeat(3, 1fr) !important; }
+    .kpis { grid-template-columns: repeat(4, 1fr) !important; }
+    .ladder { grid-template-columns: repeat(4, 1fr) !important; }
+    .risk-list, .levers { grid-template-columns: 1fr 1fr !important; }
+    .cover h1 { font-size: 64px !important; }
+    h1 { font-size: 52px !important; }
+    .cover .meta-grid { grid-template-columns: repeat(4, 1fr) !important; }
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -790,11 +807,11 @@
       <span class="rule"></span>
     </div>
 
-    <p class="lead" style="max-width:6.6in; margin-bottom:18px;">
-      Three tiers, each defined by what it unlocks <em style="color:var(--sm-text); font-style:normal; font-weight:600;">in a working photographer's day</em>. Feature inclusion below mirrors the live pricing surface in <span class="mono" style="color:var(--sm-text-2);">static/www/pricing.html</span>.
+    <p class="lead" style="max-width:6.6in; margin-bottom:14px;">
+      Three tiers, each defined by what it unlocks <em style="color:var(--sm-text); font-style:normal; font-weight:600;">in a working photographer's day</em>. Inclusion mirrors <span class="mono" style="color:var(--sm-text-2);">static/www/pricing.html</span>.
     </p>
 
-    <div class="grid-3" style="margin-bottom:18px;">
+    <div class="grid-3" style="margin-bottom:12px;">
       <!-- Free -->
       <div class="tier">
         <div class="name">Free</div>
@@ -856,12 +873,6 @@
         <div class="check">Unlimited</div>
       </div>
       <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
-        <div class="feat">Vision pipeline · 35+ passes</div>
-        <div class="check">✓</div>
-        <div class="check">✓</div>
-        <div class="check">✓</div>
-      </div>
-      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
         <div class="feat">Quick fixes</div>
         <div class="partial">1 / analysis</div>
         <div class="check">All</div>
@@ -875,18 +886,6 @@
       </div>
       <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
         <div class="feat">Shot Match · Build From Scratch</div>
-        <div class="dash">—</div>
-        <div class="check">✓</div>
-        <div class="check">✓</div>
-      </div>
-      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
-        <div class="feat">Master Modes (9 presets)</div>
-        <div class="dash">—</div>
-        <div class="check">✓</div>
-        <div class="check">✓</div>
-      </div>
-      <div class="row" style="grid-template-columns: 2.4fr 1fr 1fr 1fr;">
-        <div class="feat">Save setups · diagram export</div>
         <div class="dash">—</div>
         <div class="check">✓</div>
         <div class="check">✓</div>
@@ -911,7 +910,7 @@
       </div>
     </div>
 
-    <p class="caption"><span class="badge grounded">Grounded</span> &nbsp;Tier features &amp; prices mirror <span class="mono">static/www/pricing.html</span>. Annual = 10 × monthly per <span class="mono">engine/paywall/adaptive_pricing.py</span>.</p>
+    <p class="caption" style="margin-top:6px;"><span class="badge grounded">Grounded</span> &nbsp;Prices &amp; features mirror <span class="mono">pricing.html</span>. Annual = 10 × monthly per <span class="mono">adaptive_pricing.py</span>.</p>
 
     <footer class="page-foot">
       <span>NGW Revenue &amp; Monetization</span>
@@ -932,8 +931,8 @@
       <span class="rule"></span>
     </div>
 
-    <p class="lead" style="max-width:6.6in; margin-bottom:16px;">
-      The funnel below shows the stages each acquired visitor moves through. Percentages are <span class="badge modeled" style="vertical-align: middle;">Modeled</span> targets for the base scenario, calibrated against the existing free-trial structure (14 days, no card). Real cohort behavior replaces these once instrumentation runs at volume.
+    <p class="lead" style="max-width:6.6in; margin-bottom:10px;">
+      Stages each acquired visitor moves through. Percentages are <span class="badge modeled" style="vertical-align: middle;">Modeled</span> targets for the Base scenario, calibrated against the existing free-trial structure (14 days, no card).
     </p>
 
     <div class="funnel" style="margin-bottom:8px;">
@@ -941,31 +940,26 @@
         <span class="stage">Stage 01</span>
         <span class="name">Visitor</span>
         <span class="pct">100 %</span>
-        <span class="note">Lands on marketing or reference library.</span>
       </div>
       <div class="step">
         <span class="stage">Stage 02</span>
         <span class="name">Signup · Free</span>
         <span class="pct">35 %</span>
-        <span class="note">Creates account, runs first of 3 analyses.</span>
       </div>
       <div class="step">
         <span class="stage">Stage 03</span>
         <span class="name">Trial start</span>
         <span class="pct">12 %</span>
-        <span class="note">Begins 14-day Pro trial, no card required.</span>
       </div>
       <div class="step">
         <span class="stage">Stage 04</span>
         <span class="name">Paid · Pro</span>
         <span class="pct">5.1 %</span>
-        <span class="note">78 % of paid mix · adaptive paywall.</span>
       </div>
       <div class="step">
         <span class="stage">Stage 05</span>
         <span class="name">Paid · Studio</span>
         <span class="pct">1.4 %</span>
-        <span class="note">22 % of paid mix · team / batch / API.</span>
       </div>
     </div>
 
@@ -977,7 +971,7 @@
           <span><span class="swatch" style="background:rgba(200,169,110,0.55); border:1px solid var(--gold-line);"></span>Revenue</span>
         </span>
       </div>
-      <svg viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Conversion funnel from 25,000 visitors to 4.2% paid">
+      <svg viewBox="0 0 720 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Conversion funnel from 25,000 visitors through Pro/Studio split">
         <defs>
           <linearGradient id="funnel-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"  stop-color="rgba(132,158,184,0.28)"/>
@@ -991,63 +985,65 @@
         </defs>
 
         <!-- Stage 1: Visitor 100% -->
-        <polygon points="60,16 540,16 510,58 90,58" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1"/>
-        <text class="fn-step-text" x="60"  y="38">Stage 01</text>
-        <text class="fn-name-text" x="180" y="42">Visitor</text>
-        <text class="fn-pct-text"  x="560" y="42">100 %</text>
-        <text class="fn-num-text"  x="612" y="42">25,000</text>
+        <polygon points="60,12 540,12 510,42 90,42" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1"/>
+        <text class="fn-step-text" x="60"  y="30">Stage 01</text>
+        <text class="fn-name-text" x="180" y="33">Visitor</text>
+        <text class="fn-pct-text"  x="560" y="33">100 %</text>
+        <text class="fn-num-text"  x="612" y="33">25,000</text>
 
         <!-- Stage 2: Free 35% -->
-        <polygon points="90,62 510,62 480,104 120,104" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.92"/>
-        <text class="fn-step-text" x="60"  y="84">Stage 02</text>
-        <text class="fn-name-text" x="180" y="88">Signup · Free</text>
-        <text class="fn-pct-text"  x="560" y="88">35 %</text>
-        <text class="fn-num-text"  x="612" y="88">8,750</text>
+        <polygon points="90,46 510,46 480,76 120,76" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.92"/>
+        <text class="fn-step-text" x="60"  y="64">Stage 02</text>
+        <text class="fn-name-text" x="180" y="67">Signup · Free</text>
+        <text class="fn-pct-text"  x="560" y="67">35 %</text>
+        <text class="fn-num-text"  x="612" y="67">8,750</text>
 
         <!-- Stage 3: Trial 12% -->
-        <polygon points="120,108 480,108 430,150 170,150" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.82"/>
-        <text class="fn-step-text" x="60"  y="130">Stage 03</text>
-        <text class="fn-name-text" x="180" y="134">Trial start</text>
-        <text class="fn-pct-text"  x="560" y="134">12 %</text>
-        <text class="fn-num-text"  x="612" y="134">3,000</text>
+        <polygon points="120,80 480,80 430,110 170,110" fill="url(#funnel-grad)" stroke="rgba(132,158,184,0.45)" stroke-width="1" opacity="0.82"/>
+        <text class="fn-step-text" x="60"  y="98">Stage 03</text>
+        <text class="fn-name-text" x="180" y="101">Trial start</text>
+        <text class="fn-pct-text"  x="560" y="101">12 %</text>
+        <text class="fn-num-text"  x="612" y="101">3,000</text>
 
         <!-- Stage 4: Paid total 6.5% — split into Pro / Studio below -->
-        <polygon points="170,154 430,154 380,196 220,196" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
-        <text class="fn-step-text" x="60"  y="176">Stage 04</text>
-        <text class="fn-name-text" x="180" y="180">Paid · total</text>
-        <text class="fn-pct-text"  x="560" y="180">6.5 %</text>
-        <text class="fn-num-text"  x="612" y="180">1,625</text>
+        <polygon points="170,114 430,114 380,144 220,144" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
+        <text class="fn-step-text" x="60"  y="132">Stage 04</text>
+        <text class="fn-name-text" x="180" y="135">Paid · total</text>
+        <text class="fn-pct-text"  x="560" y="135">6.5 %</text>
+        <text class="fn-num-text"  x="612" y="135">1,625</text>
 
         <!-- Split: Pro 78% / Studio 22% of paid -->
-        <polygon points="220,200 295,200 290,240 260,240" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
-        <polygon points="305,200 380,200 340,240 310,240" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1" opacity="0.85"/>
-        <text class="fn-step-text" x="60"  y="222">Stage 05</text>
-        <text class="fn-name-text" x="180" y="226">Pro 5.1 % · Studio 1.4 %</text>
-        <text class="fn-pct-text"  x="560" y="226">78 / 22</text>
-        <text class="fn-num-text"  x="612" y="226">mix</text>
+        <polygon points="220,148 295,148 290,180 260,180" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1"/>
+        <polygon points="305,148 380,148 340,180 310,180" fill="url(#funnel-paid)" stroke="var(--gold-line)" stroke-width="1" opacity="0.85"/>
+        <text class="fn-step-text" x="60"  y="168">Stage 05</text>
+        <text class="fn-name-text" x="180" y="171">Pro 5.1 % · Studio 1.4 %</text>
+        <text class="fn-pct-text"  x="560" y="171">78 / 22</text>
+        <text class="fn-num-text"  x="612" y="171">mix</text>
 
         <!-- Vertical drop-off ticks on the right -->
-        <line x1="660" y1="20"  x2="660" y2="240" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <line x1="660" y1="16" x2="660" y2="184" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
       </svg>
     </div>
 
-    <p class="caption" style="margin-bottom:18px;">Funnel widths and absolute counts are proportional. <span style="color:var(--gold);">Gold</span> stages are revenue-bearing tiers. Studio count includes Pro seats that upgraded.</p>
+    <p class="caption" style="margin-bottom:10px;">Funnel widths and absolute counts are proportional. <span style="color:var(--gold);">Gold</span> stages are revenue-bearing.</p>
 
-    <div class="grid-2" style="margin-bottom:14px;">
-      <div class="panel">
-        <div class="label">Where the funnel earns its keep</div>
-        <p style="margin-bottom:6px;"><strong style="color:var(--sm-text); font-weight:600;">Stage 02 → 03.</strong> The trial-start rate is the most leveraged step. It's driven by the engine's ability to deliver a credible reconstruction within the free 3 analyses.</p>
-        <p style="margin-bottom:6px;"><strong style="color:var(--sm-text); font-weight:600;">Stage 03 → 04.</strong> Trial-to-paid is governed by the adaptive paywall (see § 06). The engine routes by intent state, not by uniform pricing.</p>
-        <p><strong style="color:var(--sm-text); font-weight:600;">Stage 04 → 05.</strong> Pro-to-Studio is structural: when a photographer brings a collaborator or batch workflow, Studio is the natural upgrade.</p>
-      </div>
-      <div class="panel">
-        <div class="label">What moves these numbers</div>
-        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;">
-          <li class="small"><span class="mono" style="color:var(--gold);">+ pattern accuracy</span> — every 10 pp gain in pattern match lifts trial-to-paid ~3 pp <span class="badge modeled">Modeled</span> per the revenue.py heuristic.</li>
-          <li class="small"><span class="mono" style="color:var(--gold);">+ time-to-first-aha</span> — reducing time-to-credible-reconstruction within Free gates trial-start rate.</li>
-          <li class="small"><span class="mono" style="color:var(--gold);">+ Master Modes adoption</span> — users who run any preset within trial convert materially higher.</li>
-          <li class="small"><span class="mono" style="color:var(--gold);">+ saved-setup recall</span> — return-to-platform frequency in week 2 of trial is a leading indicator.</li>
-        </ul>
+    <div class="panel">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <div class="label">Where the funnel earns its keep</div>
+          <p class="small" style="margin-bottom:4px;"><strong style="color:var(--sm-text); font-weight:600;">02 → 03.</strong> Trial-start is the most leveraged step — gated by a credible reconstruction within the free 3 analyses.</p>
+          <p class="small" style="margin-bottom:4px;"><strong style="color:var(--sm-text); font-weight:600;">03 → 04.</strong> Trial-to-paid is governed by the adaptive paywall (§ 07) — routing by intent state.</p>
+          <p class="small"><strong style="color:var(--sm-text); font-weight:600;">04 → 05.</strong> Pro-to-Studio is structural — collaborator or batch workflow triggers the upgrade.</p>
+        </div>
+        <div>
+          <div class="label">What moves these numbers</div>
+          <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px;">
+            <li class="small"><span class="mono" style="color:var(--gold);">+ pattern accuracy</span> — +10 pp lifts trial→paid ~3 pp per <span class="mono">revenue.py</span>.</li>
+            <li class="small"><span class="mono" style="color:var(--gold);">+ time-to-first-aha</span> — gates trial-start rate within Free.</li>
+            <li class="small"><span class="mono" style="color:var(--gold);">+ Master Modes</span> — preset use within trial lifts conversion.</li>
+            <li class="small"><span class="mono" style="color:var(--gold);">+ saved-setup recall</span> — week-2 return is the leading indicator.</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -1070,12 +1066,12 @@
       <span class="rule"></span>
     </div>
 
-    <p class="lead" style="max-width:6.6in; margin-bottom:6px;">
-      Three illustrative scenarios, each running 12 months at steady-state acquisition. Inputs vary across scenarios; pricing and mix are held constant per § 03. Outputs are ARR at month 12 and steady-state monthly run-rate.
+    <p class="lead" style="max-width:6.6in; margin-bottom:4px;">
+      Three scenarios, 12 months at steady-state. Pricing and mix held constant per § 03. Outputs are month-12 ARR and steady-state monthly run-rate.
     </p>
-    <p class="small" style="max-width:6.6in; margin-bottom:18px;"><span class="badge modeled" style="vertical-align:middle;">Modeled</span> &nbsp;Every figure on this page is an assumption-driven projection. The methodology page (§ 09) lists each input.</p>
+    <p class="small" style="max-width:6.6in; margin-bottom:12px;"><span class="badge modeled" style="vertical-align:middle;">Modeled</span> &nbsp;Every figure on this page is an assumption-driven projection. Inputs listed in § 09.</p>
 
-    <div class="scenarios" style="margin-bottom:16px;">
+    <div class="scenarios" style="margin-bottom:12px;">
       <div class="scenario cons">
         <span class="tag">Conservative</span>
         <h3>Slow acquisition, baseline conversion, higher churn.</h3>
@@ -1122,34 +1118,7 @@
       </div>
     </div>
 
-    <div class="matrix">
-      <div class="row head" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
-        <div class="feat">Output</div>
-        <div>Conservative</div>
-        <div>Base</div>
-        <div>Aggressive</div>
-      </div>
-      <div class="row" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
-        <div class="feat">Year-1 ARR (steady-state, month 12)</div>
-        <div class="mono">$0.42 M</div>
-        <div class="mono">$1.34 M</div>
-        <div class="mono">$3.18 M</div>
-      </div>
-      <div class="row" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
-        <div class="feat">Paid seats at month 12</div>
-        <div class="mono">≈ 860</div>
-        <div class="mono">≈ 2,700</div>
-        <div class="mono">≈ 5,800</div>
-      </div>
-      <div class="row totals" style="grid-template-columns: 1.6fr 1fr 1fr 1fr;">
-        <div class="feat">CAC payback target (≤ )</div>
-        <div class="mono">9 mo</div>
-        <div class="mono">5 mo</div>
-        <div class="mono">3 mo</div>
-      </div>
-    </div>
-
-    <div class="infographic" style="margin-top:14px;">
+    <div class="infographic">
       <div class="head">
         <span class="label">Year-1 ARR — scenario comparison ($M)</span>
         <span class="legend">
@@ -1158,43 +1127,42 @@
           <span><span class="swatch" style="background:rgba(72,186,136,0.55); border:1px solid rgba(72,186,136,0.65);"></span>Aggressive</span>
         </span>
       </div>
-      <svg viewBox="0 0 720 170" preserveAspectRatio="xMidYMid meet" role="img" aria-label="ARR comparison: $0.42M conservative, $1.34M base, $3.18M aggressive">
+      <svg viewBox="0 0 720 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="ARR comparison: $0.42M conservative, $1.34M base, $3.18M aggressive">
         <!-- gridlines -->
         <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
-          <line x1="140" y1="20"  x2="140" y2="150"/>
-          <line x1="280" y1="20"  x2="280" y2="150"/>
-          <line x1="420" y1="20"  x2="420" y2="150"/>
-          <line x1="560" y1="20"  x2="560" y2="150"/>
-          <line x1="700" y1="20"  x2="700" y2="150"/>
+          <line x1="140" y1="14"  x2="140" y2="122"/>
+          <line x1="280" y1="14"  x2="280" y2="122"/>
+          <line x1="420" y1="14"  x2="420" y2="122"/>
+          <line x1="560" y1="14"  x2="560" y2="122"/>
+          <line x1="700" y1="14"  x2="700" y2="122"/>
         </g>
         <!-- axis labels (max scaled to ~$3.5M) -->
-        <text class="axis-text" x="140" y="165" text-anchor="middle">$0.5M</text>
-        <text class="axis-text" x="280" y="165" text-anchor="middle">$1.0M</text>
-        <text class="axis-text" x="420" y="165" text-anchor="middle">$2.0M</text>
-        <text class="axis-text" x="560" y="165" text-anchor="middle">$3.0M</text>
-        <text class="axis-text" x="700" y="165" text-anchor="middle">$3.5M</text>
+        <text class="axis-text" x="140" y="135" text-anchor="middle">$0.5M</text>
+        <text class="axis-text" x="280" y="135" text-anchor="middle">$1.0M</text>
+        <text class="axis-text" x="420" y="135" text-anchor="middle">$2.0M</text>
+        <text class="axis-text" x="560" y="135" text-anchor="middle">$3.0M</text>
+        <text class="axis-text" x="700" y="135" text-anchor="middle">$3.5M</text>
 
         <!-- Conservative: $0.42M → 0.42/3.5 = 12% of axis range, axis spans 140→700 (560 wide), start at x=140 -->
-        <!-- bar width = (0.42/3.5)*560 = 67 -->
-        <rect x="140" y="30"  width="67"  height="26" rx="3" fill="rgba(132,158,184,0.35)" stroke="rgba(132,158,184,0.55)" stroke-width="1"/>
-        <text class="bar-label" x="40"  y="46">Conservative</text>
-        <text class="bar-value" x="217" y="48">$0.42 M</text>
-        <text class="bar-sub"   x="40"  y="60">~860 paid seats · 9 mo payback</text>
+        <rect x="140" y="24"  width="67"  height="22" rx="3" fill="rgba(132,158,184,0.35)" stroke="rgba(132,158,184,0.55)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="38">Conservative</text>
+        <text class="bar-value" x="217" y="40">$0.42 M</text>
+        <text class="bar-sub"   x="40"  y="50">~860 seats · 9 mo payback</text>
 
-        <!-- Base: $1.34M → (1.34/3.5)*560 = 214 -->
-        <rect x="140" y="74"  width="214" height="26" rx="3" fill="rgba(200,169,110,0.55)" stroke="var(--gold-line)" stroke-width="1"/>
-        <text class="bar-label" x="40"  y="90"  fill="var(--gold)">Base · planning</text>
-        <text class="bar-value" x="364" y="92">$1.34 M</text>
-        <text class="bar-sub"   x="40"  y="104">~2,700 paid seats · 5 mo payback</text>
+        <!-- Base -->
+        <rect x="140" y="60"  width="214" height="22" rx="3" fill="rgba(200,169,110,0.55)" stroke="var(--gold-line)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="74"  fill="var(--gold)">Base · planning</text>
+        <text class="bar-value" x="364" y="76">$1.34 M</text>
+        <text class="bar-sub"   x="40"  y="86">~2,700 seats · 5 mo payback</text>
 
-        <!-- Aggressive: $3.18M → (3.18/3.5)*560 = 509 -->
-        <rect x="140" y="118" width="509" height="26" rx="3" fill="rgba(72,186,136,0.55)" stroke="rgba(72,186,136,0.65)" stroke-width="1"/>
-        <text class="bar-label" x="40"  y="134">Aggressive</text>
-        <text class="bar-value" x="659" y="136">$3.18 M</text>
-        <text class="bar-sub"   x="40"  y="148">~5,800 paid seats · 3 mo payback</text>
+        <!-- Aggressive -->
+        <rect x="140" y="96" width="509" height="22" rx="3" fill="rgba(72,186,136,0.55)" stroke="rgba(72,186,136,0.65)" stroke-width="1"/>
+        <text class="bar-label" x="40"  y="110">Aggressive</text>
+        <text class="bar-value" x="659" y="112">$3.18 M</text>
+        <text class="bar-sub"   x="40"  y="122">~5,800 seats · 3 mo payback</text>
 
         <!-- axis baseline -->
-        <line x1="140" y1="150" x2="700" y2="150" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+        <line x1="140" y1="122" x2="700" y2="122" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
       </svg>
     </div>
 
@@ -1335,11 +1303,11 @@
       <span class="rule"></span>
     </div>
 
-    <p class="lead" style="max-width:6.6in; margin-bottom:18px;">
-      The paywall reads the user's <em style="color:var(--sm-text); font-style:normal; font-weight:600;">value state</em> — what just happened in the engine — and routes them to a price, message, and CTA tuned to that moment. Logic implemented in <span class="mono" style="color:var(--sm-text-2);">engine/paywall/adaptive_pricing.py</span>.
+    <p class="lead" style="max-width:6.6in; margin-bottom:12px;">
+      The paywall reads the user's <em style="color:var(--sm-text); font-style:normal; font-weight:600;">value state</em> and routes to a price, message, and CTA tuned to that moment. Implemented in <span class="mono" style="color:var(--sm-text-2);">engine/paywall/adaptive_pricing.py</span>.
     </p>
 
-    <div class="panel" style="margin-bottom:14px;">
+    <div class="panel" style="margin-bottom:10px;">
       <div class="label">Price ladder · live</div>
       <div class="ladder">
         <div class="rung"><span class="p">$39</span><span class="s">Entry · low-friction</span></div>
@@ -1350,7 +1318,7 @@
       <p class="small" style="margin-top:10px;">Snap-to-ladder. The engine never <em style="color:var(--sm-text); font-style:normal;">invents</em> a price between rungs — it composes the next rung from a base price + intent boost + experiment variant, then snaps. Anti-discount guardrails prevent oscillation within a session.</p>
     </div>
 
-    <div class="grid-2" style="margin-bottom:14px;">
+    <div class="grid-2" style="margin-bottom:10px;">
       <div class="panel">
         <div class="label">Value state → base price</div>
         <div class="matrix" style="margin-top:6px;">
@@ -1373,7 +1341,7 @@
       </div>
     </div>
 
-    <div class="infographic" style="margin-bottom:14px;">
+    <div class="infographic" style="margin-bottom:10px;">
       <div class="head">
         <span class="label">State → price routing</span>
         <span class="legend">
@@ -1381,71 +1349,68 @@
           <span><span class="swatch" style="background:rgba(200,169,110,0.18); border:1px solid var(--gold-line);"></span>Price rung</span>
         </span>
       </div>
-      <svg viewBox="0 0 720 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Adaptive pricing flow: value states route to price ladder">
-        <!-- Edges (from states to base prices) -->
+      <svg viewBox="0 0 720 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Adaptive pricing flow: value states route to price ladder">
+        <!-- Edges to $39 (3 states) -->
         <g class="flow-edge">
-          <path d="M 200,40  C 280,40  300,100 380,100" />
-          <path d="M 200,80  C 280,80  300,100 380,100" />
-          <path d="M 200,160 C 280,160 300,100 380,100" />
+          <path d="M 200,34  C 280,34  300,80 380,80" />
+          <path d="M 200,64  C 280,64  300,80 380,80" />
+          <path d="M 200,124 C 280,124 300,80 380,80" />
         </g>
+        <!-- Edges to $59 (2 states, gold) -->
         <g class="flow-edge gold">
-          <path d="M 200,120 C 280,120 300,140 380,140" />
-          <path d="M 200,180 C 280,180 300,140 380,140" />
+          <path d="M 200,94  C 280,94  300,114 380,114" />
+          <path d="M 200,142 C 280,142 300,114 380,114" />
         </g>
-        <!-- Boost edge (from $39 → $49 via +$10 intel) -->
+        <!-- Boost edge $39 → $49 -->
         <g class="flow-edge">
-          <path d="M 480,100 C 520,100 530,90 560,90" stroke-dasharray="3 3"/>
+          <path d="M 480,80 C 520,80 530,72 560,72" stroke-dasharray="3 3"/>
         </g>
-        <!-- Boost edge (from $59 → $79 via +$10 experiment) -->
+        <!-- Boost edge $59 → $79 -->
         <g class="flow-edge gold">
-          <path d="M 480,140 C 520,140 530,150 560,150" stroke-dasharray="3 3"/>
+          <path d="M 480,114 C 520,114 530,124 560,124" stroke-dasharray="3 3"/>
         </g>
 
         <!-- State nodes (left) -->
         <g>
-          <rect x="40" y="28" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
-          <text class="flow-state-text" x="50" y="44">LOW_VALUE</text>
+          <rect x="40" y="24" width="160" height="20" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="37">LOW_VALUE</text>
 
-          <rect x="40" y="68" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
-          <text class="flow-state-text" x="50" y="84">DISCOVERY</text>
+          <rect x="40" y="54" width="160" height="20" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="67">DISCOVERY</text>
 
-          <rect x="40" y="108" width="160" height="24" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
-          <text class="flow-state-text" x="50" y="124" fill="var(--gold)">SUCCESS_MOMENT</text>
+          <rect x="40" y="84" width="160" height="20" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-state-text" x="50" y="97" fill="var(--gold)">SUCCESS_MOMENT</text>
 
-          <rect x="40" y="148" width="160" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
-          <text class="flow-state-text" x="50" y="164">FAILURE_TENSION</text>
+          <rect x="40" y="114" width="160" height="20" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.30)"/>
+          <text class="flow-state-text" x="50" y="127">FAILURE_TENSION</text>
 
-          <rect x="40" y="172" width="160" height="0" rx="4" fill="none"/>
-          <rect x="40" y="170" width="160" height="22" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
-          <text class="flow-state-text" x="50" y="184" fill="var(--gold)">HIGH_INTENT</text>
+          <rect x="40" y="132" width="160" height="20" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-state-text" x="50" y="145" fill="var(--gold)">HIGH_INTENT</text>
         </g>
 
         <!-- Base price rungs (center) -->
         <g>
-          <rect x="380" y="88" width="100" height="26" rx="4" fill="rgba(132,158,184,0.12)" stroke="rgba(132,158,184,0.40)"/>
-          <text class="flow-price-text" x="430" y="106" text-anchor="middle" fill="var(--sm-text)">$39</text>
+          <rect x="380" y="68" width="100" height="24" rx="4" fill="rgba(132,158,184,0.12)" stroke="rgba(132,158,184,0.40)"/>
+          <text class="flow-price-text" x="430" y="85" text-anchor="middle" fill="var(--sm-text)">$39</text>
 
-          <rect x="380" y="128" width="100" height="26" rx="4" fill="rgba(200,169,110,0.14)" stroke="var(--gold-line)"/>
-          <text class="flow-price-text" x="430" y="146" text-anchor="middle" fill="var(--gold)">$59</text>
+          <rect x="380" y="102" width="100" height="24" rx="4" fill="rgba(200,169,110,0.14)" stroke="var(--gold-line)"/>
+          <text class="flow-price-text" x="430" y="119" text-anchor="middle" fill="var(--gold)">$59</text>
         </g>
 
         <!-- Boost rungs (right) -->
         <g>
-          <rect x="560" y="76" width="100" height="26" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.32)"/>
-          <text class="flow-price-text" x="610" y="94" text-anchor="middle" fill="var(--sm-text)">$49</text>
-          <text class="flow-state-text" x="610" y="68" text-anchor="middle">+ INTEL BOOST</text>
+          <rect x="560" y="60" width="100" height="24" rx="4" fill="rgba(132,158,184,0.10)" stroke="rgba(132,158,184,0.32)"/>
+          <text class="flow-price-text" x="610" y="77" text-anchor="middle" fill="var(--sm-text)">$49</text>
+          <text class="flow-state-text" x="610" y="54" text-anchor="middle">+ INTEL BOOST</text>
 
-          <rect x="560" y="136" width="100" height="26" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
-          <text class="flow-price-text" x="610" y="154" text-anchor="middle" fill="var(--gold)">$79</text>
-          <text class="flow-state-text" x="610" y="178" text-anchor="middle">+ EXPERIMENT CEIL</text>
+          <rect x="560" y="112" width="100" height="24" rx="4" fill="rgba(200,169,110,0.10)" stroke="var(--gold-line)"/>
+          <text class="flow-price-text" x="610" y="129" text-anchor="middle" fill="var(--gold)">$79</text>
+          <text class="flow-state-text" x="610" y="150" text-anchor="middle">+ EXPERIMENT CEIL</text>
         </g>
 
         <!-- Column captions -->
         <text class="flow-state-text" x="40"  y="16">Value state</text>
-        <text class="flow-state-text" x="380" y="76">Base price (snap-to-ladder)</text>
-
-        <!-- Guardrail badge -->
-        <rect x="40" y="184" width="640" height="0" stroke="none"/>
+        <text class="flow-state-text" x="380" y="60">Base price (snap-to-ladder)</text>
       </svg>
     </div>
 
