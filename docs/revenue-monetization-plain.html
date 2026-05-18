@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NGW — what it is, in plain English</title>
+<meta name="description" content="No Guesswork Lighting — a plain-language explanation of what NGW is, who pays for it, and how it could make real money." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* Studio Matte tokens (mirrored from ui/src/theme/tokens.css) */
+  :root {
+    --sm-bg:            #000000;
+    --sm-surface:       #0f1013;
+    --sm-surface-2:     #131418;
+    --sm-divider:       rgba(255,255,255,0.06);
+    --sm-divider-strong:rgba(255,255,255,0.10);
+
+    --sm-text:          rgba(245,247,250,0.96);
+    --sm-text-2:        rgba(220,224,230,0.82);
+    --sm-text-3:        rgba(184,191,199,0.58);
+    --sm-text-4:        rgba(184,191,199,0.40);
+
+    --steel:            rgb(132,158,184);
+    --steel-soft:       rgba(132,158,184,0.12);
+    --steel-line:       rgba(132,158,184,0.32);
+    --gold:             #C8A96E;
+    --gold-soft:        rgba(200,169,110,0.14);
+    --gold-line:        rgba(200,169,110,0.32);
+    --green:            #48BA88;
+
+    --panel-shadow:     1px 2px 4px rgba(0,0,0,0.4), 2px 4px 16px rgba(0,0,0,0.55);
+    --panel-bevel:      inset -1px -1px 2px rgba(0,0,0,0.18), inset 1px 1px 0 rgba(255,255,255,0.04);
+
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  @page { size: Letter; margin: 0; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #050506;
+    color: var(--sm-text);
+    font-family: var(--font);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  .doc {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 24px; padding: 24px 0;
+  }
+
+  .page {
+    width: 8.5in;
+    min-height: 11in;
+    background: var(--sm-bg);
+    color: var(--sm-text);
+    padding: 0.7in 0.75in 0.55in;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+
+  /* Page chrome — lighter than investor doc */
+  .page-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--sm-divider);
+    margin-bottom: 28px;
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--sm-text-3);
+  }
+  .page-head .brand { color: var(--sm-text-2); font-weight: 600; letter-spacing: 0.22em; }
+  .page-head .brand .dot { color: var(--gold); margin: 0 6px; }
+
+  .page-foot {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--sm-divider);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono);
+    font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--sm-text-4);
+  }
+
+  /* Typography — generous, story-driven */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--gold); font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 { margin: 0; font-size: 56px; line-height: 1.02; letter-spacing: -0.03em; font-weight: 800; }
+  h2 { margin: 0; font-size: 34px; line-height: 1.08; letter-spacing: -0.025em; font-weight: 700; }
+  h3 { margin: 0; font-size: 18px; line-height: 1.25; font-weight: 600; letter-spacing: -0.005em; color: var(--sm-text); }
+
+  p { margin: 0 0 14px; line-height: 1.62; color: var(--sm-text-2); font-size: 15px; }
+  p:last-child { margin-bottom: 0; }
+  p.lede { font-size: 17.5px; color: var(--sm-text); line-height: 1.5; max-width: 6.4in; }
+  p strong { color: var(--sm-text); font-weight: 600; }
+  em.accent { font-style: normal; color: var(--gold); font-weight: 500; }
+
+  .small { font-size: 12.5px; color: var(--sm-text-3); line-height: 1.55; }
+
+  /* Section heading block */
+  .section-h {
+    display: flex; align-items: baseline; gap: 16px;
+    margin-bottom: 22px;
+  }
+  .section-h .num {
+    font-family: var(--mono);
+    font-size: 11.5px; letter-spacing: 0.2em; color: var(--gold);
+    font-weight: 600;
+    min-width: 32px;
+  }
+  .section-h h2 { flex: 1; }
+  .section-h .rule {
+    flex: 0 0 60px; height: 1px;
+    background: var(--sm-divider-strong);
+    margin-bottom: 8px;
+  }
+
+  /* Card — wider, more breathing room than investor doc */
+  .card {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: 12px;
+    padding: 22px 24px 20px;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+  }
+  .card .label {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .card .label.steel { color: var(--steel); }
+  .card.steel { border-color: var(--steel-line); background: linear-gradient(180deg, var(--steel-soft), var(--sm-surface) 55%); }
+  .card.accent { border-color: var(--gold-line); background: linear-gradient(180deg, rgba(200,169,110,0.05), var(--sm-surface) 50%); }
+
+  /* Section eyebrow rule — alternate steel for variety */
+  .section-h .num.steel { color: var(--steel); }
+  .section-h .rule.steel { background: var(--steel-line); }
+
+  /* Two-column grid */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  /* "Like..." analogy callout */
+  .analogy {
+    border-left: 2px solid var(--gold);
+    padding: 4px 0 4px 18px;
+    margin: 6px 0 16px;
+  }
+  .analogy.steel { border-left-color: var(--steel); }
+  .analogy .l {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .analogy.steel .l { color: var(--steel); }
+  .analogy .b { font-size: 14.5px; color: var(--sm-text); line-height: 1.5; }
+  .analogy .b strong { color: var(--gold); font-weight: 600; }
+  .analogy.steel .b strong { color: var(--steel); }
+
+  /* Numeric callout — single big number */
+  .number {
+    display: flex; align-items: baseline; gap: 12px;
+    margin: 10px 0 4px;
+  }
+  .number .big {
+    font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--sm-text);
+  }
+  .number .big.gold  { color: var(--gold); }
+  .number .big.steel { color: var(--steel); }
+  .number .unit { font-size: 14px; color: var(--sm-text-3); font-weight: 500; }
+
+  /* Step list — numbered */
+  .steps { display: flex; flex-direction: column; gap: 14px; counter-reset: s; }
+  .step {
+    display: grid; grid-template-columns: 36px 1fr; gap: 14px;
+    counter-increment: s;
+  }
+  .step .n {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    color: var(--gold);
+    border: 1px solid var(--gold-line);
+    border-radius: 50%;
+    background: var(--gold-soft);
+  }
+  .step .step-h { font-size: 16px; font-weight: 600; color: var(--sm-text); margin-bottom: 2px; }
+  .step .step-b { font-size: 14px; color: var(--sm-text-2); line-height: 1.55; }
+
+  /* Tier cards — plain */
+  .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .tier {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+    display: flex; flex-direction: column;
+  }
+  .tier.featured { border-color: var(--gold-line); background: linear-gradient(180deg, rgba(200,169,110,0.05), var(--sm-surface) 35%); }
+  .tier.steel    { border-color: var(--steel-line); background: linear-gradient(180deg, var(--steel-soft), var(--sm-surface) 45%); }
+  .tier .name {
+    font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--sm-text-3); margin-bottom: 10px;
+  }
+  .tier.featured .name { color: var(--gold); }
+  .tier.steel .name    { color: var(--steel); }
+  .tier .price-row { display: flex; align-items: baseline; gap: 6px; }
+  .tier .price { font-size: 38px; font-weight: 800; letter-spacing: -0.025em; line-height: 1; color: var(--sm-text); }
+  .tier .per   { font-size: 13px; color: var(--sm-text-3); }
+  .tier .who   { font-size: 13.5px; color: var(--sm-text-2); margin-top: 10px; line-height: 1.5; }
+
+  /* Funnel — story version (people counts) */
+  .people-funnel {
+    background: var(--sm-surface);
+    border: 1px solid var(--sm-divider-strong);
+    border-radius: 12px;
+    padding: 20px 22px 18px;
+    box-shadow: var(--panel-shadow), var(--panel-bevel);
+  }
+  .pf-row {
+    display: grid;
+    grid-template-columns: 28px 1.4fr 3fr 1fr;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 0;
+    border-top: 1px solid var(--sm-divider);
+  }
+  .pf-row:first-of-type { border-top: none; }
+  .pf-row .pf-n {
+    font-family: var(--mono); font-size: 12px; color: var(--sm-text-4); font-weight: 600;
+  }
+  .pf-row .pf-l { font-size: 14.5px; color: var(--sm-text); font-weight: 500; }
+  .pf-row .pf-bar { height: 14px; background: rgba(132,158,184,0.12); border-radius: 3px; border: 1px solid rgba(132,158,184,0.30); position: relative; }
+  .pf-row .pf-bar.gold { background: rgba(200,169,110,0.22); border-color: var(--gold-line); }
+  .pf-row .pf-bar > span { display: block; height: 100%; background: rgba(132,158,184,0.55); border-radius: 2px; }
+  .pf-row .pf-bar.gold > span { background: rgba(200,169,110,0.65); }
+  .pf-row .pf-v { font-family: var(--mono); font-size: 14px; color: var(--sm-text); text-align: right; font-weight: 600; }
+  .pf-row .pf-v.gold { color: var(--gold); }
+
+  /* Cover */
+  .cover {
+    padding: 0;
+    background: var(--sm-bg);
+    flex-direction: column;
+  }
+  .cover .inner {
+    flex: 1;
+    padding: 1in 0.85in 0.65in;
+    display: flex; flex-direction: column;
+    box-sizing: border-box;
+    background:
+      radial-gradient(60% 50% at 18% 22%, rgba(200,169,110,0.10), transparent 65%),
+      radial-gradient(35% 35% at 86% 88%, rgba(132,158,184,0.07), transparent 65%),
+      var(--sm-bg);
+  }
+  .cover .brandline {
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.26em;
+    text-transform: uppercase; color: var(--sm-text-3);
+    padding-bottom: 14px; border-bottom: 1px solid var(--sm-divider);
+  }
+  .cover .brandline .logo { color: var(--sm-text); font-weight: 700; letter-spacing: 0.34em; }
+  .cover .brandline .logo .gold { color: var(--gold); }
+
+  .cover .title { margin-top: auto; }
+  .cover h1 { font-size: 68px; line-height: 0.98; letter-spacing: -0.035em; font-weight: 800; max-width: 6.8in; }
+  .cover h1 em { font-style: normal; color: var(--gold); }
+  .cover .strap { margin-top: 26px; font-size: 17px; max-width: 5.5in; color: var(--sm-text-2); line-height: 1.5; }
+
+  .cover-foot {
+    margin-top: auto;
+    padding-top: 28px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--sm-text-4);
+  }
+
+  /* Inline pill — gold by default, steel modifier */
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    color: var(--gold);
+    background: var(--gold-soft);
+    border: 1px solid var(--gold-line);
+    vertical-align: middle;
+  }
+  .pill.steel {
+    color: var(--steel);
+    background: var(--steel-soft);
+    border-color: var(--steel-line);
+  }
+
+  /* Risk / why-it-works split */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .split .col h3 { margin-bottom: 12px; font-size: 16px; }
+  .split .col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .split .col li { font-size: 14.5px; color: var(--sm-text-2); padding-left: 22px; position: relative; line-height: 1.55; }
+  .split .col.good li::before {
+    content: "+"; position: absolute; left: 0; top: 0;
+    color: var(--green); font-weight: 700; font-family: var(--mono); font-size: 16px;
+  }
+  .split .col.risk li::before {
+    content: "—"; position: absolute; left: 0; top: 0;
+    color: var(--sm-text-4); font-weight: 700; font-family: var(--mono); font-size: 16px;
+  }
+
+  /* Responsive (screen only) */
+  @media (max-width: 900px) {
+    .page { width: 100%; padding: 28px 22px 24px; min-height: auto; }
+    .two, .three, .tier-grid, .split { grid-template-columns: 1fr; }
+    .pf-row { grid-template-columns: 22px 1.4fr 2fr 1fr; gap: 8px; }
+    h1 { font-size: 38px; }
+    h2 { font-size: 26px; }
+    .cover h1 { font-size: 44px; }
+  }
+
+  /* Print */
+  @media print {
+    html, body { background: var(--sm-bg) !important; }
+    .doc { padding: 0; gap: 0; }
+    .page { box-shadow: none; margin: 0; width: 8.5in !important; min-height: 11in !important; padding: 0.7in 0.75in 0.55in !important; }
+    .cover .inner { padding: 1in 0.85in 0.65in !important; }
+    .two, .split { grid-template-columns: 1fr 1fr !important; }
+    .three, .tier-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .pf-row { grid-template-columns: 28px 1.4fr 3fr 1fr !important; }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ═══════════════════════ PAGE 1 — COVER ═══════════════════════ -->
+  <section class="page cover">
+    <div class="inner">
+      <div class="brandline">
+        <span class="logo">N<span class="gold">·</span>G<span class="gold">·</span>W</span>
+        <span>No Guesswork Lighting</span>
+        <span>For Family &amp; Friends</span>
+      </div>
+
+      <div class="title">
+        <span class="eyebrow">What it is · who pays · why it works</span>
+        <h1>The thing I'm building,<br/>explained <em>in plain English.</em></h1>
+        <p class="strap">Photography lighting is hard. Most people who try to copy a great photo end up guessing. NGW takes the guessing out. This document explains what it actually does, who pays money for it, and how that could turn into a real business — without using a single word from a finance textbook.</p>
+      </div>
+
+      <div class="cover-foot">
+        <span>Studio Matte · Carbon Black</span>
+        <span>Six pages · plain English</span>
+        <span>01 / 06</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 2 — WHAT IS THIS? ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Plain English</span>
+      <span>§ 01 · What is this thing?</span>
+    </header>
+
+    <div class="section-h">
+      <span class="num">§ 01</span>
+      <h2>What is this thing?</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lede">
+      The simplest way to say it: <strong>NGW is Shazam, but for photo lighting.</strong> A photographer sees an image they love — maybe a magazine cover, maybe a friend's shot — and asks the question every photographer asks: <em class="accent">"how did they light that?"</em> NGW answers it.
+    </p>
+
+    <div class="analogy" style="margin-top:22px;">
+      <div class="l">Like…</div>
+      <div class="b"><strong>Shazam</strong> for music: it listens to a song and tells you what it is. <strong>NGW</strong> looks at a photo and tells you how the light was set up — where the lamps were, what kind they were, what they were bouncing off.</div>
+    </div>
+
+    <div class="two" style="margin-top:18px;">
+      <div class="card steel">
+        <div class="label steel">What you put in</div>
+        <p>A photo. Could be a magazine page, a phone screenshot, a reference from a shoot the photographer wants to recreate. One image.</p>
+      </div>
+      <div class="card accent">
+        <div class="label">What you get back</div>
+        <p>A reconstruction: the lights drawn on a diagram, what type they were, what was attached to them, and a step-by-step guide a photographer can use to <strong>actually rebuild the shot</strong> in their own studio.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px; margin-bottom:10px;">Why this is hard</h3>
+    <p>Photo lighting leaves clues — the shape of a shadow on a cheek, the highlight in someone's eye, where the brightness falls off across a forehead. A trained eye can read these, but it takes years. NGW reads them automatically, in a few seconds, and explains its answer in language a photographer can act on.</p>
+    <p>The system is careful about being honest. If a photo is ambiguous — say a shadow could mean two different things — it <em class="accent">says so</em> instead of guessing. Photographers trust tools that admit when they don't know.</p>
+
+    <footer class="page-foot">
+      <span>NGW · Plain English</span>
+      <span>02 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 3 — WHO IS IT FOR ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Plain English</span>
+      <span>§ 02 · Who pays for it?</span>
+    </header>
+
+    <div class="section-h">
+      <span class="num steel">§ 02</span>
+      <h2>Who actually pays for this?</h2>
+      <span class="rule steel"></span>
+    </div>
+
+    <p class="lede">
+      Not everyone who likes photography. The buyer is specific: <strong>a working photographer</strong> — someone who gets paid to take photos for a living. They shoot portraits, fashion, products, beauty. They have studio lights they own or rent, and they care about lighting the way a chef cares about a stove.
+    </p>
+
+    <div class="analogy steel" style="margin-top:20px;">
+      <div class="l">Like…</div>
+      <div class="b">A working photographer is to NGW what a <strong>professional chef</strong> is to a really good knife. A home cook might admire it, but the chef is the one who buys it and uses it every day.</div>
+    </div>
+
+    <div class="three" style="margin-top:22px;">
+      <div class="card steel">
+        <div class="label steel">Pays the most</div>
+        <h3 style="margin-bottom:8px;">Studios &amp; teams</h3>
+        <p class="small">A small studio with 2–6 people sharing references, kit lists, and reconstructed setups. They pay for the higher tier because they need to collaborate, share, and process more.</p>
+      </div>
+      <div class="card accent">
+        <div class="label">Pays the middle</div>
+        <h3 style="margin-bottom:8px;">Solo working photographer</h3>
+        <p class="small">One photographer, paying clients, owns lighting kit. Uses NGW the way an accountant uses tax software — daily, professionally, expense it. <strong>This is the main customer.</strong></p>
+      </div>
+      <div class="card">
+        <div class="label steel">Doesn't pay</div>
+        <h3 style="margin-bottom:8px;">Hobbyist &amp; learner</h3>
+        <p class="small">Loves photography, doesn't bill for it. Uses the free version, learns from the reference library, tells working photographer friends about it. They are the word-of-mouth, not the wallet.</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top:28px; margin-bottom:10px;">Why would a working photographer pay?</h3>
+    <p>Because a single solved problem is worth more than a month of subscription. If NGW saves a photographer one reshoot — one bad-lighting day that didn't have to happen — the tool has paid for itself for the year. That's the math working photographers do in their heads.</p>
+    <p>It also makes them faster. A 20-minute "what light did they use?" exercise becomes 30 seconds, and the answer is something they can actually build, not a guess.</p>
+
+    <footer class="page-foot">
+      <span>NGW · Plain English</span>
+      <span>03 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 4 — HOW IT MAKES MONEY ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Plain English</span>
+      <span>§ 03 · How the money works</span>
+    </header>
+
+    <div class="section-h">
+      <span class="num">§ 03</span>
+      <h2>How it makes money</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lede">
+      It's a <strong>subscription</strong> — same shape as Netflix or Spotify. You sign up, you pay every month, you get to use the tool. Stop paying and you go back to the free version. There are three levels.
+    </p>
+
+    <div class="analogy" style="margin-top:20px;">
+      <div class="l">Like…</div>
+      <div class="b">A <strong>gym membership</strong>. Free tier = guest pass. Pro tier = standard membership. Studio tier = team / family plan with extras.</div>
+    </div>
+
+    <div class="tier-grid" style="margin-top:22px;">
+      <div class="tier">
+        <div class="name">Free</div>
+        <div class="price-row"><span class="price">$0</span><span class="per">/ month</span></div>
+        <div class="who">Three free analyses. Lets a curious photographer prove to themselves that the tool actually works before paying anything.</div>
+      </div>
+      <div class="tier featured">
+        <div class="name">Pro · the main one</div>
+        <div class="price-row"><span class="price">$39</span><span class="per">/ month</span></div>
+        <div class="who">Unlimited analyses, the full set of professional features. This is the version a working photographer would actually buy. About the price of a nice meal out — per month.</div>
+      </div>
+      <div class="tier steel">
+        <div class="name">Studio</div>
+        <div class="price-row"><span class="price">$59</span><span class="per">/ month</span></div>
+        <div class="who">Everything in Pro, plus team sharing, batch processing, and priority support. For small studios who need to collaborate.</div>
+      </div>
+    </div>
+
+    <div class="two" style="margin-top:22px;">
+      <div class="card">
+        <div class="label steel">The trial</div>
+        <p>Every new user gets a <strong>14-day free trial</strong> of the Pro features. <em class="accent">No credit card.</em> If they like it, they pay. If they don't, they go back to the free version with no awkward billing.</p>
+        <p class="small" style="margin-top:8px;">Same shape as Netflix's first month: try it without commitment, decide if it's worth keeping.</p>
+      </div>
+      <div class="card">
+        <div class="label steel">Pay yearly, save two months</div>
+        <p>If a photographer pays for the whole year up front, they get roughly <strong>two months free</strong>. This is the same trick phone carriers use: yearly customers are more committed and cheaper to keep, so they get a discount.</p>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW · Plain English</span>
+      <span>04 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 5 — WHAT COULD IT BECOME ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Plain English</span>
+      <span>§ 04 · What could it become?</span>
+    </header>
+
+    <div class="section-h">
+      <span class="num steel">§ 04</span>
+      <h2>What could this become?</h2>
+      <span class="rule steel"></span>
+    </div>
+
+    <p class="lede">
+      Out of every 100 people who visit the NGW website, only a small group ends up paying. That's normal — every subscription business looks like this. The question is <em class="accent">how many.</em>
+    </p>
+
+    <div class="people-funnel" style="margin-top:22px;">
+      <div class="pf-row">
+        <span class="pf-n">01</span>
+        <span class="pf-l">Visit the website</span>
+        <span class="pf-bar"><span style="width:100%"></span></span>
+        <span class="pf-v">100</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-n">02</span>
+        <span class="pf-l">Sign up · free version</span>
+        <span class="pf-bar"><span style="width:35%"></span></span>
+        <span class="pf-v">35</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-n">03</span>
+        <span class="pf-l">Try the 14-day trial</span>
+        <span class="pf-bar"><span style="width:12%"></span></span>
+        <span class="pf-v">12</span>
+      </div>
+      <div class="pf-row">
+        <span class="pf-n">04</span>
+        <span class="pf-l">Become a paying customer</span>
+        <span class="pf-bar gold"><span style="width:6.5%"></span></span>
+        <span class="pf-v gold">≈ 6.5</span>
+      </div>
+    </div>
+
+    <p class="small" style="margin-top:10px;"><span class="pill steel">Modeled</span> &nbsp;These percentages are our planning targets, not measured reality. The actual numbers replace these once enough real photographers have used it.</p>
+
+    <h3 style="margin-top:26px; margin-bottom:12px;">Three sizes of the future</h3>
+    <p>If we keep doing what we're doing, here are three honest pictures of what the business could look like by the end of year one:</p>
+
+    <div class="three" style="margin-top:14px;">
+      <div class="card steel">
+        <div class="label steel">Smaller case</div>
+        <div class="number"><span class="big steel">$420K</span><span class="unit">per year</span></div>
+        <p class="small" style="margin-top:6px;">About 860 paying photographers. Slower start, fewer signups, more people quitting.</p>
+      </div>
+      <div class="card accent">
+        <div class="label">Planning case</div>
+        <div class="number"><span class="big gold">$1.3M</span><span class="unit">per year</span></div>
+        <p class="small" style="margin-top:6px;">About 2,700 paying photographers. The funnel above plays out as planned. This is what we're building toward.</p>
+      </div>
+      <div class="card">
+        <div class="label steel">Bigger case</div>
+        <div class="number"><span class="big steel">$3.2M</span><span class="unit">per year</span></div>
+        <p class="small" style="margin-top:6px;">About 5,800 paying photographers. Word-of-mouth kicks in and small studios buy the bigger plan.</p>
+      </div>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW · Plain English</span>
+      <span>05 / 06</span>
+    </footer>
+  </section>
+
+  <!-- ═══════════════════════ PAGE 6 — WHY IT WORKS / WHY IT MIGHT NOT ═══════════════════════ -->
+  <section class="page">
+    <header class="page-head">
+      <span class="brand">NGW<span class="dot">·</span>Plain English</span>
+      <span>§ 05 · Why this could work · and what could go wrong</span>
+    </header>
+
+    <div class="section-h">
+      <span class="num">§ 05</span>
+      <h2>Why this could work · and what could go wrong</h2>
+      <span class="rule"></span>
+    </div>
+
+    <p class="lede">
+      Every business has reasons it could work and reasons it might not. Here's the honest version of both sides for NGW.
+    </p>
+
+    <div class="split" style="margin-top:18px;">
+      <div class="col good">
+        <h3 style="color:var(--green);">Why this could work</h3>
+        <ul>
+          <li><strong>The problem is real and specific.</strong> Photographers ask "how did they light that?" every day. NGW answers a question they're already asking.</li>
+          <li><strong>The buyer has money and routine.</strong> Working photographers already pay for tools — software, equipment, plugins. Adding one more $39 line is a normal decision for them, not a leap.</li>
+          <li><strong>It gets better with use.</strong> Every photo analyzed makes the system smarter. The product compounds — early users help future users.</li>
+          <li><strong>It's honest about uncertainty.</strong> When a photo is ambiguous, NGW says so. Photographers trust tools that admit limits more than tools that bluff. That trust is the long-term moat.</li>
+        </ul>
+      </div>
+      <div class="col risk">
+        <h3 style="color:var(--sm-text-2);">What could go wrong</h3>
+        <ul>
+          <li><strong>One bad answer in public.</strong> If a high-profile photographer posts a NGW answer that's clearly wrong, trust takes a hit. The fix: keep being honest about what the system doesn't know.</li>
+          <li><strong>The "AI tax" gets too expensive.</strong> Every analysis costs us a few cents of computing. If we're not careful, the bill grows faster than the subscriptions.</li>
+          <li><strong>A bigger company copies it.</strong> Adobe or someone like them launches a similar feature. The defense is depth — our reference library, the specificity of our photographer-language, and a brand photographers actually trust.</li>
+          <li><strong>Niche too narrow to grow big.</strong> Working photographers are a real market but not a huge one. The bigger story is the same engine extended into adjacent crafts: film, video, even painting reference.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card accent" style="margin-top:16px;">
+      <div class="label">The short version, if you only remember one thing</div>
+      <p style="font-size:15px;">A working photographer asks "how did they light that?" NGW answers it for $39 a month. The product gets smarter with every photo it sees. The honesty about uncertainty is the brand. The growth comes from photographers telling other photographers. <em class="accent">That's the whole pitch.</em></p>
+    </div>
+
+    <footer class="page-foot">
+      <span>NGW · Plain English · End</span>
+      <span>06 / 06</span>
+    </footer>
+  </section>
+
+</div>
+</body>
+</html>
