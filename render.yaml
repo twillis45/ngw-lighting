@@ -4,7 +4,12 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: standard          # standard = 2 GB RAM — needed for mediapipe + opencv
-    healthCheckPath: /health
+    # The health router is mounted with prefix="/api" at main.py:319, so the
+    # real route is /api/health. This said /health until 2026-08-24: Render
+    # polls the declared path, would have got a 404, marked the service
+    # permanently unhealthy and never routed traffic — a deploy that does not
+    # error, it just never serves.
+    healthCheckPath: /api/health
     envVars:
       - key: NGW_JWT_SECRET
         generateValue: true   # Render auto-generates a secure secret
