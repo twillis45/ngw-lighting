@@ -65,3 +65,14 @@ node_modules/
 .ipynb_checkpoints/
 tmp/
 certs/*.pem
+
+# One-off debug and QA scripts written at the ui/ root. Kept on disk, out of
+# the repo — they are scratch from a debugging session, not product code.
+/ui/*.mjs
+/ui/*qa*.js
+/ui/debug-*.js
+# Accidental path artifact: a script wrote to a literal Users/... path inside
+# ui/, referencing ngw-core, the name retired in favour of ngw-lighting.
+/ui/Users/
+# Review screenshots live here by convention and are not versioned.
+/review-artifacts/
