@@ -283,7 +283,7 @@ def _classify_palette(
     }
 
 
-def describe_image(path: str, describe_mode: str = "basic", *, debug: bool = False) -> Dict[str, Any]:
+def describe_image(path: str, describe_mode: str = "basic", *, debug: bool = False, run_vlm: bool = True) -> Dict[str, Any]:
     """
     basic: safe stats + palettes (no subject claims)
     vision: adds segmentation-based palettes + pose guess (opencv+mediapipe)
@@ -333,7 +333,7 @@ def describe_image(path: str, describe_mode: str = "basic", *, debug: bool = Fal
 
     out["classification"] = _classify_palette(overall_palette, grayscale_like)
 
-    if describe_mode == "vision":
+    if describe_mode == "vision" and run_vlm:
         # ── Fire VLM in parallel with CV pipeline ────────────────────
         # VLM only needs the image path — completely independent of CV.
         # Starting it here lets the API round-trip overlap with MediaPipe,

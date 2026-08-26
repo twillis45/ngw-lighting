@@ -18,8 +18,12 @@ from engine.orchestrator import (
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════════
 
-def _fake_describe(image_path, mode="vision", debug=False):
-    """Return a plausible describe_image result for testing."""
+def _fake_describe(image_path, mode="vision", debug=False, run_vlm=True):
+    """Return a plausible describe_image result for testing.
+
+    Mirrors describe_image()'s signature including run_vlm — a double that
+    drifts from the real signature fails for the wrong reason.
+    """
     return {
         "ok": True,
         "palette": {"overall": [{"hex": "#808080", "pct": 100}]},

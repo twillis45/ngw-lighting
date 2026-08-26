@@ -4968,7 +4968,13 @@ def analyze_image(
     image_path: str,
     *,
     run_extended: bool = True,
-    run_vlm: bool = False,
+    #: Default True because that is what the code has always DONE — the flag was
+    #: declared here and never threaded, so every caller got the VLM regardless.
+    #: Threading it (2026-08-26) makes the parameter real; defaulting it True keeps
+    #: every existing caller — including scripts/run_benchmarks.py, which does not
+    #: pass it — behaving exactly as before. Only callers that explicitly pass
+    #: False change, which is what those four routes always intended.
+    run_vlm: bool = True,
     run_solver: bool = True,
     debug: bool = False,
     analysis_id_override: str | None = None,
@@ -5055,7 +5061,7 @@ def analyze_image(
 
         _t_step = _time.perf_counter()
         with _span("pipeline.describe", "Step 1: describe_image"):
-            raw = _describe(image_path, "vision", debug=debug)
+            raw = _describe(image_path, "vision", debug=debug, run_vlm=run_vlm)
         _elapsed = round(_time.perf_counter() - _t_step, 2)
         result.stage_timings["describe_image"] = _elapsed
         logger.info("[analyze_image] Step 1 describe_image: %.1fs", _elapsed)
