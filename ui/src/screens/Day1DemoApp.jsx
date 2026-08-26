@@ -28,6 +28,7 @@ import { Panel, CtaButton, HomeIndicator } from './studio/_core/components';
 import { tapHaptic, warnHaptic } from '../utils/haptics';
 import { softClickSound, navSlideSound } from '../utils/sounds';
 import { LAYOUT_DESKTOP_MIN, TABLET_MIN_WIDTH } from '../utils/useIsDesktop';
+import { pushScreen, popScreen } from '../utils/screenHistory';
 import { applyTheme } from '../data/themeStore';
 import MatteBackground from './studio/_shared/MatteBackground';
 
@@ -648,12 +649,33 @@ if (typeof window !== 'undefined') window.__ngwMapResult = mapApiResult;
 export default function Day1DemoApp() {
   const [screen, _setScreen] = useState('home');
   const prevScreenRef = useRef('home');
+  //: Navigation trail. Without it every onBack had to hardcode a destination,
+  //: and 8 of 11 chose 'home' — so any second hop lost the user's place.
+  const historyRef = useRef([]);
+  //: Mirrors `screen` synchronously so setScreen stays a pure updater.
+  //: Mutating a ref inside the updater breaks under StrictMode double-invoke.
+  const screenRef = useRef('home');
+
   const setScreen = useCallback((next) => {
-    _setScreen(prev => {
+    const prev = screenRef.current;
+    if (prev !== next) {
       prevScreenRef.current = prev;
-      return next;
-    });
+      pushScreen(historyRef.current, prev, next);
+      screenRef.current = next;
+    }
+    _setScreen(next);
   }, []);
+
+  /** Pop the trail. `fallback` is used when nothing is recorded. */
+  const goBack = useCallback((fallback = 'home') => {
+    const prev = screenRef.current;
+    const next = popScreen(historyRef.current, prev, fallback);
+    prevScreenRef.current = prev;
+    screenRef.current = next;
+    _setScreen(next);
+  }, []);
+  useEffect(() => { screenRef.current = screen; }, [screen]);
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [result, setResult] = useState(null);
@@ -1634,7 +1656,7 @@ export default function Day1DemoApp() {
     }
     case 'build': {
       const buildMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
-      const buildEl = <BuildWizardScreen onComplete={handleBuildComplete} onBack={() => setScreen('home')} />;
+      const buildEl = <BuildWizardScreen onComplete={handleBuildComplete} onBack={() => goBack()} />;
       if (!buildMobile) return buildEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{buildEl}</FitToViewport>;
     }
@@ -1643,7 +1665,7 @@ export default function Day1DemoApp() {
       const savedEl = (
         <SavedSetupsScreen
           onSelect={handleSavedSetupSelect}
-          onBack={() => setScreen('home')}
+          onBack={() => goBack()}
           onBuild={() => setScreen('recipes')}
           onShoot={(setup) => { if (setup.result) { setResult(setup.result); handleStartCockpit('photographer'); } }}
         />
@@ -1653,7 +1675,7 @@ export default function Day1DemoApp() {
     }
     case 'recipes': {
       const recipesMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
-      const recipesEl = <RecipeScreen onSelect={handleRecipeSelect} onBack={() => setScreen('home')} onBuild={handleBuildWizard} />;
+      const recipesEl = <RecipeScreen onSelect={handleRecipeSelect} onBack={() => goBack()} onBuild={handleBuildWizard} />;
       if (!recipesMobile) return recipesEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{recipesEl}</FitToViewport>;
     }
@@ -1661,7 +1683,7 @@ export default function Day1DemoApp() {
       const journalMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
       const journalEl = (
         <SessionLogScreen
-          onBack={() => setScreen('home')}
+          onBack={() => goBack()}
           onSelectAnalysis={async (id) => {
             try {
               const { fetchAnalysisDetail } = await import('../data/sessionLogApi');
@@ -1682,18 +1704,18 @@ export default function Day1DemoApp() {
     }
     case 'clientbrief': {
       const cbMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
-      const cbEl = <ClientBriefScreen onBack={() => setScreen('home')} />;
+      const cbEl = <ClientBriefScreen onBack={() => goBack()} />;
       if (!cbMobile) return cbEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{cbEl}</FitToViewport>;
     }
     case 'looklibrary': {
       const llMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
-      const llEl = <LookLibraryScreen onBack={() => setScreen('home')} />;
+      const llEl = <LookLibraryScreen onBack={() => goBack()} />;
       if (!llMobile) return llEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{llEl}</FitToViewport>;
     }
     case 'roomplanner':
-      return <RoomPlannerWrapper result={result} onBack={() => setScreen(result ? 'setup' : 'home')} />;
+      return <RoomPlannerWrapper result={result} onBack={() => goBack(result ? 'setup' : 'home')} />;
     case 'shotmatch':
       return (
         <ShotMatchAdapter
@@ -1702,12 +1724,12 @@ export default function Day1DemoApp() {
           user={user}
           isPaid={appIsPaid}
           isAdmin={appIsAdmin}
-          onBack={() => setScreen(result ? 'result' : 'home')}
+          onBack={() => goBack(result ? 'result' : 'home')}
         />
       );
     case 'mykit': {
       const mkMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
-      const mkEl = <MyKitScreen onBack={() => setScreen('home')} onRecipes={handleRecipes} />;
+      const mkEl = <MyKitScreen onBack={() => goBack()} onRecipes={handleRecipes} />;
       if (!mkMobile) return mkEl;
       return (
         <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>
@@ -1720,7 +1742,7 @@ export default function Day1DemoApp() {
       const settingsEl = (
         <Day1SettingsScreen
           user={user}
-          onBack={() => setScreen('home')}
+          onBack={() => goBack()}
           onLogout={() => { clearAuth(); setUser(null); setScreen('home'); }}
           onLab={() => setScreen('lab')}
         />
@@ -1733,7 +1755,7 @@ export default function Day1DemoApp() {
       );
     }
     case 'lab':
-      return <StudioLabWrapper onBack={() => setScreen('settings')} onSessionLog={() => setScreen('sessionLog')} onLookLibrary={() => setScreen('lookLibrary')} />;
+      return <StudioLabWrapper onBack={() => goBack('settings')} onSessionLog={() => setScreen('sessionLog')} onLookLibrary={() => setScreen('lookLibrary')} />;
     case 'error':
       return (
         <FallbackReveal
