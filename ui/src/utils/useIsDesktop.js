@@ -19,6 +19,38 @@ export const LAYOUT_DESKTOP_MIN = 1024;
 // breakpoint without lowering the global desktop threshold.
 export const TABLET_MIN_WIDTH = 768;
 
+/**
+ * useMinWidth — reactive `(min-width: Npx)` match.
+ *
+ * The generic form of useIsDesktop. Exists because Day1DemoApp branched on
+ * a raw `window.innerWidth` read fourteen times: those are evaluated once
+ * per render and never re-run, so a rotation or a resize left the shell in
+ * the wrong layout regime until something else happened to re-render it.
+ */
+export function useMinWidth(px) {
+  const query = `(min-width: ${px}px)`;
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(query).matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia(query);
+    setMatches(mq.matches);
+    const handler = (e) => setMatches(e.matches);
+    // Safari < 14 uses addListener/removeListener
+    if (mq.addEventListener) mq.addEventListener('change', handler);
+    else mq.addListener(handler);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', handler);
+      else mq.removeListener(handler);
+    };
+  }, [query]);
+
+  return matches;
+}
+
 export function useIsDesktop() {
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === 'undefined') return false;

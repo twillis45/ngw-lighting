@@ -37,6 +37,7 @@ import LightingDiagram from '../_core/components/LightingDiagram';
 import useWakeLock from '../../../hooks/useWakeLock';
 import { createPortal } from 'react-dom';
 import MatteBackground from '../_shared/MatteBackground';
+import { useMinWidth, TABLET_MIN_WIDTH } from '../../../utils/useIsDesktop';
 
 const MODE_LABELS = {
   photographer: { label: 'Photographer', tag: 'FULL DETAILS' },
@@ -979,8 +980,8 @@ export default function Day1ShootScreen({ result, imagePreview, mode = 'photogra
   // (iPad mini) gets the two-column photo+chrome layout.  Other screens
   // keep the global LAYOUT_DESKTOP_MIN = 1024 threshold to avoid the
   // FitToViewport conflict zone.
-  const isDesktop = _isDesktopGlobal
-    || (typeof window !== 'undefined' && window.innerWidth >= 768);
+  const _isTabletUp = useMinWidth(TABLET_MIN_WIDTH);
+  const isDesktop = _isDesktopGlobal || _isTabletUp;
   // Scale layout for short phones (same strategy as HomeScreen)
   const VF_TOP = isDesktop ? 100
     : stableVH <= 600 ? 56

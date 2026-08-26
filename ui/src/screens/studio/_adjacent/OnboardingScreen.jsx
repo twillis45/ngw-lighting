@@ -12,6 +12,7 @@ import MatteBackground from '../_shared/MatteBackground';
 import { savePreference } from '../../../data/authApi';
 import { tapHaptic, navHaptic } from '../../../utils/haptics';
 import { softClickSound } from '../../../utils/sounds';
+import { useMinWidth } from '../../../utils/useIsDesktop';
 
 const EXPERIENCE = [
   { value: 'beginner',    label: 'Beginner' },
@@ -124,7 +125,7 @@ export default function OnboardingScreen({ onComplete }) {
     onComplete?.();
   }
 
-  const isWide = typeof window !== 'undefined' && window.innerWidth >= 820;
+  const isWide = useMinWidth(820);
 
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: SCREEN_BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: 'Inter, system-ui, sans-serif' }}>

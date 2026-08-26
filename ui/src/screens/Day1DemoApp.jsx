@@ -27,7 +27,7 @@ import { steel, C, FONT_SMOOTH as FS, VIEWFINDER_INNER_SHADOW, GLASS_REFLECTION,
 import { Panel, CtaButton, HomeIndicator } from './studio/_core/components';
 import { tapHaptic, warnHaptic } from '../utils/haptics';
 import { softClickSound, navSlideSound } from '../utils/sounds';
-import { LAYOUT_DESKTOP_MIN, TABLET_MIN_WIDTH } from '../utils/useIsDesktop';
+import { LAYOUT_DESKTOP_MIN, TABLET_MIN_WIDTH, useMinWidth } from '../utils/useIsDesktop';
 import { pushScreen, popScreen } from '../utils/screenHistory';
 import { applyTheme } from '../data/themeStore';
 import MatteBackground from './studio/_shared/MatteBackground';
@@ -674,6 +674,12 @@ export default function Day1DemoApp() {
     screenRef.current = next;
     _setScreen(next);
   }, []);
+  //: Reactive layout regimes. These replaced fourteen raw window.innerWidth
+  //: reads that were evaluated once per render and never re-run, so a resize
+  //: or rotation left the shell in the wrong regime.
+  const isDesktopUp = useMinWidth(LAYOUT_DESKTOP_MIN);   // >= 1024
+  const isTabletUp  = useMinWidth(TABLET_MIN_WIDTH);     // >= 768
+
   useEffect(() => { screenRef.current = screen; }, [screen]);
 
   const [imageFile, setImageFile] = useState(null);
@@ -1539,7 +1545,7 @@ export default function Day1DemoApp() {
       // Desktop: HomeScreen manages its own two-column grid layout at native
       // viewport width — no FitToViewport scaling needed.
       // Mobile: 430×932 aspect-preserving contain via FitToViewport.
-      const homeMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const homeMobile = !isDesktopUp;
       const homeEl = (
         <HomeScreen
           onAnalyze={handleAnalyze}
@@ -1572,7 +1578,7 @@ export default function Day1DemoApp() {
       );
     }
     case 'processing': {
-      const procMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const procMobile = !isDesktopUp;
       const procEl = <ProcessingScreen imagePreview={imagePreview} imageFile={imageFile} analysisComplete={analysisReady} exifData={exifData} result={result} onCancel={handleRetry} />;
       if (!procMobile) return procEl;
       return (
@@ -1586,7 +1592,7 @@ export default function Day1DemoApp() {
       // Tablet portrait (768–1023px) also bypasses scaling; ResultScreen activates
       // its two-column grid internally via the TABLET_MIN_WIDTH check.
       // Mobile: 430-wide with width-only scaling.
-      const resultMobile = typeof window !== 'undefined' && window.innerWidth < TABLET_MIN_WIDTH;
+      const resultMobile = !isTabletUp;
       const resultEl = (
         <ResultScreen
           result={result}
@@ -1609,7 +1615,7 @@ export default function Day1DemoApp() {
     case 'setup': {
       // Desktop/tablet: bypass FitToViewport — SetupScreen manages its own layout.
       // Mobile: 430×932 with standard scaling.
-      const setupMobile = typeof window !== 'undefined' && window.innerWidth < TABLET_MIN_WIDTH;
+      const setupMobile = !isTabletUp;
       const setupEl = (
         <SetupScreen
           result={result}
@@ -1633,7 +1639,7 @@ export default function Day1DemoApp() {
       // Cockpit uses a LOCAL 768px threshold (not the global 1024)
       // so tablet portrait gets the two-column photo+chrome layout
       // in both FitToViewport AND the internal isDesktop branching.
-      const shootMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+      const shootMobile = !isTabletUp;
       const shootDesktopVH = typeof window !== 'undefined' ? window.innerHeight : 800;
       return (
         <FitToViewport
@@ -1655,13 +1661,13 @@ export default function Day1DemoApp() {
       );
     }
     case 'build': {
-      const buildMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const buildMobile = !isDesktopUp;
       const buildEl = <BuildWizardScreen onComplete={handleBuildComplete} onBack={() => goBack()} />;
       if (!buildMobile) return buildEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{buildEl}</FitToViewport>;
     }
     case 'saved': {
-      const savedMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const savedMobile = !isDesktopUp;
       const savedEl = (
         <SavedSetupsScreen
           onSelect={handleSavedSetupSelect}
@@ -1674,13 +1680,13 @@ export default function Day1DemoApp() {
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{savedEl}</FitToViewport>;
     }
     case 'recipes': {
-      const recipesMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const recipesMobile = !isDesktopUp;
       const recipesEl = <RecipeScreen onSelect={handleRecipeSelect} onBack={() => goBack()} onBuild={handleBuildWizard} />;
       if (!recipesMobile) return recipesEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{recipesEl}</FitToViewport>;
     }
     case 'journal': {
-      const journalMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const journalMobile = !isDesktopUp;
       const journalEl = (
         <SessionLogScreen
           onBack={() => goBack()}
@@ -1703,13 +1709,13 @@ export default function Day1DemoApp() {
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{journalEl}</FitToViewport>;
     }
     case 'clientbrief': {
-      const cbMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const cbMobile = !isDesktopUp;
       const cbEl = <ClientBriefScreen onBack={() => goBack()} />;
       if (!cbMobile) return cbEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{cbEl}</FitToViewport>;
     }
     case 'looklibrary': {
-      const llMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const llMobile = !isDesktopUp;
       const llEl = <LookLibraryScreen onBack={() => goBack()} />;
       if (!llMobile) return llEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{llEl}</FitToViewport>;
@@ -1728,7 +1734,7 @@ export default function Day1DemoApp() {
         />
       );
     case 'mykit': {
-      const mkMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const mkMobile = !isDesktopUp;
       const mkEl = <MyKitScreen onBack={() => goBack()} onRecipes={handleRecipes} />;
       if (!mkMobile) return mkEl;
       return (
@@ -1738,7 +1744,7 @@ export default function Day1DemoApp() {
       );
     }
     case 'settings': {
-      const settingsMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const settingsMobile = !isDesktopUp;
       const settingsEl = (
         <Day1SettingsScreen
           user={user}
@@ -1766,7 +1772,7 @@ export default function Day1DemoApp() {
       );
     default: {
       // Fallback to home — same bypass pattern
-      const defMobile = typeof window !== 'undefined' && window.innerWidth < LAYOUT_DESKTOP_MIN;
+      const defMobile = !isDesktopUp;
       const defEl = (
         <HomeScreen onAnalyze={handleAnalyze} hasLastResult={!!lastResult} onViewLastResult={handleViewLastResult}
           user={user} onLogout={() => { clearAuth(); setUser(null); }} onSettings={handleSettings}
