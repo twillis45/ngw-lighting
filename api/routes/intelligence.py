@@ -44,6 +44,7 @@ from db.intelligence import (
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["intelligence"])
 
+from auth.dev_guard import get_dev_user
 from config.admin import is_admin
 
 try:
@@ -132,7 +133,7 @@ async def record_nailed_it(
 async def get_score(
     days: int = 30,
     force: bool = False,
-    user=Depends(get_optional_user),
+    user: Dict = Depends(get_dev_user),
 ):
     """
     Return current global intelligence score.
@@ -158,7 +159,7 @@ async def get_score(
 
 
 @router.get("/intelligence/score/history")
-async def get_score_history(days: int = 30, limit: int = 30):
+async def get_score_history(days: int = 30, limit: int = 30, user: Dict = Depends(get_dev_user)):
     """Score trend — last `limit` snapshots for the given window."""
     history = get_intelligence_history(limit=limit, window_days=days)
     return {"window_days": days, "history": history}
@@ -168,7 +169,7 @@ async def get_score_history(days: int = 30, limit: int = 30):
 async def get_pattern_scores(
     days: int = 30,
     force: bool = False,
-    user=Depends(get_optional_user),
+    user: Dict = Depends(get_dev_user),
 ):
     """
     Per-pattern intelligence scores + priority table.

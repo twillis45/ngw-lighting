@@ -98,18 +98,8 @@ PUBLIC_ROUTES: dict[str, str] = {
     "/api/paywall/adaptive-pricing": "Anonymous visitors are shown the paywall.",
 
     # ── REVIEW: reachable anonymously; flagged for a gating decision ──
-    "/api/intelligence/score": (
-        "REVIEW: aggregate engine-accuracy score. No PII, but it is internal "
-        "quality telemetry with no reason to be public. Candidate for gating."
-    ),
-    "/api/intelligence/score/history": (
-        "REVIEW: engine-accuracy trend over time. Same concern as /score, and "
-        "a trend reveals more than a point value. Candidate for gating."
-    ),
-    "/api/intelligence/patterns": (
-        "REVIEW: per-pattern engine scores and priority table. Internal "
-        "quality telemetry. Candidate for gating."
-    ),
+    # /api/intelligence/score, /score/history and /patterns were here and are
+    # now gated with get_dev_user — their only callers are ui/src/data/labApi.js.
     "/api/intelligence/sample-calc": "REVIEW: sample scoring calculation. Demo content?",
     "/api/paywall/impression/{impression_id}/converted": (
         "REVIEW: anonymous write keyed on a caller-supplied impression id with "
