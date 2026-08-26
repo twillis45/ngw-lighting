@@ -223,12 +223,38 @@ class TestEdgeCaseFlags:
         assert ecf.bw_processing is True
 
     def test_blown_highlights_flag(self):
-        ctr = _make_cue(confidence=0.7, ratio=10.0)
-        cr = _make_cue_report(populated_cues={"contrast_ratio": ctr})
+        """Fires on actual pixel clipping, not on a contrast-ratio proxy.
+
+        The flag used to key on contrast_ratio > 8.0, which false-fired on any
+        dramatic Rembrandt or Loop portrait — deep shadows plus bright skin push
+        the p95/p5 ratio past 8 without a single clipped pixel. The source of
+        truth is now TonalProcessingEstimation.highlights_clipped, set from the
+        histogram (p99 pegged at white with p99-p95 < 3).
+        """
+        tpe = _make_cue(confidence=0.7, highlights_clipped=True)
+        cr = _make_cue_report(populated_cues={"tonal_processing_estimation": tpe})
         fv = FaceValidation(face_detected=True)
         r = _make_result(cue_report=cr)
         ecf = _compute_edge_case_flags(r, fv)
         assert ecf.blown_highlights is True
+
+    def test_blown_highlights_does_not_fire_on_contrast_alone(self):
+        """Regression guard for the false-positive this flag was fixed to avoid.
+
+        A dramatic portrait with a high contrast ratio and no clipped highlights
+        must NOT be flagged. Without this, someone reinstating the old proxy
+        would turn the test above green and quietly reintroduce the bug.
+        """
+        ctr = _make_cue(confidence=0.7, ratio=10.0)
+        tpe = _make_cue(confidence=0.7, highlights_clipped=False)
+        cr = _make_cue_report(populated_cues={
+            "contrast_ratio": ctr,
+            "tonal_processing_estimation": tpe,
+        })
+        fv = FaceValidation(face_detected=True)
+        r = _make_result(cue_report=cr)
+        ecf = _compute_edge_case_flags(r, fv)
+        assert ecf.blown_highlights is False
 
     def test_outdoor_foliage_flag(self):
         esc = _make_cue(confidence=0.6, environment_hints=["dappled_foliage", "warm_overall"])
