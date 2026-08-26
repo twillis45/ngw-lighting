@@ -425,6 +425,28 @@ def _reconcile_source_quality(
         result.recommended_value = cv_quality
         result.recommendation_source = "cv"
         result.explanation = f"VLM ({vlm_str}) agrees with CV ({cv_quality})."
+    elif is_bw and cv_lower == "hard" and "soft" in vlm_lowers:
+        # ── Narrow, documented exception to CV precedence ──────────────
+        # The VL guardrail is that the VLM hints and must not silently
+        # outrank strong physical evidence. This is neither silent nor
+        # strong evidence: B&W processing measurably inflates apparent
+        # shadow edge hardness, so the CV reading is known-degraded in
+        # exactly this configuration, and the note says so on the record.
+        #
+        # Deliberately one-directional. B&W inflates hardness, so it only
+        # explains CV-hard-vs-VLM-soft. The reverse conflict — CV soft,
+        # VLM hard — has no such explanation and still goes to review.
+        result.agreement = "vlm_override"
+        result.recommended_value = "soft"
+        result.recommendation_source = "vlm"
+        result.explanation = (
+            f"CV measured {cv_quality} but the image is B&W, which inflates "
+            f"apparent shadow edge hardness. Resolving to the VLM reading ({vlm_str})."
+        )
+        result.notes.append(
+            "B&W processing can inflate apparent shadow edge hardness, "
+            "making soft light appear hard in CV measurements."
+        )
     else:
         result.agreement = "conflicting"
         result.recommended_value = cv_quality
@@ -432,11 +454,6 @@ def _reconcile_source_quality(
         result.explanation = (
             f"VLM expects {vlm_str} but CV measured {cv_quality}."
         )
-        if is_bw and cv_lower == "hard":
-            result.notes.append(
-                "B&W processing can inflate apparent shadow edge hardness, "
-                "making soft light appear hard in CV measurements."
-            )
 
     return result
 

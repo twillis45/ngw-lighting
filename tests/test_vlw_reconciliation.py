@@ -484,3 +484,33 @@ class TestConfidenceBoost:
 
         assert lr.confidence == 0.65  # original unchanged
         assert boosted.confidence > 0.65  # copy boosted
+
+
+class TestBWOverrideIsNarrow:
+    """The B&W override is a documented exception to CV precedence.
+
+    The VL guardrail says the VLM hints and must not silently outrank strong
+    physical evidence. These pin the exception to the one configuration where
+    the physical evidence is known-degraded, so it cannot widen by accident.
+    """
+
+    def test_reverse_conflict_still_goes_to_review(self):
+        """CV soft + VLM hard has no B&W explanation — B&W inflates hardness."""
+        vlm = _map_vlm_style("split")  # expects hard
+        result = _reconcile_source_quality(vlm, "soft", is_bw=True)
+        assert result.agreement == "conflicting"
+        assert result.recommendation_source == "human_review_required"
+
+    def test_colour_image_still_conflicts(self):
+        """Without B&W there is no reason to doubt the CV hardness reading."""
+        vlm = _map_vlm_style("clamshell")  # expects soft
+        result = _reconcile_source_quality(vlm, "hard", is_bw=False)
+        assert result.agreement == "conflicting"
+
+    def test_override_records_its_reason(self):
+        """A silent override would breach the guardrail; this one explains itself."""
+        vlm = _map_vlm_style("clamshell")
+        result = _reconcile_source_quality(vlm, "hard", is_bw=True)
+        assert result.agreement == "vlm_override"
+        assert "B&W" in result.explanation
+        assert any("inflate" in n for n in result.notes)
