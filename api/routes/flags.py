@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["flags"])
 
 FLAGS_PATH = Path("data/flags.json")
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 _flags_cache: Optional[Dict[str, Any]] = None
 
@@ -70,7 +70,7 @@ async def get_flags(
 @router.get("/flags/all")
 async def get_all_flags(user=Depends(get_current_user)):
     """Return full flag definitions including rollout %. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return load_flags()
 
@@ -87,7 +87,7 @@ async def update_flag_rollout(
     user=Depends(get_current_user),
 ):
     """Update a flag's rollout % and enabled state. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     if not 0 <= body.rollout_pct <= 100:
         raise HTTPException(status_code=400, detail="rollout_pct must be 0–100")

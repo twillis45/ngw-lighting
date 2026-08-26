@@ -16,6 +16,7 @@ import { trackEvent, getSessionId } from '../data/analytics';
 import { getPaywallConfig } from '../data/pricingStore';
 import { authHeaders } from '../data/authApi';
 import { savePlan } from '../data/planStore';
+import { isAdminEmail as isAdmin, DEV_MODE_EMAIL } from '../config/admin';
 
 const STORAGE_KEY = 'ngw_paid';
 const COUNT_KEY = 'ngw_analysis_count';
@@ -36,14 +37,10 @@ function isQaFreeMode(email) {
 }
 
 /** These accounts always have full access — no paywall, no prompts. */
-const ADMIN_EMAILS = [
-  'todd@toddwillisphoto.com',
-  'dev@localhost',
-];
-
 function isAdminEmail(email) {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
+  const e = email.trim().toLowerCase();
+  return e === DEV_MODE_EMAIL || isAdmin(e);
 }
 
 /**

@@ -14,12 +14,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { loadPlan, savePlan, meetsPlan } from '../data/planStore';
 
-const ADMIN_EMAILS = ['todd@toddwillisphoto.com'];
-
-function isAdminEmail(email) {
-  if (!email) return false;
-  return ADMIN_EMAILS.includes(email.trim().toLowerCase());
-}
+import { isAdminEmail } from '../config/admin';
 
 export default function usePlan(userEmail) {
   const isAdmin = isAdminEmail(userEmail);

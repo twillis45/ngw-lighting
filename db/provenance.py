@@ -29,7 +29,7 @@ Review flags (experts and internal only)
 Classification is ACCOUNT-BASED only — no behavioral heuristics.
 
 Internal account detection (in priority order):
-  1. Email in ADMIN_EMAILS (hardcoded set, e.g. todd@toddwillisphoto.com)
+  1. Email in the admin list (NGW_ADMIN_EMAILS env var — see config/admin.py)
   2. Email in NGW_DEV_EMAILS env var
   3. Email in NGW_EXPERT_EMAILS env var → expert_review
   4. Everything else → production
@@ -54,8 +54,8 @@ from db.database import get_db
 
 # ── Account lists ───────────────────────────────────────────────────────────────
 
-#: Hardcoded admin / internal accounts — always treated as internal
-ADMIN_EMAILS: frozenset[str] = frozenset({"todd@toddwillisphoto.com"})
+#: Admin / internal accounts — resolved from NGW_ADMIN_EMAILS (see config/admin.py)
+from config.admin import get_admin_emails
 
 
 def _env_emails(var: str) -> frozenset[str]:
@@ -64,8 +64,8 @@ def _env_emails(var: str) -> frozenset[str]:
 
 
 def get_internal_emails() -> frozenset[str]:
-    """Union of ADMIN_EMAILS + NGW_DEV_EMAILS."""
-    return ADMIN_EMAILS | _env_emails("NGW_DEV_EMAILS")
+    """Union of the admin list + NGW_DEV_EMAILS."""
+    return get_admin_emails() | _env_emails("NGW_DEV_EMAILS")
 
 
 def get_expert_emails() -> frozenset[str]:
