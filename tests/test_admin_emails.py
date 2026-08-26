@@ -242,3 +242,38 @@ def test_lab_analyze_no_longer_exists():
         "/api/lab/analyze still exists — two analyze routes will drift"
     )
     assert "/api/analyze" in paths
+
+
+# ── Plan-aware VLM routing ────────────────────────────────
+
+def test_free_account_gets_the_cv_only_read(monkeypatch):
+    """A free account must not trigger the paid VLM layer.
+
+    The lighting read is CV and costs ~nothing. The VLM adds description and is
+    the only part with a bill — and ~97% of the wall time. Free gets the fast one.
+    """
+    from api.routes.lab import wants_vlm
+    monkeypatch.delenv("NGW_ADMIN_EMAILS", raising=False)
+    monkeypatch.setenv("NGW_DEV_EMAILS", "someone-else@ngw-test.com")
+    _ensure_user("free-user@ngw-test.com", "Free User")
+    assert wants_vlm("free-user@ngw-test.com") is False
+
+
+def test_internal_accounts_always_get_the_vlm(monkeypatch):
+    """Curation needs the semantic hints regardless of plan."""
+    from api.routes.lab import wants_vlm
+    monkeypatch.setenv("NGW_DEV_EMAILS", "curator@ngw-test.com")
+    assert wants_vlm("curator@ngw-test.com") is True
+
+
+def test_admin_accounts_get_the_vlm(monkeypatch):
+    from api.routes.lab import wants_vlm
+    monkeypatch.setenv("NGW_ADMIN_EMAILS", "boss@ngw-test.com")
+    assert wants_vlm("boss@ngw-test.com") is True
+
+
+def test_anonymous_never_triggers_a_paid_call():
+    """Belt and braces: the route already 401s, but the helper must not spend."""
+    from api.routes.lab import wants_vlm
+    assert wants_vlm(None) is False
+    assert wants_vlm("") is False

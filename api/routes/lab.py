@@ -60,6 +60,26 @@ router = APIRouter(prefix="/lab", tags=["lab"])
 analyze_router = APIRouter(tags=["analyze"])
 
 
+def wants_vlm(email: Optional[str]) -> bool:
+    """Whether this caller's plan includes the VLM layer.
+
+    The lighting read — pattern, key direction, elevation, catchlights, shadow
+    geometry — is CV in our own engine and costs ~nothing. The VLM adds a
+    descriptive layer: subject, skin tone, styling, mood. It is the only part
+    with a bill attached, and measured on an M3 Max it is also ~97% of the wall
+    time (CV-only 0.7s, full 28.1s).
+
+    So free accounts get the fast, free read and paid accounts get the full one.
+    Internal accounts always get it — curation needs the hints.
+    """
+    if not email:
+        return False
+    if is_admin_or_dev(email):
+        return True
+    from auth.plan_guard import _user_plan
+    return _user_plan(email) != "free"
+
+
 def is_admin_or_dev(email: Optional[str]) -> bool:
     """True for accounts that are not customers.
 
@@ -459,6 +479,7 @@ async def lab_analyze(
             status_code=403,
             detail="debug output is restricted to internal accounts.",
         )
+    _wants_vlm = wants_vlm(user.get("email"))
     check_rate_limit("lab_analyze", request, limit=10, window=60)
     content = await _validate_upload(image)
     # Save uploaded file with canonical name — original filename preserved separately
@@ -488,7 +509,7 @@ async def lab_analyze(
         loop = asyncio.get_event_loop()
         future = loop.run_in_executor(
             None,
-            partial(analyze_image, str(fpath), run_extended=True, run_vlm=True, debug=debug,
+            partial(analyze_image, str(fpath), run_extended=True, run_vlm=_wants_vlm, debug=debug,
                     analysis_id_override=analysis_id,
                     sensitivity=sensitivity if sensitivity in ('strict', 'balanced', 'flexible') else 'balanced'),
         )
