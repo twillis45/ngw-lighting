@@ -3215,7 +3215,13 @@ def route_analysis_mode(result: "AnalysisResult") -> Tuple[AnalysisMode, str, fl
         corroborators: List[str] = []
         if rim_lb:
             corroborators.append("rim_load_bearing")
-        if ambient >= 0.65:
+        # Threshold is 0.50, matching this function's own docstring and the
+        # live check at the BOUNDED gate below. It was 0.65, which could never
+        # fire: ambient_contamination is set to exactly 0.6 when
+        # window_light_gradient is flagged and 0.0 otherwise (see
+        # compute_scene_complexity), so 0.65 put the bar above the only value
+        # the signal can take and made this corroborator unreachable.
+        if ambient >= 0.50:
             corroborators.append(f"ambient_contamination={ambient:.2f}")
         if shadow_conflict >= 0.50 and catchlight_reliable:
             corroborators.append(
