@@ -130,12 +130,13 @@ export async function analyzeImage(file, { debug = false, signal } = {}) {
     }
   } catch { /* proceed without */ }
   const query = params.toString() ? `?${params}` : '';
-  return labFetch(`/analyze${query}`, { method: 'POST', body: form, signal });
+  // /api/analyze — customer-facing, NOT /api/lab. Same handler, different mount.
+  return coreFetch(`/analyze${query}`, { method: 'POST', body: form, signal });
 }
 
 /** Cancel an in-flight analysis by id. */
 export async function cancelAnalysis(analysisId) {
-  return labFetch(`/analyze/cancel/${analysisId}`, { method: 'POST' });
+  return coreFetch(`/analyze/cancel/${analysisId}`, { method: 'POST' });
 }
 
 

@@ -56,6 +56,7 @@ from api.routes.user_data import router as user_data_router
 from api.routes.admin import router as admin_router
 from api.routes.diagnostics import router as diagnostics_router
 from api.routes.lab import router as lab_router
+from api.routes.lab import analyze_router
 from api.routes.lab_benchmarks import router as lab_benchmarks_router
 from api.routes.lab_signals import router as lab_signals_router
 from api.routes.exec_dashboard import router as exec_dashboard_router
@@ -298,6 +299,7 @@ app.include_router(user_data_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
 app.include_router(diagnostics_router, prefix="/api")
 app.include_router(lab_router, prefix="/api")
+app.include_router(analyze_router, prefix="/api")   # customer-facing /api/analyze
 app.include_router(lab_benchmarks_router, prefix="/api/lab")
 app.include_router(exec_dashboard_router, prefix="/api")
 app.include_router(lighting_dna_router, prefix="/api")

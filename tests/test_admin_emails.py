@@ -170,3 +170,75 @@ def test_lab_curator_routes_stay_gated(monkeypatch):
     assert client.get("/api/lab/status", headers=auth).status_code == 403
     assert client.get("/api/lab/gold-set", headers=auth).status_code == 403
     assert client.get("/api/lab/coverage-map", headers=auth).status_code == 403
+
+
+# ── Customer analyze route ────────────────────────────────
+
+def _tiny_jpeg_bytes():
+    return _tiny_jpeg()
+
+
+def test_analyze_requires_sign_in(monkeypatch):
+    """Anonymous callers get 401, not a free analysis.
+
+    The meter and the free-tier allowance key on a user id; an anonymous
+    caller cannot be metered.
+    """
+    monkeypatch.delenv("NGW_ADMIN_EMAILS", raising=False)
+    resp = client.post(
+        "/api/analyze",
+        files={"image": ("photo.jpg", _tiny_jpeg(), "image/jpeg")},
+    )
+    assert resp.status_code == 401, f"expected 401, got {resp.status_code}: {resp.text}"
+
+
+def test_analyze_reachable_by_a_normal_signed_in_user(monkeypatch):
+    """A paying customer must be able to analyze a photo.
+
+    This is the defect the route move fixes: the Studio shell's only analyze
+    path was /api/lab/analyze (get_dev_user), so a signed-in non-dev user got
+    403 and the product did not run for them at all.
+    """
+    monkeypatch.setenv("NGW_DEV_EMAILS", "someone-else@ngw-test.com")
+    monkeypatch.delenv("NGW_ADMIN_EMAILS", raising=False)
+
+    user = _ensure_user("analyze-customer@ngw-test.com", "Customer")
+    token = create_access_token(user["id"])
+
+    resp = client.post(
+        "/api/analyze",
+        files={"image": ("photo.jpg", _tiny_jpeg(), "image/jpeg")},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code != 401, "signed-in user was rejected as anonymous"
+    assert resp.status_code != 403, (
+        f"signed-in customer got 403 — the curator gate is back: {resp.text}"
+    )
+
+
+def test_debug_dumps_are_internal_only(monkeypatch):
+    """debug=true returns complete model dumps. A customer must not get them."""
+    monkeypatch.setenv("NGW_DEV_EMAILS", "someone-else@ngw-test.com")
+    monkeypatch.delenv("NGW_ADMIN_EMAILS", raising=False)
+
+    user = _ensure_user("analyze-customer2@ngw-test.com", "Customer 2")
+    token = create_access_token(user["id"])
+
+    resp = client.post(
+        "/api/analyze?debug=true",
+        files={"image": ("photo.jpg", _tiny_jpeg(), "image/jpeg")},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 403, (
+        f"expected 403 for debug as a customer, got {resp.status_code}: {resp.text}"
+    )
+
+
+def test_lab_analyze_no_longer_exists():
+    """One route, one truth. The old curator-gated path must be gone, not aliased."""
+    from main import app
+    paths = {r.path for r in app.routes if getattr(r, "methods", None)}
+    assert "/api/lab/analyze" not in paths, (
+        "/api/lab/analyze still exists — two analyze routes will drift"
+    )
+    assert "/api/analyze" in paths

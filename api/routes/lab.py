@@ -52,6 +52,25 @@ from db.database import (
 
 router = APIRouter(prefix="/lab", tags=["lab"])
 
+#: Customer-facing analysis. Mounted at /api, NOT /api/lab.
+#: The Studio shell's only analyse path used to be /api/lab/analyze, which is
+#: get_dev_user — so a paying customer could not analyse a photo at all. These
+#: are the SAME handler functions, re-mounted; there is deliberately no second
+#: implementation to drift from.
+analyze_router = APIRouter(tags=["analyze"])
+
+
+def is_admin_or_dev(email: Optional[str]) -> bool:
+    """True for accounts that are not customers.
+
+    Reuses get_internal_emails() — the same set that excludes a session from
+    metrics, cohorts and conversion — so "who is internal" has one definition.
+    """
+    if not email:
+        return False
+    from db.provenance import get_internal_emails
+    return email.strip().lower() in get_internal_emails()
+
 UPLOAD_DIR = DATA_DIR / "uploads" / "lab"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -398,21 +417,39 @@ async def lab_face_preflight(
 
 # ── Workbench: Full-fidelity Analysis ─────────────────────
 
-@router.post("/analyze")
+@analyze_router.post("/analyze")
 async def lab_analyze(
     request: Request,
     image: UploadFile = File(...),
-    debug: bool = Query(False, description="Generate debug overlay image"),
+    debug: bool = Query(False, description="Generate debug overlay image (internal only)"),
     delete_after: bool = Query(False, description="Delete uploaded image after analysis (privacy mode)"),
     sensitivity: str = Query("balanced", description="Pattern sensitivity: strict, balanced, flexible"),
-    user: Dict = Depends(get_dev_user),
+    user: Optional[Dict] = Depends(get_optional_user),
 ):
     """Run full pipeline analysis on an uploaded image.
+
+    Requires a signed-in account: the analysis meter and the free-tier
+    allowance are keyed on a user id, and an anonymous caller cannot be
+    metered. ``debug=true`` returns complete model dumps and is restricted
+    to internal accounts.
+
 
     Returns complete model dumps for debugging/review.
     When debug=True, also generates a visual debug overlay showing
     all detected signals and returns the overlay URL.
     """
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Sign in to analyze a photo.",
+        )
+    # debug=true returns complete model dumps — curator/dev material, never a customer's.
+    # debug=true returns complete model dumps — curator/dev material, never a customer's.
+    if debug and not is_admin_or_dev(user.get("email")):
+        raise HTTPException(
+            status_code=403,
+            detail="debug output is restricted to internal accounts.",
+        )
     check_rate_limit("lab_analyze", request, limit=10, window=60)
     content = await _validate_upload(image)
     # Save uploaded file with canonical name — original filename preserved separately
@@ -1040,7 +1077,7 @@ async def fetch_image_url_proxy(
         raise HTTPException(status_code=400, detail=f"Could not reach that URL: {e}")
 
 
-@router.post("/analyze/cancel/{analysis_id}")
+@analyze_router.post("/analyze/cancel/{analysis_id}")
 async def cancel_analysis(
     analysis_id: str,
     user: Dict = Depends(get_dev_user),
@@ -1058,7 +1095,7 @@ async def cancel_analysis(
     return {"cancelled": False, "analysis_id": analysis_id, "detail": "Not in-flight (already finished or unknown)"}
 
 
-@router.get("/analyze/status")
+@analyze_router.get("/analyze/status")
 async def analyze_status(user: Dict = Depends(get_dev_user)):
     """Return the list of currently in-flight analysis ids."""
     with _inflight_lock:
