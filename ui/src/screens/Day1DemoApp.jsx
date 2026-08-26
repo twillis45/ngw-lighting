@@ -109,7 +109,7 @@ function wizardPayloadToShootMatch(payload) {
  * Studio Matte design — matches Figma prototype (file: YQgGd8KZyZoXzZwJV7p4b6, Studio Matte Theme page)
  * Flow: Home → Processing → Result (High/Low confidence) → Save Setup
  *
- * Wired to real analysis engine: POST /api/lab/analyze
+ * Wired to real analysis engine: POST /api/analyze
  */
 
 /**

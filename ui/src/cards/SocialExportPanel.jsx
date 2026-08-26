@@ -94,7 +94,7 @@ function parseCatchlightPresence(str) {
 /**
  * Build a lights array from real engine inference fields when diagram_spec is absent.
  *
- * The lab API (/api/lab/analyze) does not return diagram_spec. It does return
+ * The analyze API (/api/analyze) does not return diagram_spec. It does return
  * lighting_inference and reconstruction which carry the same underlying data in
  * different keys. This function assembles the shape that socialCanvas render
  * functions expect. Only truthful omission — no invented values.

@@ -75,7 +75,16 @@ UPLOAD_DIR = DATA_DIR / "uploads" / "lab"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 _MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
-ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("NGW_ANALYSIS_TIMEOUT", "180"))
+#: Default 90s, not 180s, because Cloudflare sits in front of Render in
+#: production (verified: `server: cloudflare`, cf-ray on every response) and its
+#: default origin timeout is 100s. At 180s an analysis between 100s and 180s
+#: returned a Cloudflare 524 to the caller while this server kept working and
+#: succeeded — a confusing gateway error instead of an honest one. Failing at 90s
+#: means the 504 below is ours, and says something useful.
+#: Measured Aug 26 2026 on an M3 Max: CV-only 0.7s, full pipeline with VLM 28.1s.
+#: Render's standard plan is slower, so 90s leaves real headroom; raise
+#: NGW_ANALYSIS_TIMEOUT only alongside a Cloudflare origin-timeout increase.
+ANALYSIS_TIMEOUT_SECONDS = int(os.getenv("NGW_ANALYSIS_TIMEOUT", "90"))
 
 # ── In-flight analysis tracking (cancel support) ─────────────
 _inflight_lock = threading.Lock()
@@ -495,7 +504,7 @@ async def lab_analyze(
             raise HTTPException(
                 status_code=504,
                 detail=f"Analysis timed out after {ANALYSIS_TIMEOUT_SECONDS}s. "
-                       "Try a smaller image or increase NGW_ANALYSIS_TIMEOUT.",
+                       "Try again, or use a smaller image.",
             )
         except asyncio.CancelledError:
             raise HTTPException(status_code=499, detail="Analysis cancelled.")
