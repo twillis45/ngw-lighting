@@ -33,7 +33,7 @@ from engine.learning.failure_classifier import classify_failure
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["failures"])
 
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 # Ensure tables exist at import time (same pattern as other routers)
 try:
@@ -190,7 +190,7 @@ async def failure_stats(
     user=Depends(get_current_user),
 ):
     """Per-pattern failure breakdown. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return {"days": days, "patterns": get_failure_stats(days)}
 
@@ -204,6 +204,6 @@ async def feedback_loop(
     Feedback loop metrics: MISSED_IT rate, NAILED_IT rate,
     high-confidence failure breakdown.  Admin only.
     """
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return get_feedback_loop_stats(days)

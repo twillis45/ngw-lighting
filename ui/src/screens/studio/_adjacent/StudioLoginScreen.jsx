@@ -104,7 +104,13 @@ function InsetField({
       return () => clearTimeout(t);
     }
   }, [autoFocus]);
-  const showError = !!fieldError && (touched || !focused);
+  // Show a field error only after the user has left the field having typed
+  // nothing valid — never on first paint. `touched` is set on blur, so
+  // `touched || !focused` was true before the input had ever been focused,
+  // and every field rendered "required" the moment the form appeared.
+  // The `!focused` half still earns its place: it hides the error again
+  // while the user is back in the field fixing it.
+  const showError = !!fieldError && touched && !focused;
   const errorRing = showError ? `, 0px 0px 0px 1px rgba(230,85,85,0.55)` : '';
   return (
     <div style={{ marginBottom: 16 }}>

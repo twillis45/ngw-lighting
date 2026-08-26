@@ -10,6 +10,10 @@ import {
   renderStoryTemplate,
   renderCarouselSlide,
   drawSignalCard,
+  drawSignalCardB,
+  drawSignalCardC,
+  drawSignalCardD,
+  drawSignalCardE,
   drawBlueprintCard,
   downloadCanvas,
   downloadReel,
@@ -20,6 +24,14 @@ import { getToken } from '../data/authApi';
 import { getSessionId } from '../data/analytics';
 import CorrectionSheet from '../screens/studio/_core/components/CorrectionSheet';
 import { startStripeCheckout } from '../data/stripeCheckout';
+
+// Test-only variant selector via ?lc_variant=b|c|d|e — never promoted without explicit approval
+const _lcv = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('lc_variant');
+const _signalFn = _lcv === 'b' ? drawSignalCardB
+  : _lcv === 'c' ? drawSignalCardC
+  : _lcv === 'd' ? drawSignalCardD
+  : _lcv === 'e' ? drawSignalCardE
+  : drawSignalCard;
 
 const FONT_SMOOTH = { WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' };
 
@@ -377,7 +389,7 @@ export default function SocialExportPanel({
       const patternReasoning = result?.sections?.pattern?.reasoning
         || result?._raw?.reconstruction?.reconstruction_narrative
         || '';
-      drawSignalCard(ctx, { ...opts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment, progress: animProgress }, S);
+_signalFn(ctx, { ...opts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment, progress: animProgress }, S);
     } else if (template === 'story') {
       renderStoryTemplate(ctx, { ...opts, setupSummary: result?.mood ? `${result.mood} lighting` : '' });
     } else if (template === 'summary') {
@@ -403,7 +415,7 @@ export default function SocialExportPanel({
       const miniOpts = { photo: photoRef.current, diagramCanvas, pattern, confidence, lights, camera, format: miniFmt, branded, environment, progress: 1 };
       if (t.id === 'bts') {
         const patternReasoning = result?.sections?.pattern?.reasoning || result?._raw?.reconstruction?.reconstruction_narrative || '';
-        drawSignalCard(ctx, { ...miniOpts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment, progress: 1 }, dims.cw / 1080);
+_signalFn(ctx, { ...miniOpts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment, progress: 1 }, dims.cw / 1080);
       } else if (t.id === 'story') {
         renderStoryTemplate(ctx, { ...miniOpts, setupSummary: result?.mood ? `${result.mood} lighting` : '' });
       } else if (t.id === 'summary') {
@@ -449,7 +461,7 @@ export default function SocialExportPanel({
         const patternReasoning = result?.sections?.pattern?.reasoning
           || result?._raw?.reconstruction?.reconstruction_narrative
           || '';
-        drawSignalCard(eCtx, { ...opts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment }, S);
+_signalFn(eCtx, { ...opts, imageEl: photoRef.current, patternReasoning, confEvidence, judgment }, S);
       } else if (template === 'story') renderStoryTemplate(eCtx, { ...opts, setupSummary: result?.mood ? `${result.mood} lighting` : '' });
       else if (template === 'summary') {
         const S = fmt.w / 1080;

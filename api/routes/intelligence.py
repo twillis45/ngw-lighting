@@ -44,7 +44,7 @@ from db.intelligence import (
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["intelligence"])
 
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 try:
     init_intelligence_tables()
@@ -84,7 +84,7 @@ def _require_admin(user: dict) -> None:
     # NGW_DEV_MODE=1 bypasses admin gate for local development
     if os.getenv("NGW_DEV_MODE", "").strip().lower() in ("1", "true", "yes"):
         return
-    if not user or user.get("email") not in ADMIN_EMAILS:
+    if not user or not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
 
 

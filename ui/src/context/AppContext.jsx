@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useCallback } from 'react';
 import { navHaptic, selectHaptic, successHaptic, warnHaptic } from '../utils/haptics';
+import { primaryAdminEmail } from '../config/admin';
 
 /* -- default light factory (kept for backward compat) -- */
 
@@ -691,7 +692,7 @@ function _buildDemoInit(devModeUser) {
       // Use admin user so AdminCorrectionPanel renders; pass ?admin=0 to see user panel instead
       const adminUser = params.get('admin') === '0'
         ? (devModeUser || null)
-        : { id: 'dev-admin', email: 'todd@toddwillisphoto.com', username: 'Todd Willis' };
+        : { id: 'dev-admin', email: primaryAdminEmail(), username: 'Todd Willis' };
       return {
         ...base,
         user: adminUser,

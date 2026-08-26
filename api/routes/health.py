@@ -24,12 +24,12 @@ router = APIRouter(tags=["health"])
 _BOOT_EPOCH = time.time()
 
 import os
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 def _require_admin(user: dict) -> None:
     if os.getenv("NGW_DEV_MODE", "").strip().lower() in ("1", "true", "yes"):
         return
-    if not user or user.get("email") not in ADMIN_EMAILS:
+    if not user or not is_admin(user.get("email")):
         from fastapi import HTTPException
         raise HTTPException(status_code=403, detail="Admin only")
 

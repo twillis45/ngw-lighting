@@ -10,6 +10,7 @@ import { setFlag } from './modes/featureFlags';
 import './theme/tokens.css';
 import './styles/app.css';
 import './components/shared/shared-components.css';
+import { primaryAdminEmail } from './config/admin';
 
 /* ── Sentry browser SDK ─────────────────────────────────────────── */
 Sentry.init({
@@ -72,7 +73,7 @@ try {
   const _isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
   if ((import.meta.env.DEV || _isLocalhost) && params.get('devmode') === '1') {
     setFlag('enable_lab', true);
-    _devModeUser = { id: 'dev-mode', email: 'todd@toddwillisphoto.com', username: 'Dev Mode' };
+    _devModeUser = { id: 'dev-mode', email: primaryAdminEmail(), username: 'Dev Mode' };
     localStorage.setItem('ngw_auth_user', JSON.stringify(_devModeUser));
     localStorage.setItem('ngw_paid', 'true');
     params.delete('devmode');

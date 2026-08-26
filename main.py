@@ -371,11 +371,24 @@ async def security_and_cache_headers(request: Request, call_next):
         (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; "
-            "style-src 'self' 'unsafe-inline'; "
+            # worker-src was unset, so it fell back to script-src, which has no
+            # blob: — every Worker created from a blob URL was blocked. The export
+            # path (socialCanvas, exportSvg, SocialExportPanel) builds blob URLs.
+            "worker-src 'self' blob:; "
+            # Google Fonts needs the stylesheet host here and the font files in
+            # font-src below; without both, Inter never loads and the page
+            # silently falls back to system faces.
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "img-src 'self' data: blob: https:; "
-            "connect-src 'self' https://api.stripe.com https://js.stripe.com https://o*.ingest.sentry.io; "
+            # "o*.ingest.sentry.io" was invalid twice over: a CSP host wildcard
+            # must be a leading "*." label, and the real host carries a region
+            # segment (o…​.ingest.US.sentry.io). An invalid source makes the
+            # browser drop it, so Sentry was blocked outright — the tool that
+            # reports errors could not report.
+            "connect-src 'self' https://api.stripe.com https://js.stripe.com "
+            "https://*.ingest.sentry.io https://*.ingest.us.sentry.io; "
             "frame-src https://js.stripe.com https://hooks.stripe.com; "
-            "font-src 'self' data:; "
+            "font-src 'self' data: https://fonts.gstatic.com; "
             "object-src 'none'; "
             "base-uri 'self';"
         ),

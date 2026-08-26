@@ -24,7 +24,7 @@ from db.experiments import (
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["experiments"])
 
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 
 @router.get("/experiments/metrics")
@@ -33,7 +33,7 @@ async def all_metrics(
     user=Depends(get_current_user),
 ):
     """All active experiment metrics. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return {"days": days, "experiments": get_all_experiment_metrics(days)}
 
@@ -45,7 +45,7 @@ async def flag_metrics(
     user=Depends(get_current_user),
 ):
     """Single flag metrics. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return get_experiment_metrics(flag_name, days)
 
@@ -59,7 +59,7 @@ async def candidates(
     Decision engine: evaluate all experiments and return promote/rollback/hold candidates.
     Admin only.
     """
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=403, detail="Admin only")
     return {"days": days, "candidates": generate_candidates(days)}
 

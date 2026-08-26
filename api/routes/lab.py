@@ -30,6 +30,7 @@ from fastapi.responses import FileResponse, Response as FastAPIResponse
 from pydantic import BaseModel, Field
 
 from auth.dev_guard import get_dev_user
+from auth.security import get_optional_user
 from auth.rate_limit import check_rate_limit
 from engine.request_context import set_request_context, clear_request_context
 from db.database import (
@@ -227,11 +228,18 @@ async def lab_status(user: Dict = Depends(get_dev_user)):
 
 # ── Fast face preflight — returns face_box + catchlights in <2s ─────────
 
+# ── PUBLIC ROUTE — the one exception in this router ──────────
+# Every other /lab route is curator-only via get_dev_user. This one is not:
+# the customer-facing Studio shell calls it to drive the processing animation
+# (ui/src/screens/studio/_core/useLightingRead.js), and that fetch carries no
+# Authorization header, so a gated dependency returns 401 before the paywall is
+# ever evaluated. It is CV-only — no VLM, no pipeline, no DB write — and stays
+# rate-limited below. Do NOT copy this pattern to a new /lab route.
 @router.post("/face-preflight")
 async def lab_face_preflight(
     request: Request,
     image: UploadFile = File(...),
-    user: Dict = Depends(get_dev_user),
+    user: Optional[Dict] = Depends(get_optional_user),
 ):
     """Fast CV-only pass: face bounding box + catchlight positions.
 

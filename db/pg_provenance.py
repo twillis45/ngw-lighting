@@ -45,7 +45,7 @@ from typing import Any, Dict, List, Optional
 
 # ── Account lists (same logic as db/provenance.py) ───────────────────────────
 
-ADMIN_EMAILS: frozenset[str] = frozenset({"todd@toddwillisphoto.com"})
+from config.admin import get_admin_emails
 
 
 def _env_emails(var: str) -> frozenset[str]:
@@ -54,7 +54,7 @@ def _env_emails(var: str) -> frozenset[str]:
 
 
 def get_internal_emails() -> frozenset[str]:
-    return ADMIN_EMAILS | _env_emails("NGW_DEV_EMAILS")
+    return get_admin_emails() | _env_emails("NGW_DEV_EMAILS")
 
 
 def get_expert_emails() -> frozenset[str]:

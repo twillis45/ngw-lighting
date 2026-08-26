@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["analytics"])
 
-ADMIN_EMAILS = {"todd@toddwillisphoto.com"}
+from config.admin import is_admin
 
 
 class TrackBody(BaseModel):
@@ -76,7 +76,7 @@ async def analytics_stats(
     user=Depends(get_current_user),
 ):
     """Return aggregated analytics stats. Admin only."""
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
     return get_all_stats(days=days)
 
@@ -92,7 +92,7 @@ async def analytics_dashboard(
 
     origin: 'production' | 'internal' | 'all' (default: production via exclusion flags)
     """
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
     from db.analytics import (
         get_kpi_summary,
@@ -133,7 +133,7 @@ async def analytics_provenance(
     origin: 'production' | 'internal' | 'all' — scopes the exclusion counts
     (the by_origin breakdown is always the full picture regardless of filter).
     """
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
     from db.provenance import get_provenance_summary
     return get_provenance_summary(days=days, origin=origin)
@@ -191,7 +191,7 @@ async def promote_session_for_learning(
     Only sessions with eligible_for_reference_review=True may be promoted.
     Admin only.
     """
-    if user.get("email") not in ADMIN_EMAILS:
+    if not is_admin(user.get("email")):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
     from db.provenance import get_session_provenance, promote_session_for_learning

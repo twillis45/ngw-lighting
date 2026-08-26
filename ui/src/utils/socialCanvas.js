@@ -850,14 +850,14 @@ export function renderCarouselSlide(ctx, {
     y += px(42, S);
   }
 
-  // Modifier — role-colored, fades in
+  // Modifier — white, role-color glow only. Role color is accent (role label), not hierarchy.
   if (mod) {
     const modA = sect(progress, 0.44, 0.20);
     ctx.save();
     ctx.globalAlpha = modA;
     ctx.shadowColor = rc; ctx.shadowBlur = px(8, S);
     ctx.font        = `600 ${f(52, S)} ${FONT}`;
-    ctx.fillStyle   = rc; ctx.textAlign = 'center';
+    ctx.fillStyle   = TEXT_MID; ctx.textAlign = 'center';
     ctx.fillText(mod, w / 2, y);
     ctx.restore();
     y += px(68, S);
@@ -1349,6 +1349,502 @@ export function drawSignalCard(ctx, data, S) {
   drawGrain(ctx, w, h);
 }
 
+
+// ── EXPORT VARIANT FUNCTIONS (test/real-dispatch-export-variants) ─────────────
+// Variants B–E are test-only. Wire via ?lc_variant=b|c|d|e URL param.
+// Do not expose in production unless explicitly promoted.
+
+// Variant B — Two-Zone Proof Receipt
+// Larger portrait (63%), gradient bridge, setup block with small diagram cue.
+export function drawSignalCardB(ctx, data, S) {
+  const { pattern, confidence = 0, imageEl: photo, branded = true,
+          judgment = null, lights = [], confEvidence = '' } = data;
+
+  const w        = ctx.canvas.width;
+  const h        = ctx.canvas.height;
+  const pad      = px(28, S);
+  const photoH   = Math.round(h * 0.63);
+  const pct      = Math.round((confidence || 0) * 100);
+  const patUpper = (pattern || 'UNKNOWN').toUpperCase().replace(/_/g, ' ');
+  const kl       = lights.find(l => l.role === 'key') || lights[0] || null;
+  const mod      = kl?.modifier_label || '';
+  const pos      = (kl?.position_label || '').replace(/-/g, ' ').toUpperCase();
+  const cc       = confColor(confidence);
+
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, w, h);
+
+  if (photo && photo.complete && photo.naturalWidth > 0) {
+    const crop = smartCrop(photo, null, w, photoH);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, photoH); ctx.clip();
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, photoH);
+    ctx.restore();
+    drawPhotoFade(ctx, photoH, w, px(130, S));
+  }
+
+  let y = photoH + px(22, S);
+
+  // Row 1: NGW LIGHT READ · pct
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.36)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('NGW LIGHT READ', pad, y);
+  ctx.font = `600 ${f(14, S)} ${FONT}`; ctx.letterSpacing = '0px';
+  ctx.fillStyle = cc; ctx.textAlign = 'right';
+  ctx.fillText(`${pct}%`, w - pad, y);
+  ctx.restore();
+  y += px(24, S);
+
+  // Row 2: REMBRANDT (dominant)
+  let sz = patUpper.replace(/\s/g, '').length <= 8 ? 48 : patUpper.replace(/\s/g, '').length <= 12 ? 40 : 33;
+  ctx.save();
+  ctx.font = `700 ${f(sz, S)} ${FONT}`; ctx.letterSpacing = `${px(3, S)}px`;
+  ctx.fillStyle = TEXT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  while (sz > 20 && ctx.measureText(patUpper).width > w - pad * 2) { sz -= 2; ctx.font = `700 ${f(sz, S)} ${FONT}`; }
+  ctx.fillText(patUpper, pad, y);
+  ctx.restore();
+  y += px(sz + 10, S);
+
+  // Evidence line
+  if (confEvidence) {
+    ctx.save();
+    ctx.font = `400 ${f(13, S)} ${FONT}`; ctx.letterSpacing = `${px(0.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.55)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`Confirmed by ${confEvidence}`, pad, y);
+    ctx.restore();
+    y += px(22, S);
+  }
+
+  y += px(10, S);
+
+  // KEY LIGHT block — left column; NAILED IT — right column
+  const colR    = w - pad;
+  const colMid  = Math.round(w * 0.58);
+
+  // KEY LIGHT header
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.32)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('KEY LIGHT', pad, y);
+  ctx.restore();
+
+  const setupY = y + px(16, S);
+
+  // Modifier
+  if (mod) {
+    ctx.save();
+    ctx.font = `700 ${f(20, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+    ctx.fillStyle = TEXT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(mod.toUpperCase(), pad, setupY);
+    ctx.restore();
+  }
+
+  // Position
+  if (pos) {
+    ctx.save();
+    ctx.font = `500 ${f(12, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.55)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(pos, pad, setupY + px(24, S));
+    ctx.restore();
+  }
+
+  // Light count
+  if (lights.length > 0) {
+    ctx.save();
+    ctx.font = `500 ${f(11, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.40)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`${lights.length} ${lights.length === 1 ? 'LIGHT' : 'LIGHTS'}`, pad, setupY + px(44, S));
+    ctx.restore();
+  }
+
+  // NAILED IT (right of KEY LIGHT block)
+  if (judgment === 'nailed' || judgment === 'close') {
+    const jLabel = judgment === 'nailed' ? 'NAILED IT' : 'CLOSE READ';
+    const jColor = judgment === 'nailed' ? 'rgba(72,186,136,0.88)' : 'rgba(132,158,184,0.60)';
+    ctx.save();
+    ctx.font = `700 ${f(30, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = jColor; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillText(jLabel, colR, y);
+    ctx.restore();
+    ctx.save();
+    ctx.font = `500 ${f(11, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.48)'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillText('CONFIRMED READ', colR, y + px(38, S));
+    ctx.restore();
+  }
+
+  y = setupY + px(66, S);
+
+  // Small direction diagram (bottom right corner, 180px wide)
+  if (lights.length > 0) {
+    const dw = px(180, S), dh = px(140, S);
+    const dx = w - pad - dw, dy = h - px(50, S) - dh;
+    if (dy > y) drawOverheadDiagram(ctx, dx, dy, dw, dh, lights, S);
+  }
+
+  // Footer
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  if (branded) ctx.fillText('LIGHT READ · NGW', w - pad, h - px(22, S));
+  ctx.restore();
+
+  drawGrain(ctx, w, h);
+}
+
+// Variant C — Text-First Proof Receipt
+// Dominant typography, no diagram, cleanest shareable layout.
+export function drawSignalCardC(ctx, data, S) {
+  const { pattern, confidence = 0, imageEl: photo, branded = true,
+          judgment = null, lights = [], confEvidence = '' } = data;
+
+  const w        = ctx.canvas.width;
+  const h        = ctx.canvas.height;
+  const pad      = px(28, S);
+  const photoH   = Math.round(h * 0.60);
+  const pct      = Math.round((confidence || 0) * 100);
+  const patUpper = (pattern || 'UNKNOWN').toUpperCase().replace(/_/g, ' ');
+  const kl       = lights.find(l => l.role === 'key') || lights[0] || null;
+  const mod      = kl?.modifier_label || '';
+  const pos      = (kl?.position_label || '').replace(/-/g, ' ').toUpperCase();
+  const cc       = confColor(confidence);
+
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, w, h);
+
+  if (photo && photo.complete && photo.naturalWidth > 0) {
+    const crop = smartCrop(photo, null, w, photoH);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, photoH); ctx.clip();
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, photoH);
+    ctx.restore();
+    drawPhotoFade(ctx, photoH, w, px(120, S));
+  }
+
+  let y = photoH + px(22, S);
+
+  // Header row: NGW LIGHT READ left · pct right
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.36)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('NGW LIGHT READ', pad, y);
+  ctx.font = `600 ${f(14, S)} ${FONT}`; ctx.letterSpacing = '0px';
+  ctx.fillStyle = cc; ctx.textAlign = 'right';
+  ctx.fillText(`${pct}%`, w - pad, y);
+  ctx.restore();
+  y += px(26, S);
+
+  // REMBRANDT — 52pt dominant hero
+  let sz = patUpper.replace(/\s/g, '').length <= 8 ? 52 : patUpper.replace(/\s/g, '').length <= 12 ? 44 : 36;
+  ctx.save();
+  ctx.font = `700 ${f(sz, S)} ${FONT}`; ctx.letterSpacing = `${px(3, S)}px`;
+  ctx.fillStyle = TEXT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  while (sz > 20 && ctx.measureText(patUpper).width > w - pad * 2) { sz -= 2; ctx.font = `700 ${f(sz, S)} ${FONT}`; }
+  ctx.fillText(patUpper, pad, y);
+  ctx.restore();
+  y += px(sz + 10, S);
+
+  // Evidence
+  if (confEvidence) {
+    ctx.save();
+    ctx.font = `400 ${f(14, S)} ${FONT}`; ctx.letterSpacing = `${px(0.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.55)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`Confirmed by ${confEvidence}`, pad, y);
+    ctx.restore();
+    y += px(26, S);
+  }
+
+  // Divider
+  ctx.save();
+  ctx.strokeStyle = 'rgba(132,158,184,0.14)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+  ctx.restore();
+  y += px(18, S);
+
+  // KEY LIGHT section
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.32)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('KEY LIGHT', pad, y);
+  ctx.restore();
+  y += px(18, S);
+
+  if (mod) {
+    ctx.save();
+    ctx.font = `700 ${f(18, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+    ctx.fillStyle = TEXT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(mod.toUpperCase(), pad, y);
+    ctx.restore();
+    y += px(26, S);
+  }
+
+  if (pos) {
+    ctx.save();
+    ctx.font = `500 ${f(13, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.55)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(pos, pad, y);
+    ctx.restore();
+    y += px(20, S);
+  }
+
+  if (lights.length > 0) {
+    ctx.save();
+    ctx.font = `500 ${f(11, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.40)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`${lights.length} ${lights.length === 1 ? 'LIGHT' : 'LIGHTS'}`, pad, y);
+    ctx.restore();
+    y += px(22, S);
+  }
+
+  // Divider before judgment
+  ctx.save();
+  ctx.strokeStyle = 'rgba(132,158,184,0.14)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+  ctx.restore();
+  y += px(18, S);
+
+  // NAILED IT · CONFIRMED READ (horizontal, prominent)
+  if (judgment === 'nailed' || judgment === 'close') {
+    const jLabel    = judgment === 'nailed' ? 'NAILED IT' : 'CLOSE READ';
+    const jColor    = judgment === 'nailed' ? 'rgba(72,186,136,0.90)' : 'rgba(132,158,184,0.60)';
+    ctx.save();
+    ctx.font = `700 ${f(28, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+    ctx.fillStyle = jColor; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(jLabel, pad, y);
+    const jw = ctx.measureText(jLabel).width;
+    ctx.font = `500 ${f(11, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.45)';
+    ctx.fillText(' · CONFIRMED READ', pad + jw + px(4, S), y + px(9, S));
+    ctx.restore();
+  }
+
+  // Footer
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  if (branded) ctx.fillText('LIGHT READ · NGW', w - pad, h - px(22, S));
+  ctx.restore();
+
+  drawGrain(ctx, w, h);
+}
+
+// Variant D — No-Diagram Light Card
+// Like the current Signal Card but with setup info and promoted NAILED IT.
+export function drawSignalCardD(ctx, data, S) {
+  const { pattern, confidence = 0, imageEl: photo, branded = true,
+          judgment = null, lights = [], confEvidence = '' } = data;
+
+  const w        = ctx.canvas.width;
+  const h        = ctx.canvas.height;
+  const pad      = px(28, S);
+  const photoH   = Math.round(h * 0.55);
+  const pct      = Math.round((confidence || 0) * 100);
+  const patUpper = (pattern || 'UNKNOWN').toUpperCase().replace(/_/g, ' ');
+  const kl       = lights.find(l => l.role === 'key') || lights[0] || null;
+  const mod      = kl?.modifier_label || '';
+  const pos      = (kl?.position_label || '').replace(/-/g, ' ').toUpperCase();
+  const cc       = confColor(confidence);
+
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, w, h);
+
+  if (photo && photo.complete && photo.naturalWidth > 0) {
+    const crop = smartCrop(photo, null, w, photoH);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, photoH); ctx.clip();
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, photoH);
+    ctx.restore();
+    drawPhotoFade(ctx, photoH, w, px(100, S));
+  }
+
+  let y = photoH + px(22, S);
+
+  // Header row
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.36)'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('LIGHT READ', pad, y);
+  ctx.font = `600 ${f(14, S)} ${FONT}`; ctx.letterSpacing = '0px';
+  ctx.fillStyle = cc; ctx.textAlign = 'right';
+  ctx.fillText(`${pct}%`, w - pad, y);
+  ctx.restore();
+  y += px(24, S);
+
+  // Pattern
+  let sz = patUpper.replace(/\s/g, '').length <= 8 ? 48 : patUpper.replace(/\s/g, '').length <= 12 ? 40 : 33;
+  ctx.save();
+  ctx.font = `700 ${f(sz, S)} ${FONT}`; ctx.letterSpacing = `${px(3, S)}px`;
+  ctx.fillStyle = TEXT; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  while (sz > 20 && ctx.measureText(patUpper).width > w - pad * 2) { sz -= 2; ctx.font = `700 ${f(sz, S)} ${FONT}`; }
+  ctx.fillText(patUpper, pad, y);
+  ctx.restore();
+  y += px(sz + 8, S);
+
+  // Evidence
+  if (confEvidence) {
+    ctx.save();
+    ctx.font = `400 ${f(13, S)} ${FONT}`; ctx.letterSpacing = `${px(0.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`Confirmed by ${confEvidence}`, pad, y);
+    ctx.restore();
+    y += px(22, S);
+  }
+
+  y += px(8, S);
+
+  // Setup block: modifier · position · count
+  if (mod || pos) {
+    const setupParts = [mod ? mod.toUpperCase() : null, pos || null, lights.length > 0 ? `${lights.length} ${lights.length === 1 ? 'LIGHT' : 'LIGHTS'}` : null].filter(Boolean);
+    ctx.save();
+    ctx.font = `500 ${f(16, S)} ${FONT}`; ctx.letterSpacing = `${px(1, S)}px`;
+    ctx.fillStyle = TEXT_MID; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(setupParts.join('  ·  '), pad, y);
+    ctx.restore();
+    y += px(26, S);
+  }
+
+  // Full-width divider
+  y += px(12, S);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(132,158,184,0.14)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+  ctx.restore();
+  y += px(18, S);
+
+  // NAILED IT — promoted, left-aligned, 28pt
+  if (judgment === 'nailed' || judgment === 'close') {
+    const jLabel = judgment === 'nailed' ? 'NAILED IT' : 'CLOSE READ';
+    const jColor = judgment === 'nailed' ? 'rgba(72,186,136,0.90)' : 'rgba(132,158,184,0.60)';
+    ctx.save();
+    ctx.font = `700 ${f(28, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+    ctx.fillStyle = jColor; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(jLabel, pad, y);
+    ctx.restore();
+    y += px(34, S);
+    ctx.save();
+    ctx.font = `500 ${f(11, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.42)'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('CONFIRMED READ', pad, y);
+    ctx.restore();
+  }
+
+  // Footer
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  if (branded) ctx.fillText('LIGHT READ · NGW', w - pad, h - px(22, S));
+  ctx.restore();
+
+  drawGrain(ctx, w, h);
+}
+
+// Variant E — Blueprint Hybrid
+// Smaller photo (40%), full-width overhead diagram, light rows below.
+export function drawSignalCardE(ctx, data, S) {
+  const { pattern, confidence = 0, imageEl: photo, branded = true,
+          judgment = null, lights = [], confEvidence = '' } = data;
+
+  const w        = ctx.canvas.width;
+  const h        = ctx.canvas.height;
+  const pad      = px(36, S);
+  const cw       = w - pad * 2;
+  const photoH   = Math.round(h * 0.40);
+  const pct      = Math.round((confidence || 0) * 100);
+  const patUpper = (pattern || 'UNKNOWN').toUpperCase().replace(/_/g, ' ');
+  const cc       = confColor(confidence);
+
+  ctx.fillStyle = BG; ctx.fillRect(0, 0, w, h);
+
+  if (photo && photo.complete && photo.naturalWidth > 0) {
+    const crop = smartCrop(photo, null, w, photoH);
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, photoH); ctx.clip();
+    ctx.drawImage(photo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, photoH);
+    ctx.restore();
+    drawPhotoFade(ctx, photoH, w, px(80, S));
+  }
+
+  let y = photoH + px(20, S);
+
+  // Centered series label
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(2.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.32)'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('NGW LIGHT READ', w / 2, y);
+  ctx.restore();
+  y += px(22, S);
+
+  // Pattern centered, 44pt
+  let sz = patUpper.replace(/\s/g, '').length <= 8 ? 44 : patUpper.replace(/\s/g, '').length <= 12 ? 38 : 30;
+  ctx.save();
+  ctx.font = `700 ${f(sz, S)} ${FONT}`; ctx.letterSpacing = `${px(4, S)}px`;
+  ctx.fillStyle = TEXT; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  while (sz > 18 && ctx.measureText(patUpper).width > cw) { sz -= 2; ctx.font = `700 ${f(sz, S)} ${FONT}`; }
+  ctx.fillText(patUpper, w / 2, y);
+  ctx.restore();
+
+  // pct right-aligned on same baseline
+  ctx.save();
+  ctx.font = `600 ${f(14, S)} ${FONT}`; ctx.letterSpacing = '0px';
+  ctx.fillStyle = cc; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+  ctx.fillText(`${pct}%`, w - pad, y + px(4, S));
+  ctx.restore();
+
+  y += px(sz + 10, S);
+
+  // Evidence (centered, compact)
+  if (confEvidence) {
+    ctx.save();
+    ctx.font = `400 ${f(12, S)} ${FONT}`; ctx.letterSpacing = `${px(0.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText(`Confirmed by ${confEvidence}`, w / 2, y);
+    ctx.restore();
+    y += px(20, S);
+  }
+
+  // Divider
+  y += px(8, S);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(132,158,184,0.14)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+  ctx.restore();
+  y += px(14, S);
+
+  // Full-width overhead diagram
+  const diagH = px(220, S);
+  drawOverheadDiagram(ctx, pad, y, cw, diagH, lights, S);
+  y += diagH + px(14, S);
+
+  // Divider
+  ctx.save();
+  ctx.strokeStyle = 'rgba(132,158,184,0.14)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(w - pad, y); ctx.stroke();
+  ctx.restore();
+  y += px(14, S);
+
+  // Light rows (up to 2)
+  lights.slice(0, 2).forEach((l) => {
+    const rowH = drawLightRow(ctx, pad + px(2, S), y, l, S);
+    y += rowH + px(10, S);
+  });
+
+  // NAILED IT + CONFIRMED READ footer block
+  if (judgment === 'nailed' || judgment === 'close') {
+    const jLabel = judgment === 'nailed' ? 'NAILED IT' : 'CLOSE READ';
+    const jColor = judgment === 'nailed' ? 'rgba(72,186,136,0.88)' : 'rgba(132,158,184,0.60)';
+    ctx.save();
+    ctx.font = `700 ${f(20, S)} ${FONT}`; ctx.letterSpacing = `${px(2, S)}px`;
+    ctx.fillStyle = jColor; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText(jLabel, pad, h - px(36, S));
+    ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+    ctx.fillStyle = 'rgba(132,158,184,0.40)';
+    ctx.fillText('CONFIRMED READ', pad, h - px(22, S));
+    ctx.restore();
+  }
+
+  // Brand footer
+  ctx.save();
+  ctx.font = `500 ${f(10, S)} ${FONT}`; ctx.letterSpacing = `${px(1.5, S)}px`;
+  ctx.fillStyle = 'rgba(132,158,184,0.50)'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  if (branded) ctx.fillText('LIGHT READ · NGW', w - pad, h - px(22, S));
+  ctx.restore();
+
+  drawGrain(ctx, w, h);
+}
 
 // ── Download helpers ────────────────────────────────────────────────────────
 export function downloadCanvas(canvas, filename) {
