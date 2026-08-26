@@ -2834,16 +2834,23 @@ def light_structure_pass(
     h, w = img_bgr.shape[:2]
     gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
 
+    #: True when no real face box was supplied and we fell back to a center crop.
+    #: Kept as an explicit flag rather than a note, because a note is prose and
+    #: nothing downstream reads prose as a confidence signal.
+    face_box_estimated = False
+
     if face_box is None:
         # Estimate face region from person segmentation or image center.
         # Many dark-skin portrait images fail face detection due to MediaPipe
         # model limitations.  Use a conservative center crop (20-80% of image)
-        # as the face ROI so shadow analysis can still run.
+        # as the face ROI so shadow analysis can still run — abandoning those
+        # subjects is not an option.
         h_img, w_img = img_bgr.shape[:2]
         face_box = (
             int(w_img * 0.15), int(h_img * 0.08),
             int(w_img * 0.85), int(h_img * 0.80),
         )
+        face_box_estimated = True
         notes.append("face_box estimated from image center crop (face detector failed)")
 
     # face_box is (x0, y0, x1, y1) — two corner coordinates, not (x, y, w, h).
@@ -3464,6 +3471,23 @@ def light_structure_pass(
         confidence += 0.1
     confidence = round(min(0.9, confidence), 3)
 
+    # ── Honesty gate: a guessed face box cannot support a pattern claim ──
+    # This pass reads the NOSE SHADOW REGION. Without a real face box we do not
+    # know where the nose is, so any pattern derived from a center crop is a
+    # guess wearing a confidence score — and it was reporting 0.65.
+    #
+    # The center-crop fallback stays: it lets the surrounding passes work on
+    # images where MediaPipe fails, which disproportionately affects
+    # dark-skinned subjects, and abandoning them is not an option. What changes
+    # is that this pass stops asserting a pattern it cannot support.
+    if face_box_estimated:
+        pattern_name = "unknown"
+        confidence = min(confidence, 0.15)
+        notes.append(
+            "pattern withheld — face box was estimated, so nose-shadow geometry "
+            "is not reliable enough to name a pattern"
+        )
+
     # ── Highlight width ratio ────────────────────────────────────
     # Compute from the full face ROI: what fraction of columns are
     # brighter than 115% of the face mean?  This is a proxy for how
@@ -3485,6 +3509,7 @@ def light_structure_pass(
         "triangle_completeness": round(triangle_completeness, 3),
         "pattern_name": pattern_name,
         "confidence": confidence,
+        "face_box_estimated": face_box_estimated,
         "notes": notes,
         # ── Enhanced signals (v2) ──
         "nose_shadow_centroid_angle_deg": round(_centroid_angle, 1),
