@@ -82,6 +82,16 @@ PUBLIC_ROUTES: dict[str, str] = {
         "write; rate-limited 20/60s. See api/routes/lab.py PUBLIC ROUTE marker."
     ),
 
+    # ── Public accuracy gallery ──
+    "/api/gallery": (
+        "Deliberately public. The product's claim is that it reads light "
+        "correctly, and it cannot be audited from behind a sign-in wall. "
+        "Serves approved reference entries with ground truth and our read, "
+        "including misses. No user data."
+    ),
+    "/api/gallery/{entry_id}/thumbnail": "Gallery image for a public entry.",
+    "/api/gallery/{entry_id}/overlay": "Debug overlay for a public entry — what the engine saw.",
+
     # ── Share-token addressed ──
     "/api/shared/setup/{share_token}": "Bearer-token-in-URL share link.",
     "/api/team-sessions/{share_token}": "Bearer-token-in-URL share link.",
