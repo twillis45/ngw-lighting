@@ -12,9 +12,9 @@ Last updated: **August 26, 2026** · deploy verified 12:10 EDT
 | | |
 |---|---|
 | Branch | `main` |
-| HEAD | `5bfff85` — Make the Studio layout regimes reactive |
+| HEAD | `7000e2d` — Fail before Cloudflare does |
 | Unpushed | **0** — `main` deployed and verified 12:10 EDT |
-| Test suite | **2,605 passed · 4 failed · 48 skipped** (246s) |
+| Test suite | **2,609 passed · 4 failed · 48 skipped** (233s) |
 | The 4 failures | Pre-existing engine tests, unrelated to recent work — `test_advanced_passes`, `test_complexity_profile`, `test_perception_layer`, `test_vlw_reconciliation`. Verified identical before and after every change this session by stashing and re-running at HEAD. |
 | Production | `https://app.noguessworksystems.com` — `/health` **200** |
 | Deploy target | **Render**, Docker runtime, `render.yaml`. Never Vercel/Netlify. |
@@ -33,10 +33,32 @@ Last updated: **August 26, 2026** · deploy verified 12:10 EDT
   evaluated. Verified in production: preflight 200, curator routes still 401.
 - **`6bc355b`** — `tests/test_protected_routes_sweep.py` (enumerating auth gate,
   275 routes, red-proofed) and `docs/SURFACES.md` (axis-1 declarations).
+- **`1272d3c`** — `run_vlm` made real. **`4e8a9ce`** — customers can analyze a photo:
+  `/api/analyze` replaces the curator-gated `/api/lab/analyze`, which is deleted rather
+  than aliased. **`7000e2d`** — analysis timeout 180s → 90s to fail before Cloudflare.
 - **Audit, no code changed** — legacy vs Studio comparison across visual,
   functional, and workflow layers. Findings in §4.
 
 ---
+
+## 2b. Working artifacts
+
+Published pages for this work. Private until shared; `/artifacts` in the terminal lists them.
+
+| Artifact | What it holds |
+|---|---|
+| [NGW Company Register](https://claude.ai/code/artifact/4df93834-44b4-41d1-b754-d91bab76b85d) | **Canonical.** Entity, domains, registry + mail infra, identities, project register, architecture, every service console. Mirrored at `ngw-os/docs/COMPANY-REGISTER.md` |
+| [NGW Business Tree](https://claude.ai/code/artifact/f32753df-6e11-4628-9f06-3d676a2eafcf) | Five lines, every project mapped, and five contradictions between the source documents |
+| [NGW Lighting Rate Card](https://claude.ai/code/artifact/afa45439-f5bc-4b28-a99f-b0a90b11e0ae) | Pricing and financing mechanisms, measured COGS, margin per tier, 8 tracked references |
+| [Elixxier Gap Tracker](https://claude.ai/code/artifact/3341d158-78f9-4d59-8e42-6a383c102c36) | 16 gaps vs set.a.light 3D scored by impact/day, plus the 4 places we already win |
+
+Committed companions: `docs/SURFACES.md`, `docs/STRIPE-ACTIVATION.md`,
+`ngw-os/skills/measure-unit-cost/`, `ngw-leadgen/docs/2026-08-25-market-promotion-handoff.md`,
+`ngw-event-planner/demo/docs/claude-skills/REVIEW_BOARD_ROSTER.md`.
+
+**Artifacts carry unverified figures deliberately.** The elixxier prices are secondhand
+from a review; their own pricing page shows nothing without going to checkout. Anything
+quoted outward clears `claim-verification` first.
 
 ## 3. Active traps — the part that pays
 
@@ -71,6 +93,17 @@ Every one of these cost a wrong turn this session.
   is set, or there are zero working admins.
 - **`plan_guard` caches its list in a module global.** Plan-tier changes need a
   Render restart; admin routes update at call time. They will disagree.
+- **`run_vlm` was a dead parameter** until 2026-08-26. It sat in `analyze_image()`'s
+  signature and docstring and was never threaded, so four routes — including the paid
+  `/api/v1` tier — passed `run_vlm=False` and got the VLM anyway. Its default is now
+  **True**, which preserves the old behavior rather than changing it.
+- **Cloudflare sits in front of Render** (`server: cloudflare`, cf-ray on every
+  response) with a **100s** default origin timeout. `NGW_ANALYSIS_TIMEOUT` is 90s so the
+  server fails first with its own 504. Raising it past ~95s brings back opaque 524s.
+- **The VLM is ~97% of analysis wall time**, not just cost. Measured on an M3 Max:
+  CV-only **0.7s**, full pipeline **28.1s**. A CV-only tier is fast as well as free.
+- **A test double that drifts from its real signature fails for the wrong reason.**
+  `_fake_describe` lacked a new kwarg and six tests failed on the signature, not behavior.
 - **One `/lab` route is public by design** — `face-preflight`. Do not copy the
   pattern to a new `/lab` route; the sweep will catch it, but know why.
 
