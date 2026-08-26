@@ -3,6 +3,9 @@
 > **Canonical instruction file.** Read this at the start of every session.
 > Last updated: 2026-04-11
 >
+> **Read `HANDOFF.md` first** — measured state, active traps, next steps.
+> The traps section is where the last session recorded what already went wrong.
+>
 > Cross-references:
 > - Engine / pipeline rules → `docs/ENGINE_TRUTH.md`
 > - Taxonomy / enum rules → `docs/TAXONOMY_TRUTH.md`
