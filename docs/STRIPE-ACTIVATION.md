@@ -52,12 +52,20 @@ them into a chat.
 Two plans × two billing periods = **four Price objects**. The code reads all
 four independently; a missing one returns a 400 naming the exact env var.
 
-| Plan | Period | Price | Env var |
-|---|---|---|---|
-| Pro | monthly | **$39** | `STRIPE_PRICE_ID_MONTHLY` |
-| Pro | yearly | **$390** | `STRIPE_PRICE_ID_YEARLY` |
-| Studio | monthly | — | `STRIPE_PRICE_ID_STUDIO_MONTHLY` |
-| Studio | yearly | — | `STRIPE_PRICE_ID_STUDIO_YEARLY` |
+| Plan | Period | Price | Effective /mo | Env var |
+|---|---|---|---|---|
+| Pro | monthly | **$39** | $39.00 | `STRIPE_PRICE_ID_MONTHLY` |
+| Pro | **quarterly** | **$105** | $35.00 | `STRIPE_PRICE_ID_QUARTERLY` ⚠️ needs a code line |
+| Pro | yearly | **$390** | $32.50 | `STRIPE_PRICE_ID_YEARLY` |
+| Studio | — | unpriced | — | defer until a buyer exists |
+
+The term ladder is monotonic on purpose: **$39 → $35 → $32.50**. Quarterly at $99 would
+be 15.4% off, close enough to annual's 16.7% that the annual rung stops making sense.
+$105 protects it.
+
+Quarterly is also the seasonal accommodation — a wedding photographer buys Q2 into Q3
+and lapses over winter without cancelling. Most of the value of a pause feature, at the
+cost of one Price object.
 
 Pro amounts come from `ui/src/data/pricingStore.js` (`price_monthly: 39`,
 `price_yearly: 390`, a 17% yearly discount). **Studio tier pricing is not set
@@ -92,11 +100,13 @@ Service `ngw-api` → Environment:
 ```
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_PRICE_ID_MONTHLY=price_...
+STRIPE_PRICE_ID_QUARTERLY=price_...
 STRIPE_PRICE_ID_YEARLY=price_...
-STRIPE_PRICE_ID_STUDIO_MONTHLY=price_...
-STRIPE_PRICE_ID_STUDIO_YEARLY=price_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
+
+Studio's two price vars stay unset. The code 400s with a message naming the missing
+variable, which is the correct behaviour for a tier with no price yet.
 
 `STRIPE_SECRET_KEY` is read at call time (`_get_stripe()`), but **`PRICE_IDS`
 is built at module import**, so the price variables need a service restart —
@@ -114,8 +124,7 @@ prevent open-redirect abuse, and rejects with 400 if they don't match.
 - [ ] `POST /api/stripe/create-checkout-session` returns 401 anonymously
       (it requires a JWT by design — anonymous callers must not be able to
       create sessions against your Stripe account)
-- [ ] Each of the four plan/period combinations returns a checkout URL rather
-      than the "No Stripe Price ID configured" 400
+- [ ] All three Pro terms return a checkout URL; Studio still 400s by design
 - [ ] Webhook endpoint reachable and rejecting unsigned POSTs
 - [ ] A real end-to-end checkout grants the plan — the only proof that counts
 - [ ] `claim-verification` run over any pricing copy before it faces a buyer
