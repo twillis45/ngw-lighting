@@ -3,7 +3,7 @@
 **Read this first, before `docs/` or the long-form log.**
 Measured reality, not intentions. Updated every session.
 
-Last updated: **August 26, 2026**
+Last updated: **August 26, 2026** · deploy verified 12:10 EDT
 
 ---
 
@@ -12,9 +12,9 @@ Last updated: **August 26, 2026**
 | | |
 |---|---|
 | Branch | `main` |
-| HEAD | `6bc355b` — Enumerating auth sweep + surface declarations |
-| Unpushed | **1 commit** |
-| Test suite | **2,602 passed · 4 failed · 51 skipped** (197s) |
+| HEAD | `5bfff85` — Make the Studio layout regimes reactive |
+| Unpushed | **0** — `main` deployed and verified 12:10 EDT |
+| Test suite | **2,605 passed · 4 failed · 48 skipped** (246s) |
 | The 4 failures | Pre-existing engine tests, unrelated to recent work — `test_advanced_passes`, `test_complexity_profile`, `test_perception_layer`, `test_vlw_reconciliation`. Verified identical before and after every change this session by stashing and re-running at HEAD. |
 | Production | `https://app.noguessworksystems.com` — `/health` **200** |
 | Deploy target | **Render**, Docker runtime, `render.yaml`. Never Vercel/Netlify. |
@@ -78,26 +78,26 @@ Every one of these cost a wrong turn this session.
 
 ## 4. Next steps, in order
 
-1. **Push** — 1 commit unpushed on `main`.
-2. **Studio back stack** — P1. No history; `onBack` is hardcoded per screen and
-   8 of 11 go to `home`, so any second hop loses your place. `prevScreenRef`
-   exists but only picks an animation. Legacy's `AppContext` history array is the
-   working model. §XII scope pass is done and approved; needs `data-testid`s
-   before the browser walk can assert it.
-3. **Gate the three `REVIEW:` telemetry routes** — `/api/intelligence/score`,
-   `/score/history`, `/patterns` expose aggregate engine-accuracy data publicly.
-   One dependency each.
-4. **Non-reactive layout branches** — 23 raw `window.innerWidth` reads evaluated
-   once at render against 11 reactive `useIsDesktop()` usages, with hardcoded
-   thresholds (`820`, `768`, `1024`) beside the named constants.
-5. **White Balance** — legacy shows WB + detected CCT; Studio shows no colour
-   temperature anywhere. The one real data gap between the shells.
-6. **Lab has no entry point in Studio** — URL-only, and its back button exits to
-   Settings, which has no way in.
-7. **No `npm run check`** — the stage-4 "guard script passes" gate has nothing
-   to run.
+1. **White Balance** — legacy shows WB + detected CCT; Studio shows no colour
+   temperature anywhere. The one real data gap between the shells, and colour
+   temp sits alongside aperture for a photographer matching a look.
+2. **Lab has no entry point in Studio** — URL-only (`?lab=1`), and its back
+   button exits to Settings, which has no way in. A one-way door.
+3. **No `npm run check`** — the stage-4 "guard script passes" gate has nothing
+   to run. `check:static-assets` exists; nothing aggregates.
+4. **Two paywall impression routes** still accept anonymous writes keyed on a
+   caller-supplied id with no ownership check. Analytics-integrity only; still
+   allowlisted as REVIEW in the sweep.
+5. **Duplicate verdict controls** on the Studio result — `Nailed It / Close
+   Read / Missed It` and `✓ Nailed It / ~ Almost / ✕ Off`, same screen.
 
----
+### Done this session — do not redo
+
+- Studio back stack (`d1643c5`) — verified in production: Home → Recipes →
+  Build → Back lands on **Recipes**, second back reaches Home.
+- Three engine-telemetry routes gated (`b43ec19`) — verified 401 in prod.
+- Layout regimes made reactive (`5bfff85`).
+- Enumerating route sweep + surface declarations (`6bc355b`).
 
 ## 5. Open decisions for Todd
 
