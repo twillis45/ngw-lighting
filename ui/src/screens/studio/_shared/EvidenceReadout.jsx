@@ -19,7 +19,8 @@ const FONT_SMOOTH = {
 
 export default function EvidenceReadout({ evidence, compact = false }) {
   if (!evidence) return null;
-  const { observations = [], limits = [], disagreements = [], runnerUp = null, coverage = null } = evidence;
+  const { observations = [], limits = [], disagreements = [], runnerUp = null,
+          separated = null, coverage = null } = evidence;
   if (observations.length === 0 && limits.length === 0 && disagreements.length === 0) return null;
 
   return (
@@ -57,7 +58,7 @@ export default function EvidenceReadout({ evidence, compact = false }) {
       {/* Where the engine was unsure. It records this and always has; it
           simply was not shown. A read a photographer can weigh beats one
           they have to take on faith. */}
-      {(disagreements.length > 0 || runnerUp) && (
+      {(disagreements.length > 0 || runnerUp || separated === false) && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 2 }}>
           <span style={{
             fontSize: 9, fontWeight: 600, letterSpacing: '1.1px',
@@ -71,9 +72,19 @@ export default function EvidenceReadout({ evidence, compact = false }) {
           ))}
           {runnerUp && (
             <span style={{
-              fontSize: 11, fontWeight: 500, color: steel(0.58),
+              fontSize: 11, fontWeight: 500,
+              color: separated === false ? 'rgba(217,119,87,0.85)' : steel(0.58),
               lineHeight: 1.4, ...FONT_SMOOTH,
-            }}>Next most credible: {runnerUp.pattern}</span>
+            }}>
+              {separated === false
+                /* The engine could not separate its top two. Every error in
+                   the reference corpus sits in this group; reads it DID
+                   separate were correct in all 11 observed cases. Worth a
+                   photographer's second look, which is why it is said plainly
+                   rather than folded into a score. */
+                ? `${runnerUp.pattern} was just as credible — worth a second look`
+                : `Next most credible: ${runnerUp.pattern}`}
+            </span>
           )}
           {coverage && coverage.weak && coverage.weak.length > 0 && (
             <span style={{

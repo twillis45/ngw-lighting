@@ -55,6 +55,23 @@ check('does not leak internal resolver names to the photographer',
 check('does not repeat the same limitation twice',
   new Set(d.limits).size === d.limits.length, d.limits);
 
+check('reports whether the engine separated its top two candidates',
+  d.separated === true || d.separated === false, d.separated);
+
+// Synthetic: a tied credibility pair must read as NOT separated. Every error
+// in the reference corpus sits in that group.
+const tied = buildLightingEvidence({
+  observability: { candidate_credibility_summary: [
+    { pattern: 'loop', credibility: 0.6 }, { pattern: 'butterfly', credibility: 0.6 }] },
+});
+check('a tied credibility pair is not separated', tied.separated === false, tied.separated);
+check('a clear winner is separated',
+  buildLightingEvidence({ observability: { candidate_credibility_summary: [
+    { pattern: 'loop', credibility: 0.8 }, { pattern: 'butterfly', credibility: 0.2 }] } }).separated === true);
+check('a single candidate reports null, not a false confidence',
+  buildLightingEvidence({ observability: { candidate_credibility_summary: [
+    { pattern: 'loop', credibility: 0.8 }] } }).separated === null);
+
 console.log('\nscoreIsMeaningful — only the band measured as separable');
 check('80 is shown', scoreIsMeaningful(80) === true);
 check('79 is withheld', scoreIsMeaningful(79) === false);

@@ -121,12 +121,31 @@ export function buildLightingEvidence(data) {
     }
   }
 
-  // The runner-up, when the engine kept one worth naming.
+  // The runner-up, and whether the engine actually separated its top two.
+  //
+  // MEASURED over the 34-image corpus (2026-08-27), and the first signal
+  // found that tracks correctness at all:
+  //
+  //     credibility gap >  0  ->  n=11, 11 correct  (100%)
+  //     credibility gap <= 0  ->  n=14,  9 correct  ( 64%)
+  //
+  // Every error in the corpus sits in the second group. The stated
+  // confidence does not do this -- the wrong answers there carry 0.87,
+  // 0.89 and 0.94.
+  //
+  // This is NOT a decline trigger. Declining on gap <= 0 would discard 9
+  // correct reads to catch 5 errors. It is a qualifier: when the engine
+  // could not separate its top two, say so and name what was close, so a
+  // photographer weighs it instead of taking it on faith. n=25, so "100%"
+  // means "not observed wrong in 11 tries", not "never wrong".
   const credible = (obs.candidate_credibility_summary || [])
     .filter(c => c && c.pattern)
     .slice(0, 3);
   const runnerUp = credible.length > 1
     ? { pattern: prettyPattern(credible[1].pattern), credibility: credible[1].credibility }
+    : null;
+  const separated = credible.length > 1
+    ? (credible[0].credibility - credible[1].credibility) > 0
     : null;
 
   const cov = obs.signal_coverage || null;
@@ -139,7 +158,7 @@ export function buildLightingEvidence(data) {
       }
     : null;
 
-  return { observations, limits, disagreements, runnerUp, coverage };
+  return { observations, limits, disagreements, runnerUp, separated, coverage };
 }
 
 /**
