@@ -97,3 +97,37 @@ def test_gallery_scores_the_engines_resolved_read_not_a_single_pass():
     assert exact >= 10, (
         f"only {exact}/{len(scored)} exact; the engine resolves 17/34. "
         "The gallery is scoring the wrong field and understating the product.")
+
+
+def test_debug_overlay_is_not_public():
+    """Gate 1 of promote-surface: every privileged route checks role server-side,
+    and a test asserts a non-internal caller gets 403.
+
+    The gallery router is mounted public so a visitor can audit the accuracy
+    claim without an account. The debug overlay rode along with it: it was
+    reachable unauthenticated (200, a 457KB PNG) while the identical class of
+    material -- "complete model dumps, curator/dev material, never a
+    customer's" -- was already 403 on /api/analyze?debug=true.
+    """
+    from fastapi.testclient import TestClient
+
+    from main import app
+
+    c = TestClient(app)
+    listing = c.get("/api/gallery").json()
+    entry = next((e for e in listing["entries"] if e.get("has_overlay")), None)
+    if entry is None:
+        import pytest
+
+        pytest.skip("no entry carries a debug overlay")
+
+    r = c.get(f"/api/gallery/{entry['id']}/overlay")
+    assert r.status_code == 403, (
+        f"anonymous caller got {r.status_code} from the debug overlay; "
+        "privileged material must not ride along on a public router"
+    )
+
+    # The public payload must not carry provenance detail either.
+    assert "source_type" not in entry, (
+        "source_type reads 'found_online' on 32 of 34 entries — not for public view"
+    )

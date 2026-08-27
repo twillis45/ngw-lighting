@@ -21,10 +21,20 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 
+from auth.security import get_optional_user
+
 logger = logging.getLogger(__name__)
+
+def is_internal(user: Optional[Dict[str, Any]]) -> bool:
+    """Same internal-account test the analyze route uses for debug output."""
+    if not user:
+        return False
+    from db.provenance import get_internal_emails
+    return (user.get("email") or "").strip().lower() in get_internal_emails()
+
 
 router = APIRouter(prefix="/gallery", tags=["gallery"])
 
@@ -107,7 +117,9 @@ def list_gallery() -> Dict[str, Any]:
             "id": meta.get("reference_id") or d.name,
             "pattern": meta.get("pattern_id"),
             "environment": meta.get("environment"),
-            "source_type": meta.get("source_type"),
+            # source_type deliberately NOT exposed: it reads "found_online"
+            # on 32 of 34 entries, which is provenance detail a public
+            # viewer has no use for and we should not broadcast.
             "light_count": meta.get("light_count"),
             "key_direction_deg": meta.get("key_direction_deg"),
             "expected_light_count": gt.get("expected_light_count"),
@@ -159,8 +171,26 @@ def gallery_thumbnail(entry_id: str):
 
 
 @router.get("/{entry_id}/overlay")
-def gallery_overlay(entry_id: str):
-    """The debug overlay — what the engine actually saw."""
+def gallery_overlay(entry_id: str, user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
+    """The debug overlay — what the engine actually saw.
+
+    INTERNAL ONLY. This router is mounted public so a visitor can audit the
+    accuracy claim without an account, but a debug overlay is the same class
+    of material the analyze route already restricts: "complete model dumps --
+    curator/dev material, never a customer's." It was reachable
+    unauthenticated (200, 457KB PNG) while the identical material was 403 on
+    /api/analyze?debug=true. Found by the promote-surface gate, which exists
+    because a surface promoted from internal to public carries every
+    assumption it made while it was internal.
+
+    The public accuracy screen does not request it -- it reads `has_overlay`
+    and nothing else.
+    """
+    if not is_internal(user):
+        raise HTTPException(
+            status_code=403,
+            detail="Debug overlays are restricted to internal accounts.",
+        )
     d = _find(entry_id)
     p = d / "debug_overlay.png"
     if not p.exists():
