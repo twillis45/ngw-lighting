@@ -172,3 +172,30 @@ export function buildLightingEvidence(data) {
 export function scoreIsMeaningful(confidence0to100) {
   return typeof confidence0to100 === 'number' && confidence0to100 >= 80;
 }
+
+
+/**
+ * Is this result a decline rather than a read?
+ *
+ * The engine can already answer "unknown" -- it is a valid LightingPattern
+ * value. The product could not SAY it: displayPattern('unknown') returned the
+ * string "Unknown", which the result screen rendered in the same 36px heading
+ * it uses for "Rembrandt", with a confidence figure beside it. A decline
+ * presented in the costume of an answer is worse than no decline at all,
+ * because it is indistinguishable from a pattern the photographer has not
+ * heard of.
+ *
+ * This does not decide WHEN to decline -- that trigger is still open, and
+ * deliberately so: the reference corpus carries exactly one entry whose truth
+ * is `unknown`, and it is not separable from correct reads on confidence,
+ * coverage, credibility, contradiction count, or face detection. Fitting a
+ * threshold to one sample would be inventing a number, not measuring one.
+ *
+ * What this does is make the decline EXPRESSIBLE, so that when a trigger
+ * exists the product can already say it honestly.
+ */
+export function isDecline(pattern) {
+  if (pattern == null) return true;
+  const p = String(pattern).trim().toLowerCase();
+  return p === '' || p === 'unknown' || p === 'none';
+}

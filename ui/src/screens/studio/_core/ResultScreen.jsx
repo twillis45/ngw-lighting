@@ -25,7 +25,7 @@ import useStableViewport from '../../../utils/useStableViewport';
 import { resultRevealSound, segmentPressSound, navSlideSound, softClickSound } from '../../../utils/sounds';
 import { loadSettings } from '../../../data/settingsStore';
 import EvidenceReadout from '../_shared/EvidenceReadout';
-import { scoreIsMeaningful } from '../_shared/lightingEvidence';
+import { scoreIsMeaningful, isDecline } from '../_shared/lightingEvidence';
 import { steel, C, FONT_SMOOTH, VIEWFINDER_INNER_SHADOW, GLASS_REFLECTION, LENS_VIGNETTE, DITHER_STYLE,
          CTA_BG, CTA_SHADOW, CTA_BEVEL, PANEL_SHADOW, PANEL_BEVEL,
          TEXT_SHADOW_ENGRAVED,
@@ -2768,10 +2768,14 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
             color: 'rgba(245,247,250,0.97)',
             ...FONT_SMOOTH,
           }}>
-            {prettify(pattern, { title: true })}
+            {/* A decline is not a pattern named "Unknown". When the engine
+                cannot read the light, say that in words a photographer would
+                use — and let the evidence readout below carry what it DID
+                see. See isDecline() for why the trigger is still open. */}
+            {isDecline(pattern) ? 'No confident read' : prettify(pattern, { title: true })}
           </p>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 6 }}>
-            {confDisplayMode !== 'simple' && scoreIsMeaningful(confidence) && (
+            {confDisplayMode !== 'simple' && !isDecline(pattern) && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: 20, fontWeight: 700,
                 color: confColor,
@@ -2785,7 +2789,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
                 grade misled: "Uncertain" reads were right 83% of the time and
                 "Tentative" 100%, which teaches photographers to ignore the label.
                 Observations are shown instead -- see lightingEvidence.js. */}
-            {confDisplayMode !== 'numeric' && scoreIsMeaningful(confidence) && (
+            {confDisplayMode !== 'numeric' && !isDecline(pattern) && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: confDisplayMode === 'simple' ? 18 : 13,
                 fontWeight: 600,
@@ -2938,14 +2942,18 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
             position: 'relative', zIndex: 2,
             ...FONT_SMOOTH,
           }}>
-            {prettify(pattern, { title: true })}
+            {/* A decline is not a pattern named "Unknown". When the engine
+                cannot read the light, say that in words a photographer would
+                use — and let the evidence readout below carry what it DID
+                see. See isDecline() for why the trigger is still open. */}
+            {isDecline(pattern) ? 'No confident read' : prettify(pattern, { title: true })}
           </p>
           {/* Confidence — respects confDisplayMode: simple=read, numeric=%, detailed=both */}
           <div style={{
             display: 'flex', alignItems: 'baseline', gap: 8,
             marginTop: 6, position: 'relative', zIndex: 2,
           }}>
-            {confDisplayMode !== 'simple' && scoreIsMeaningful(confidence) && (
+            {confDisplayMode !== 'simple' && !isDecline(pattern) && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: 20, fontWeight: 700,
                 color: confColor,
@@ -2961,7 +2969,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
                 grade misled: "Uncertain" reads were right 83% of the time and
                 "Tentative" 100%, which teaches photographers to ignore the label.
                 Observations are shown instead -- see lightingEvidence.js. */}
-            {confDisplayMode !== 'numeric' && scoreIsMeaningful(confidence) && (
+            {confDisplayMode !== 'numeric' && !isDecline(pattern) && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: confDisplayMode === 'simple' ? 18 : 13,
                 fontWeight: 600,

@@ -9,7 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { buildLightingEvidence, scoreIsMeaningful }
+import { buildLightingEvidence, scoreIsMeaningful, isDecline }
   from '../ui/src/screens/studio/_shared/lightingEvidence.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -76,6 +76,13 @@ console.log('\nscoreIsMeaningful — only the band measured as separable');
 check('80 is shown', scoreIsMeaningful(80) === true);
 check('79 is withheld', scoreIsMeaningful(79) === false);
 check('null is withheld', scoreIsMeaningful(null) === false);
+
+console.log('\nisDecline — a decline must not be dressed as a pattern');
+for (const [v, exp] of [['unknown', true], ['Unknown', true], ['  unknown ', true],
+                        [null, true], [undefined, true], ['', true], ['none', true],
+                        ['rembrandt', false], ['loop', false], ['high_key', false]]) {
+  check(`isDecline(${JSON.stringify(v)}) === ${exp}`, isDecline(v) === exp, isDecline(v));
+}
 
 console.log('\nempty/degenerate input must not throw');
 for (const bad of [undefined, null, {}, { lighting_inference: null }]) {
