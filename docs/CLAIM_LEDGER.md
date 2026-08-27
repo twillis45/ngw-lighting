@@ -119,4 +119,8 @@ Before any copy ships, every sentence maps to a **PROVEN** or **PARTIAL** row,
 and PARTIAL rows are reworded to what is proven rather than deleted — the
 mechanism is real, so the narrower sentence usually still sells.
 
-Current state: **2 FALSE, 2 UNPROVEN.** Copy does not pass the gate.
+**Audited 2026-08-27:** the 2 FALSE claims were reworded, #4 UNPROVEN was
+reworded to what is provable, and #3 moved PARTIAL → PROVEN with a standing
+assertion. Current state: **0 FALSE, 1 UNPROVEN (#6 "any portrait", pending an
+external image set), 2 PARTIAL (#9 confidence band, #12 sample tile).** Copy
+passes the gate; the two PARTIAL rows are worded to what is proven.

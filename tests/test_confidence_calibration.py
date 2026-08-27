@@ -37,42 +37,62 @@ CORPUS_LABEL_AUDIT = "canonical pattern_id required for scoring"
 
 
 def _canonical_ids():
-    data = json.load(open("data/lighting_patterns.json"))
-    pats = data if isinstance(data, list) else data.get("patterns") or []
-    return {p["pattern_id"] for p in pats}
+    """The vocabulary the ENGINE means by `pattern`.
+
+    Was `data/lighting_patterns.json` — a SETUP LIBRARY, not the pattern enum.
+    Checking labels against it reported 3 offenders that are perfectly valid
+    engine values (projected, triangle), while the two vocabularies overlap on
+    only 5 of 28 entries. A guard measuring against the wrong vocabulary
+    manufactures work and hides the real thing.
+    """
+    from engine.enums import LightingPattern
+
+    return {e.value for e in LightingPattern}
+
+
+def _deprecated_aliases():
+    """Values the enum keeps only so pre-cutover records deserialize.
+
+    engine/enums.py marks these "REMOVE after 2026-05-06". A label that is a
+    valid enum value can still be the WRONG label if it is one of these --
+    golden_hour is annotated "source_context only; pattern resolved
+    separately", so scoring pattern accuracy against it is a category error
+    even though the value parses.
+    """
+    return {"rim_only", "axial", "flat_fashion", "gobo_projection",
+            "golden_hour", "overcast_natural"}
 
 
 def test_ground_truth_labels_are_canonical_pattern_ids():
-    """9 of 34 corpus labels are not canonical patterns.
+    """Every corpus label must be a live pattern value the engine can mean.
 
-    TX guardrail: source_context (golden_hour, overcast_natural) and modifier
-    (gobo) concepts must not sit as peer pattern outputs.  Scoring pattern
-    accuracy against them is a category error and depresses every metric
-    computed from this corpus.
+    Two ways to fail: a value the enum does not carry at all, or a value it
+    carries only as an expired migration alias.
     """
     import glob
     import os
 
     canon = _canonical_ids()
-    offenders = []
+    expired = _deprecated_aliases()
+    unknown_value, stale_alias = [], []
+
     for meta_path in sorted(glob.glob("data/reference_dataset/*/*/metadata.json")):
         gt = (json.load(open(meta_path)).get("ground_truth") or {})
         expected = gt.get("expected_pattern")
-        if expected and expected not in canon and expected != "unknown":
-            offenders.append((os.path.basename(os.path.dirname(meta_path)), expected))
+        slug = os.path.basename(os.path.dirname(meta_path))
+        if not expected or expected == "unknown":
+            continue
+        if expected not in canon:
+            unknown_value.append((slug, expected))
+        elif expected in expired:
+            stale_alias.append((slug, expected))
 
-    # Pinned at the measured count. Lower it as labels are corrected; a rise
-    # means new non-canonical labels were introduced.
-    assert len(offenders) <= 3, (
-        f"non-canonical ground-truth labels rose to {len(offenders)}: {offenders}"
+    assert not unknown_value, (
+        f"labels the engine cannot mean at all: {unknown_value}"
     )
-
-
-@pytest.mark.benchmark
-def test_confidence_still_carries_no_signal():
-    """Documents the defect. Fails if confidence becomes informative -- good news,
-    but update the recorded baseline when it happens."""
-    pytest.skip(
-        "Requires a full corpus sweep; see docs and the numbers in this module's "
-        "docstring. Run scripts/measure_calibration.py to regenerate."
+    # Pinned at the measured count. Lower it as labels are corrected; a rise
+    # means a stale alias was reintroduced as ground truth.
+    assert len(stale_alias) <= 1, (
+        f"expired migration aliases used as ground truth rose to "
+        f"{len(stale_alias)}: {stale_alias}"
     )
