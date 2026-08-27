@@ -34,7 +34,7 @@ const C = {
   glassSheen:  'rgba(178,191,209,0.07)',
 };
 
-export default function HomeScreen({ onAnalyze, hasLastResult, onViewLastResult, user, onLogout, onSettings, onRecipes, onSavedSetups, onBuildWizard, onMyKit, onSessionLog, onLookLibrary, onClientBrief, onVideoCapture, lastAnalysisTime }) {
+export default function HomeScreen({ onAnalyze, hasLastResult, onViewLastResult, user, onLogout, onSettings, onRecipes, onSavedSetups, onBuildWizard, onMyKit, onSessionLog, onLookLibrary, onClientBrief, onVideoCapture, lastAnalysisTime, onAccuracy}) {
   const [imageFile,    setImageFile]    = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isPressed,    setIsPressed]    = useState(false);
@@ -1965,6 +1965,23 @@ export default function HomeScreen({ onAnalyze, hasLastResult, onViewLastResult,
           >
             {sampleLoading ? 'Loading…' : 'Try a sample →'}
           </p>
+          {/* Gate Zero G0.3 — the accuracy claim must be auditable before
+              signup. Leads to every scored reference read, misses included. */}
+          {onAccuracy && (
+            <>
+              <span style={{ width: 1, height: 12, background: steel(0.15), display: 'block', flexShrink: 0 }} />
+              <p
+                onClick={() => { softClickSound(); tapHaptic(); onAccuracy(); }}
+                style={{
+                  margin: 0,
+                  fontSize: 13, fontWeight: 600, letterSpacing: '0.4px',
+                  color: steel(0.40),
+                  cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                  ...FONT_SMOOTH,
+                }}
+              >How accurate? →</p>
+            </>
+          )}
         </div>
       )}
 

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import HomeScreen from './studio/_core/HomeScreen';
+import AccuracyScreen from './studio/_core/AccuracyScreen';
+import { buildLightingEvidence } from './studio/_shared/lightingEvidence';
 import ProcessingScreen from './studio/_core/ProcessingScreen';
 import ResultScreen from './studio/_core/ResultScreen';
 import SetupScreen from './studio/_core/SetupScreen';
@@ -613,10 +615,16 @@ function mapApiResult(data) {
   const recreationSetup = data.reference_analysis?.recreation_setup || {};
   const setupNotes = recreationSetup.setup_notes || [];
 
+  // Observations behind the read. The result screen shows these instead of a
+  // self-graded confidence band below the one score band that measured as
+  // separable — see lightingEvidence.js for the measurement.
+  const evidence = buildLightingEvidence(data);
+
   return {
     pattern,
     geometricBase,
     confidence,
+    evidence,
     meta,
     mood,
     cameraSettings: exifCamera,
@@ -1295,6 +1303,7 @@ export default function Day1DemoApp() {
     }
   }, [result, activeSessionToken, shareLoading]);
   const handleLookLibrary = () => setScreen('looklibrary');
+  const handleAccuracy    = () => setScreen('accuracy');
   const handleClientBrief = () => setScreen('clientbrief');
   const handleBuildComplete = (payload) => {
     // Build a result object from wizard payload so SetupScreen can render it
@@ -1559,7 +1568,7 @@ export default function Day1DemoApp() {
           onBuildWizard={handleBuildWizard}
           onMyKit={handleMyKit}
           onSessionLog={handleSessionLog}
-          onLookLibrary={handleLookLibrary}
+          onLookLibrary={handleLookLibrary} onAccuracy={handleAccuracy}
           onClientBrief={handleClientBrief}
           onVideoCapture={handleVideoCapture}
           lastAnalysisTime={lastAnalysisTime}
@@ -1714,6 +1723,13 @@ export default function Day1DemoApp() {
       if (!cbMobile) return cbEl;
       return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{cbEl}</FitToViewport>;
     }
+    case 'accuracy': {
+      // Gate Zero G0.3 — the proof surface, reachable without an account.
+      const acMobile = !isDesktopUp;
+      const acEl = <AccuracyScreen onBack={() => goBack()} />;
+      if (!acMobile) return acEl;
+      return <FitToViewport designWidth={430} designHeight={932} minScale={1} maxScale={1.9} tightness={0.96}>{acEl}</FitToViewport>;
+    }
     case 'looklibrary': {
       const llMobile = !isDesktopUp;
       const llEl = <LookLibraryScreen onBack={() => goBack()} />;
@@ -1777,7 +1793,7 @@ export default function Day1DemoApp() {
         <HomeScreen onAnalyze={handleAnalyze} hasLastResult={!!lastResult} onViewLastResult={handleViewLastResult}
           user={user} onLogout={() => { clearAuth(); setUser(null); }} onSettings={handleSettings}
           onRecipes={handleRecipes} onSavedSetups={handleSavedSetups} onBuildWizard={handleBuildWizard}
-          onMyKit={handleMyKit} onSessionLog={handleSessionLog} onLookLibrary={handleLookLibrary} onClientBrief={handleClientBrief} onVideoCapture={handleVideoCapture} lastAnalysisTime={lastAnalysisTime} />
+          onMyKit={handleMyKit} onSessionLog={handleSessionLog} onLookLibrary={handleLookLibrary} onAccuracy={handleAccuracy} onClientBrief={handleClientBrief} onVideoCapture={handleVideoCapture} lastAnalysisTime={lastAnalysisTime} />
       );
       if (!defMobile) return defEl;
       return <FitToViewport designWidth={430} designHeight={932} maxScale={1.9} tightness={0.96}>{defEl}</FitToViewport>;
