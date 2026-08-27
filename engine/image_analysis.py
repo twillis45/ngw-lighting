@@ -333,17 +333,20 @@ def describe_image(path: str, describe_mode: str = "basic", *, debug: bool = Fal
 
     out["classification"] = _classify_palette(overall_palette, grayscale_like)
 
-    if describe_mode == "vision" and run_vlm:
+    if describe_mode == "vision":
         # ── Fire VLM in parallel with CV pipeline ────────────────────
         # VLM only needs the image path — completely independent of CV.
         # Starting it here lets the API round-trip overlap with MediaPipe,
         # cue extraction, and the 30+ vision passes, cutting wall time ~40%.
+        # run_vlm gates ONLY the VLM.  The CV pipeline below runs either way
+        # (VL: the VLM is hinting, not ground truth -- an engine that cannot
+        # analyze without it has that backwards).
         _vlm_future: Optional[Future] = None
         _vlm_executor: Optional[ThreadPoolExecutor] = None
-        _img_hash = _image_hash(path)
-        _vlm_cached = _load_vlm_cache(_img_hash)
+        _img_hash = _image_hash(path) if run_vlm else None
+        _vlm_cached = _load_vlm_cache(_img_hash) if run_vlm else None
 
-        if _vlm_cached is None:
+        if run_vlm and _vlm_cached is None:
             try:
                 from engine.vlm import describe_reference_image, vlm_available
                 if vlm_available():
@@ -408,7 +411,9 @@ def describe_image(path: str, describe_mode: str = "basic", *, debug: bool = Fal
         # ── Collect VLM result (started in parallel above) ───────────
         vlm_desc = None
         _vlm_error: Optional[str] = None
-        if _vlm_cached is not None:
+        if not run_vlm:
+            pass  # VLM deliberately skipped — CV-only run, not an error
+        elif _vlm_cached is not None:
             # Cache hit — reconstruct from disk
             try:
                 from engine.image_analysis_models import VLMDescription
