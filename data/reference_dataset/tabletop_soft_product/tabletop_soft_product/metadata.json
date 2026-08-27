@@ -15,7 +15,7 @@
     "expected_pattern": "tabletop_soft_product",
     "acceptable_patterns": [
       "tabletop_soft_product",
-      "flat_fashion",
+      "flat",
       "high_key",
       "unknown",
       "rembrandt"

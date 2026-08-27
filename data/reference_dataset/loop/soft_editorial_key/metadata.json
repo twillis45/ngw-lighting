@@ -17,7 +17,6 @@
       "loop",
       "rembrandt",
       "window_portrait",
-      "golden_hour",
       "unknown"
     ],
     "expected_light_count": 1,

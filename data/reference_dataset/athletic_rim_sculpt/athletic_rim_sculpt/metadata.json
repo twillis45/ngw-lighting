@@ -15,7 +15,7 @@
     "expected_pattern": "athletic_rim_sculpt",
     "acceptable_patterns": [
       "athletic_rim_sculpt",
-      "rim_only",
+      "rim",
       "split",
       "short",
       "low_key",

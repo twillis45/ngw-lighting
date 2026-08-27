@@ -12,9 +12,8 @@
   "shadow_pattern": "gobo",
   "notes": "Window with negative fill \u2014 window blinds casting striped shadow pattern across face, warm side light, high contrast",
   "ground_truth": {
-    "expected_pattern": "gobo",
+    "expected_pattern": "window_negative_fill",
     "acceptable_patterns": [
-      "gobo",
       "window_portrait",
       "window_negative_fill",
       "split",

@@ -17,9 +17,8 @@
       "short",
       "split",
       "rembrandt",
-      "rim_only",
+      "rim",
       "low_key",
-      "gobo",
       "unknown"
     ],
     "expected_light_count": 1,

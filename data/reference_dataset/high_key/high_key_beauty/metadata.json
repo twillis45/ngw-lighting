@@ -15,7 +15,7 @@
     "expected_pattern": "high_key",
     "acceptable_patterns": [
       "high_key",
-      "flat_fashion",
+      "flat",
       "butterfly",
       "clamshell",
       "rembrandt",

@@ -12,9 +12,9 @@
   "shadow_pattern": "rim_only",
   "notes": "Rim only \u2014 pure rim/edge light from behind, face in deep shadow, hat obscures features, dramatic silhouette",
   "ground_truth": {
-    "expected_pattern": "rim_only",
+    "expected_pattern": "rim",
     "acceptable_patterns": [
-      "rim_only",
+      "rim",
       "low_key",
       "split",
       "rembrandt",

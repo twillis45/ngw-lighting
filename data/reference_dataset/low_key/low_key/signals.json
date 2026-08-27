@@ -1,0 +1,849 @@
+{
+  "geometry": {},
+  "pose_solver": {
+    "ok": true,
+    "torso_rotation_deg": 0.0,
+    "head_rotation_deg": 15.4,
+    "shoulder_line_angle_deg": -177.6,
+    "hip_line_angle_deg": -178.1,
+    "chin_pitch": "up",
+    "chin_yaw_deg": -55.6,
+    "subject_lean": "camera_right",
+    "arm_occlusion_regions": [
+      "waist_left",
+      "waist_right"
+    ],
+    "leg_occlusion_regions": [
+      "leg_crossing"
+    ],
+    "body_surface_normals_estimate": {
+      "chest_axis_deg": 0.0,
+      "abdomen_axis_deg": 0.0,
+      "face_axis_deg": 12.3
+    },
+    "pose_shadow_interference": true,
+    "pose_highlight_interference": true,
+    "occluded_regions": [
+      "leg_crossing",
+      "waist_left",
+      "waist_right"
+    ],
+    "self_shadow_regions": [
+      "waist_left",
+      "waist_right"
+    ],
+    "pose_complexity_score": 0.602,
+    "pose_confidence_adjustment": "reduce_lighting_confidence"
+  },
+  "camera_geometry": {
+    "ok": false,
+    "error": "no face geometry data"
+  },
+  "surface_class": {
+    "ok": false,
+    "error": "operands could not be broadcast together with shapes (844,473) (2048,1147) (844,473) "
+  },
+  "catchlight": {
+    "ok": true,
+    "catchlight_count": 0,
+    "catchlight_shape": "unknown",
+    "catchlight_position": "unknown",
+    "catchlight_size_ratio": 0.021,
+    "catchlight_intensity": 0.712,
+    "catchlight_circularity": null
+  },
+  "specular_surface": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:214: error: (-209:Sizes of input arguments do not match) The operation is neither 'array op array' (where arrays have the same size and type), nor 'array op scalar', nor 'scalar op array' in function 'binary_op'\n"
+  },
+  "shadow": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:214: error: (-209:Sizes of input arguments do not match) The operation is neither 'array op array' (where arrays have the same size and type), nor 'array op scalar', nor 'scalar op array' in function 'binary_op'\n"
+  },
+  "highlight": {
+    "ok": true,
+    "highlight_width_ratio": 0.261,
+    "highlight_rolloff_rate": 0.826,
+    "highlight_edge_gradient": 0.12,
+    "highlight_axis_deg": 90.0,
+    "highlight_specularity": 0.836
+  },
+  "background": {
+    "ok": false,
+    "error": "boolean index did not match indexed array along axis 0; size of axis is 844 but size of corresponding boolean axis is 2048"
+  },
+  "catchlight_topology": {
+    "ok": true,
+    "catchlight_count": 1,
+    "raw_count": 1,
+    "displayed_count": 1,
+    "dedup_note": null,
+    "cluster_geometry": "single",
+    "cluster_spread_deg": 0.0,
+    "inter_catchlight_spacing": [],
+    "bilateral_symmetry_score": 0.0,
+    "primary": {
+      "clock_deg": 111.8,
+      "shape": "strip",
+      "size_ratio": 0.01,
+      "intensity": 0.713,
+      "eye": "left",
+      "area": 6
+    },
+    "secondary": null,
+    "tertiary": null,
+    "confidence": 0.4,
+    "notes": [
+      "Source: pixel re-scan fallback (Pipeline 1 had no data)"
+    ]
+  },
+  "highlight_axis_map": {
+    "ok": true,
+    "regions": {
+      "forehead": {
+        "axis_deg": 4.2,
+        "width_ratio": 0.202,
+        "intensity": 0.129
+      },
+      "left_cheek": {
+        "axis_deg": 3.9,
+        "width_ratio": 0.282,
+        "intensity": 0.186
+      }
+    },
+    "dominant_axis_deg": 4.1,
+    "axis_count": 1,
+    "axis_consistency": 1.0,
+    "wrap_ratio": 0.028,
+    "confidence": 0.4,
+    "notes": []
+  },
+  "highlight_symmetry": {
+    "ok": true,
+    "left_intensity": 0.0,
+    "right_intensity": 0.0,
+    "symmetry_score": 0.0,
+    "dominant_side": "unknown",
+    "intensity_ratio": 1.0,
+    "fill_detected": false,
+    "fill_side": null,
+    "underfill_ev": null,
+    "confidence": 0.0,
+    "notes": [
+      "Insufficient face area for symmetry analysis"
+    ]
+  },
+  "continuous_source": {
+    "ok": true,
+    "likely_technology": "strobe",
+    "technology_confidence": 1.0,
+    "evidence": [
+      "high_specularity (0.84) \u2192 strobe/flash likely"
+    ],
+    "specular_edge_sharpness": 0.836,
+    "color_temp_consistency": 0.5,
+    "confidence": 0.9,
+    "notes": []
+  },
+  "bounce_contributor": {
+    "ok": true,
+    "contributors": [
+      {
+        "type": "v_flat",
+        "fill_ratio": 0.093,
+        "side": "left"
+      }
+    ],
+    "primary_fill_type": "negative_fill",
+    "fill_to_key_ratio": 0.093,
+    "total_bounce_contribution": 0.074,
+    "confidence": 0.6,
+    "notes": [
+      "very low fill ratio (0.09) \u2192 possible v-flat/negative fill"
+    ]
+  },
+  "separation_light": {
+    "ok": true,
+    "has_hair_light": false,
+    "hair_light_direction_deg": null,
+    "hair_light_intensity": 0.0,
+    "hair_light_width_ratio": 0.0,
+    "has_rim_light": false,
+    "rim_side": null,
+    "has_background_spill": false,
+    "spill_vs_intentional_confidence": 0.5,
+    "confidence": 0.45,
+    "notes": []
+  },
+  "off_axis_key": {
+    "ok": true,
+    "key_azimuth_deg": 4.1,
+    "key_elevation_deg": 45.0,
+    "is_off_axis": false,
+    "off_axis_angle_deg": 0.0,
+    "detection_method": "highlight_axis",
+    "confidence": 0.25,
+    "notes": [
+      "highlight_axis_deg=4.1 \u2192 azimuth=4.1"
+    ]
+  },
+  "light_structure": {
+    "ok": true,
+    "nose_shadow_shape": "indeterminate",
+    "nose_shadow_length_ratio": 1.0,
+    "nose_shadow_angle_deg": 0.0,
+    "triangle_detected": false,
+    "triangle_cheek": null,
+    "triangle_completeness": 0.0,
+    "pattern_name": "unknown",
+    "confidence": 0.45,
+    "face_box_estimated": false,
+    "notes": [
+      "shadow_ratio=1.00, asymmetry=0.00",
+      "unconditional cheek scan found triangle_isolation=0.633 (Rembrandt triangle present despite low nose L/R asymmetry)"
+    ],
+    "nose_shadow_centroid_angle_deg": 225.0,
+    "nose_shadow_centroid_distance": 0.02,
+    "left_right_asymmetry": 0.0,
+    "top_bottom_ratio": 1.0,
+    "shadow_density": 1.0,
+    "triangle_isolation": 0.633,
+    "highlight_width_ratio": 0.261
+  },
+  "light_direction_field": {
+    "ok": true,
+    "ldf_vectors": [
+      {
+        "region": "r0_c1",
+        "angle_deg": -2.5,
+        "magnitude": 9.74,
+        "confidence": 0.19475705944867414
+      },
+      {
+        "region": "r0_c2",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r1_c1",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r1_c2",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r2_c0",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r2_c1",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r2_c2",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r2_c3",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r3_c0",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r3_c1",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r3_c2",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      },
+      {
+        "region": "r3_c3",
+        "angle_deg": 0.0,
+        "magnitude": NaN,
+        "confidence": 1.0
+      }
+    ],
+    "dominant_light_vector_deg": -0.2,
+    "vector_consistency": 1.0,
+    "ldf_cell_count": 12,
+    "notes": [
+      "Analyzed 12 cells, dominant direction -0.2\u00b0."
+    ]
+  },
+  "inverse_square": {
+    "ok": false,
+    "error": "boolean index did not match indexed array along axis 0; size of axis is 319 but size of corresponding boolean axis is 507"
+  },
+  "solar": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:230: error: (-215:Assertion failed) (mtype == CV_8U || mtype == CV_8S) && _mask.sameSize(*psrc1) in function 'binary_op'\n"
+  },
+  "window": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:230: error: (-215:Assertion failed) (mtype == CV_8U || mtype == CV_8S) && _mask.sameSize(*psrc1) in function 'binary_op'\n"
+  },
+  "bounce": {
+    "ok": true,
+    "bounce_sources": [],
+    "dominant_bounce_direction": null,
+    "bounce_fill_ratio": 0.0,
+    "notes": []
+  },
+  "reflection": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:230: error: (-215:Assertion failed) (mtype == CV_8U || mtype == CV_8S) && _mask.sameSize(*psrc1) in function 'binary_op'\n"
+  },
+  "penumbra": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:230: error: (-215:Assertion failed) (mtype == CV_8U || mtype == CV_8S) && _mask.sameSize(*psrc1) in function 'binary_op'\n"
+  },
+  "occlusion": {
+    "ok": false,
+    "error": "OpenCV(4.13.0) /Users/xperience/GHA-OpenCV-Python/_work/opencv-python/opencv-python/opencv/modules/core/src/arithm.cpp:230: error: (-215:Assertion failed) (mtype == CV_8U || mtype == CV_8S) && _mask.sameSize(*psrc1) in function 'binary_op'\n"
+  },
+  "color_temp": {
+    "ok": false,
+    "error": "operands could not be broadcast together with shapes (844,473) (2048,1147) "
+  },
+  "environment": {
+    "ok": true,
+    "environment_class": "studio",
+    "environment_confidence": 0.1,
+    "indoor_outdoor": "indoor",
+    "controlled_lighting": true,
+    "environment_evidence": [],
+    "notes": [
+      "Environment: studio (conf=0.10), indoor."
+    ]
+  },
+  "modifier_shape": {
+    "ok": true,
+    "modifier_candidates": [],
+    "primary_modifier": "unknown",
+    "primary_modifier_confidence": 0.0,
+    "reflection_regions": [],
+    "notes": []
+  },
+  "hypothesis": {
+    "ok": true,
+    "hypotheses": [
+      {
+        "lights": [
+          {
+            "role": "key",
+            "direction_deg": -0.2,
+            "height": "eye_level",
+            "distance_ft": 6.0,
+            "modifier": "unknown",
+            "color_temp_k": 5500
+          }
+        ],
+        "environment": "studio",
+        "confidence": 0.352,
+        "evidence": [
+          "key: ['Primary light source assumed.']"
+        ]
+      }
+    ],
+    "best_hypothesis_index": 0,
+    "likely_light_count": "one",
+    "light_count_confidence": 0.44,
+    "roles": {
+      "key": {
+        "present": true,
+        "confidence": 0.9,
+        "evidence": [
+          "Primary light source assumed."
+        ]
+      },
+      "fill": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "negative_fill": {
+        "present": true,
+        "confidence": 0.44999999999999996,
+        "evidence": []
+      },
+      "rim": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "kicker": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "background": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "bounce": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "unknown_secondary": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      }
+    },
+    "multi_light_evidence_score": 0.0,
+    "false_multi_light_risk": 0.1,
+    "light_role_notes": [
+      "Light count: one (conf=0.44)",
+      "key: conf=0.90",
+      "negative_fill: conf=0.45"
+    ],
+    "notes": []
+  },
+  "light_role": {
+    "ok": true,
+    "hypotheses": [
+      {
+        "lights": [
+          {
+            "role": "key",
+            "direction_deg": -0.2,
+            "height": "eye_level",
+            "distance_ft": 6.0,
+            "modifier": "unknown",
+            "color_temp_k": 5500
+          }
+        ],
+        "environment": "studio",
+        "confidence": 0.352,
+        "evidence": [
+          "key: ['Primary light source assumed.']"
+        ]
+      }
+    ],
+    "best_hypothesis_index": 0,
+    "likely_light_count": "one",
+    "light_count_confidence": 0.44,
+    "roles": {
+      "key": {
+        "present": true,
+        "confidence": 0.9,
+        "evidence": [
+          "Primary light source assumed."
+        ]
+      },
+      "fill": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "negative_fill": {
+        "present": true,
+        "confidence": 0.44999999999999996,
+        "evidence": []
+      },
+      "rim": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "kicker": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "background": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "bounce": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "unknown_secondary": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      }
+    },
+    "multi_light_evidence_score": 0.0,
+    "false_multi_light_risk": 0.1,
+    "light_role_notes": [
+      "Light count: one (conf=0.44)",
+      "key: conf=0.90",
+      "negative_fill: conf=0.45"
+    ],
+    "notes": []
+  },
+  "physics": {
+    "ok": true,
+    "scored_hypotheses": [
+      {
+        "hypothesis": {
+          "lights": [
+            {
+              "role": "key",
+              "direction_deg": -0.2,
+              "height": "eye_level",
+              "distance_ft": 6.0,
+              "modifier": "unknown",
+              "color_temp_k": 5500
+            }
+          ],
+          "environment": "studio",
+          "confidence": 0.352,
+          "evidence": [
+            "key: ['Primary light source assumed.']"
+          ]
+        },
+        "physics_score": 0.5,
+        "violations": [],
+        "checks": {
+          "highlight_axis": 0.0,
+          "catchlight_geometry": 0.5,
+          "direction_field": 1.0
+        }
+      }
+    ],
+    "best_hypothesis_index": 0,
+    "best_physics_score": 0.5,
+    "violation_summary": [],
+    "notes": [
+      "Scored 1 hypotheses, best=0 (score=0.500)."
+    ]
+  },
+  "reconstruction": {
+    "ok": true,
+    "key_light_angle_deg_raw": 30.0,
+    "key_light_angle_deg_pose_corrected": 30.0,
+    "key_light_angle_deg": 30.0,
+    "key_light_height": "eye_level",
+    "key_elevation_above_eye_deg": null,
+    "modifier_size_class": "small",
+    "modifier_size_class_raw": "small",
+    "modifier_size_class_surface_corrected": "small",
+    "modifier_certainty": "moderate",
+    "modifier_distance_ft": 7.7,
+    "fill_present": false,
+    "negative_fill": false,
+    "background_light": false,
+    "background_distance_ft": 12.0,
+    "camera_height_relative_to_subject": "eye_level",
+    "pose_complexity_score": 0.602,
+    "surface_complexity_score_from_surface": null,
+    "likely_light_count": "one",
+    "light_roles": {
+      "key": {
+        "present": true,
+        "confidence": 0.9,
+        "evidence": [
+          "Primary light source assumed."
+        ]
+      },
+      "fill": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "negative_fill": {
+        "present": true,
+        "confidence": 0.44999999999999996,
+        "evidence": []
+      },
+      "rim": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "kicker": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "background": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "bounce": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      },
+      "unknown_secondary": {
+        "present": false,
+        "confidence": 0.0,
+        "evidence": []
+      }
+    },
+    "light_role_notes": [
+      "Light count: one (conf=0.44)",
+      "key: conf=0.90",
+      "negative_fill: conf=0.45"
+    ],
+    "light_direction_consistency": 1.0,
+    "estimated_source_distance_ft": 7.7,
+    "distance_class": null,
+    "environment_class": "studio",
+    "sun_candidate": false,
+    "window_candidate": false,
+    "occlusion_detected": false,
+    "dominant_cct_kelvin": null,
+    "mixed_lighting": false,
+    "modifier_candidates": [],
+    "primary_modifier_hypothesis": "unknown",
+    "hypotheses": [
+      {
+        "lights": [
+          {
+            "role": "key",
+            "direction_deg": -0.2,
+            "height": "eye_level",
+            "distance_ft": 6.0,
+            "modifier": "unknown",
+            "color_temp_k": 5500
+          }
+        ],
+        "environment": "studio",
+        "confidence": 0.352,
+        "evidence": [
+          "key: ['Primary light source assumed.']"
+        ]
+      }
+    ],
+    "best_hypothesis": {
+      "lights": [
+        {
+          "role": "key",
+          "direction_deg": -0.2,
+          "height": "eye_level",
+          "distance_ft": 6.0,
+          "modifier": "unknown",
+          "color_temp_k": 5500
+        }
+      ],
+      "environment": "studio",
+      "confidence": 0.352,
+      "evidence": [
+        "key: ['Primary light source assumed.']"
+      ]
+    },
+    "physics_score": 0.5,
+    "physics_violations": [],
+    "notes": [
+      "shadow weight halved: pose_shadow_interference in ['waist_left', 'waist_right']",
+      "key_angle defaulted to 30\u00b0",
+      "key_angle_face_relative=30.0\u00b0 (no pose correction applied)",
+      "highlight_interference noted (catchlight weight already dominant)",
+      "modifier_size from weighted softness=0.17",
+      "distance from catchlight_size: 0.021",
+      "no fill: highlight_width_ratio < 0.35"
+    ]
+  },
+  "vlm_reconstruction": {
+    "primary_reconstruction": {
+      "dominant_source_direction_deg": -0.2,
+      "dominant_source_height_class": "unknown",
+      "dominant_source_height_deg_estimate": null,
+      "dominant_source_distance_class": "unknown",
+      "dominant_source_distance_ft": null,
+      "source_size_class": "unknown",
+      "modifier_family_candidates": [
+        {
+          "type": "unknown",
+          "confidence": 1.0
+        }
+      ],
+      "environment": "studio",
+      "likely_light_count": 1,
+      "roles": {
+        "key": {
+          "present": true,
+          "confidence": 0.9
+        },
+        "fill": {
+          "present": false,
+          "confidence": 0.0
+        },
+        "negative_fill": {
+          "present": true,
+          "confidence": 0.45
+        },
+        "rim": {
+          "present": false,
+          "confidence": 0.0
+        },
+        "kicker": {
+          "present": false,
+          "confidence": 0.0
+        },
+        "background": {
+          "present": false,
+          "confidence": 0.0
+        },
+        "bounce": {
+          "present": false,
+          "confidence": 0.0
+        }
+      },
+      "reconstruction_confidence": 0.42,
+      "ambiguity_notes": [
+        "No catchlights detected; eye region ambiguous.",
+        "Pose complexity and occlusion reduce lighting certainty.",
+        "No shadow, penumbra, or inverse square data available.",
+        "Modifier family and source size unknown due to lack of evidence.",
+        "Environment class 'studio' has low confidence (0.1)."
+      ],
+      "contradiction_notes": [
+        "Highlight and LDF agree on direction, but height and distance are indeterminate.",
+        "No background, shadow, or bounce evidence available."
+      ]
+    },
+    "candidates": [
+      {
+        "candidate_id": "candidate_1",
+        "key_light_angle_deg": -0.2,
+        "key_light_height_class": "unknown",
+        "key_light_height_deg_estimate": null,
+        "key_light_distance_class": "unknown",
+        "key_light_distance_ft_estimate": null,
+        "source_size_class": "unknown",
+        "modifier_family_candidates": [
+          {
+            "type": "unknown",
+            "confidence": 1.0
+          }
+        ],
+        "environment": "studio",
+        "likely_light_count": 1,
+        "roles": {
+          "key": {
+            "present": true,
+            "confidence": 0.9
+          },
+          "fill": {
+            "present": false,
+            "confidence": 0.0
+          },
+          "negative_fill": {
+            "present": true,
+            "confidence": 0.45
+          },
+          "rim": {
+            "present": false,
+            "confidence": 0.0
+          },
+          "kicker": {
+            "present": false,
+            "confidence": 0.0
+          },
+          "background": {
+            "present": false,
+            "confidence": 0.0
+          },
+          "bounce": {
+            "present": false,
+            "confidence": 0.0
+          }
+        },
+        "confidence_score": 0.42,
+        "ambiguity_notes": [
+          "No catchlights detected; eye region ambiguous.",
+          "Pose complexity and occlusion reduce lighting certainty.",
+          "No shadow, penumbra, or inverse square data available.",
+          "Modifier family and source size unknown due to lack of evidence.",
+          "Environment class 'studio' has low confidence (0.1)."
+        ]
+      }
+    ],
+    "ok": true,
+    "notes": [],
+    "needs_review": false,
+    "needs_review_reasons": [],
+    "validation_scores": null,
+    "contradiction_notes": [],
+    "ambiguity_notes": [],
+    "signal_reliability_summary": null,
+    "solver_trace_summary": null,
+    "master_profile": null,
+    "master_profile_confidence": 0.0,
+    "style_family": null
+  },
+  "reference_matches": {
+    "closest_references": [
+      {
+        "reference_id": "iooss_athletic_001",
+        "photographer": "Walter Iooss Jr",
+        "lighting_pattern": "athletic_rim_sculpt",
+        "similarity": 0.625,
+        "dataset_tier": "gold"
+      },
+      {
+        "reference_id": "watson_rim_editorial_001",
+        "photographer": "Albert Watson",
+        "lighting_pattern": "editorial_rim_key",
+        "similarity": 0.619,
+        "dataset_tier": "gold"
+      },
+      {
+        "reference_id": "karsh_rembrandt_001",
+        "photographer": "Yousuf Karsh",
+        "lighting_pattern": "rembrandt",
+        "similarity": 0.582,
+        "dataset_tier": "gold"
+      },
+      {
+        "reference_id": "leibovitz_loop_001",
+        "photographer": "Annie Leibovitz",
+        "lighting_pattern": "loop",
+        "similarity": 0.579,
+        "dataset_tier": "gold"
+      },
+      {
+        "reference_id": "lindbergh_soft_editorial_001",
+        "photographer": "Peter Lindbergh",
+        "lighting_pattern": "soft_editorial_key",
+        "similarity": 0.579,
+        "dataset_tier": "gold"
+      }
+    ],
+    "top_reference": "iooss_athletic_001",
+    "top_similarity": 0.625
+  },
+  "validation": {
+    "ok": true,
+    "valid": false,
+    "confidence": 0.633,
+    "warnings": [
+      "high pose complexity (0.60), no catchlight anchor \u2014 low confidence"
+    ],
+    "pose_adjusted": true,
+    "surface_adjusted": false
+  }
+}
