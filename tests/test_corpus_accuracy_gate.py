@@ -9,8 +9,10 @@ the resolved pattern.  A unit suite cannot see an accuracy regression.
 Baselines below are MEASURED, not aspirational (run_vlm=False, 2026-08-26,
 after ground-truth labels were remapped to canonical pattern_ids -- which
 RAISED both numbers despite making acceptable_patterns stricter):
-    exact       17/34
-    acceptable  29/34
+    exact       18/34
+    acceptable  30/34   (raised from 17/29 when the stale `gobo` label was
+                         remapped to its canonical `projected` -- the label
+                         was producing a false miss, not the engine)
 
 Lowering a baseline is a product decision, not a test fix.  If a change drops
 these, either the change is wrong or the number is a deliberate trade -- say
@@ -27,8 +29,8 @@ from engine.orchestrator import analyze_image
 CORPUS = sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
 
 # Measured 2026-08-26 over the full 34-image corpus, run_vlm=False.
-BASELINE_EXACT = 17
-BASELINE_ACCEPTABLE = 29
+BASELINE_EXACT = 18
+BASELINE_ACCEPTABLE = 30
 
 # A fast subset for the default suite. These are entries that resolved to an
 # acceptable pattern at baseline, so any drop here is a real regression.
