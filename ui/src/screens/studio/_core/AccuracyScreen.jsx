@@ -58,10 +58,11 @@ export default function AccuracyScreen({ onBack }) {
       // verified on iPhone 17 Pro Max, where 22px put '← Back' under the clock.
       padding: 'max(env(safe-area-inset-top, 0px) + 22px, 68px) 20px max(env(safe-area-inset-bottom, 0px) + 40px, 56px)',
       overflowY: 'auto', ...FONT_SMOOTH,
-    }}>
+    }} data-testid="accuracy-screen">
       <button
         type="button"
         onClick={onBack}
+        data-testid="accuracy-back"
         style={{
           background: 'none', border: 'none', padding: 0, cursor: 'pointer',
           color: steel(0.55), fontSize: 13, fontWeight: 600, letterSpacing: '0.3px',
@@ -95,12 +96,12 @@ export default function AccuracyScreen({ onBack }) {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 1fr))',
             gap: 12,
-          }}>
+          }} data-testid="accuracy-grid">
             {entries.map(e => {
               const state = verdictOf(e.verdict);
               const v = VERDICT[state];
               return (
-                <div key={e.id} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <div key={e.id} data-testid="accuracy-tile" style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <img
                     src={e.thumbnail_url}
                     alt={`Reference — expected ${e.verdict?.expected || 'unknown'} lighting`}

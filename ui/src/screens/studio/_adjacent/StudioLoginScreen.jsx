@@ -562,6 +562,13 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
           {onAccuracy && (
             <button
               type="button"
+              // The email field autofocuses. Without this, the first press
+              // blurs it, validation renders "Email is required", the layout
+              // shifts, and the button moves out from under the pointer
+              // before `click` fires -- so the FIRST tap is silently
+              // swallowed and only the second works. preventDefault on
+              // mousedown stops the focus change, so nothing shifts.
+              onMouseDown={e => e.preventDefault()}
               onClick={onAccuracy}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
