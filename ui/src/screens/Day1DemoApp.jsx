@@ -1457,8 +1457,12 @@ export default function Day1DemoApp() {
   // (The old Bucket B cockpit-unlock branch that redirected to prod auth
   // was removed along with the cockpit gate — all studio paths now show
   // the in-studio login screen.)
-  if (!user) {
-    return <StudioLoginScreen onLogin={(u) => setUser(u)} />;
+  if (!user && screen !== 'accuracy') {
+    // The accuracy gallery is deliberately OUTSIDE this gate. It is the
+    // public proof surface (Gate Zero G0.3): a photographer has to be able
+    // to audit the accuracy claim before being asked for an email. Gating
+    // the proof behind the signup it exists to justify is circular.
+    return <StudioLoginScreen onLogin={(u) => setUser(u)} onAccuracy={() => setScreen('accuracy')} />;
   }
 
   // Onboarding gate — first-run profiling wizard

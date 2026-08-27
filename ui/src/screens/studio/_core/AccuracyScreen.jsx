@@ -51,7 +51,13 @@ export default function AccuracyScreen({ onBack }) {
     <div style={{
       position: 'relative', width: '100%', minHeight: '100%',
       background: '#000', color: 'rgba(245,247,250,0.95)',
-      padding: '22px 20px 40px', overflowY: 'auto', ...FONT_SMOOTH,
+      // Respect the notch/status bar — verified on iPhone 17 Pro Max,
+      // where a flat 22px top pad put '← Back' under the clock.
+      // Clear the notch/status bar. env() alone returns 0 without
+      // viewport-fit=cover, so max() guarantees a floor either way --
+      // verified on iPhone 17 Pro Max, where 22px put '← Back' under the clock.
+      padding: 'max(env(safe-area-inset-top, 0px) + 22px, 68px) 20px max(env(safe-area-inset-bottom, 0px) + 40px, 56px)',
+      overflowY: 'auto', ...FONT_SMOOTH,
     }}>
       <button
         type="button"
