@@ -321,7 +321,13 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             margin: '10px 0 0', fontSize: 14, fontWeight: 400,
             color: steel(0.7), letterSpacing: '0.2px', lineHeight: 1.5,
             ...FONT_SMOOTH,
-          }}>Reverse-engineer any portrait. Nail the shot, every time.</p>
+          }}>Reverse-engineer portrait lighting. See the setup behind the shot.</p>
+          {/* Was: "Reverse-engineer any portrait. Nail the shot, every time."
+              Claim ledger #5, FALSE: the corpus resolves 18/34 exactly and the
+              proof page one tap away publishes its own misses. A buyer needs a
+              single miss to disprove "every time", and we hand them two.
+              #6: "any portrait" is UNPROVEN — 34 in-house images, 23 of them
+              monochrome, nothing external. See docs/CLAIM_LEDGER.md. */}
         </div>
 
         {/* ── Content ── */}

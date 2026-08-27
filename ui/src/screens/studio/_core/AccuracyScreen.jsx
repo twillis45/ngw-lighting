@@ -82,7 +82,14 @@ export default function AccuracyScreen({ onBack }) {
       ) : (
         <>
           <p style={{ fontSize: 13.5, color: steel(0.68), margin: '0 0 4px', lineHeight: 1.55 }}>
-            Against photographs whose lighting was verified by hand.
+            {/* Was "verified by hand". Claim ledger #4, UNPROVEN: 32 of 34
+                entries carry photographer:"benchmark_verified" — a placeholder
+                string, not a person — and source_type:"found_online". Nothing
+                records who verified an entry, when, or how. The honest sentence
+                is what we can show: the expected pattern is recorded, and every
+                read is scored against it in the open. Restore the stronger
+                wording only once per-entry provenance exists. */}
+            Against a reference set with recorded expected patterns.
             <strong style={{ color: 'rgba(245,247,250,0.92)' }}> {data.exact} of {data.scored}</strong> matched
             the expected pattern exactly;
             <strong style={{ color: 'rgba(245,247,250,0.92)' }}> {data.hits} of {data.scored}</strong> fell

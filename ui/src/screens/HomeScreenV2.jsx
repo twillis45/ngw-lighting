@@ -196,7 +196,10 @@ function FreeHomeContent({ triggerUpload, handleWizard, lastSetup, dispatch, use
         >
           Analyze a Photo
         </button>
-        <span className="home-v2__cta-hint">Trusted by photographers who care about light</span>
+        {/* Claim ledger #14, FALSE: there are no users yet, so nobody is
+            trusting anything. Reinstate when a named photographer agrees to
+            be quoted. See docs/CLAIM_LEDGER.md. */}
+        <span className="home-v2__cta-hint">Every reference read published — misses included</span>
       </div>
 
       <div className="home-v2__secondary">
@@ -314,7 +317,10 @@ function PaidHomeContent({ result, lastSetup, recentSetups, triggerUpload, handl
         >
           Analyze a Photo
         </button>
-        <span className="home-v2__cta-hint">Trusted by photographers who care about light</span>
+        {/* Claim ledger #14, FALSE: there are no users yet, so nobody is
+            trusting anything. Reinstate when a named photographer agrees to
+            be quoted. See docs/CLAIM_LEDGER.md. */}
+        <span className="home-v2__cta-hint">Every reference read published — misses included</span>
       </div>
 
       <div className="home-v2__secondary">

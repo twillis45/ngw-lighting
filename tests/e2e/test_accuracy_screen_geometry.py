@@ -126,3 +126,40 @@ def test_proof_surface_geometry_holds(browser, name, w, h):
         )
     finally:
         pg.close()
+
+
+@pytest.mark.parametrize("name,w,h", VIEWPORTS[:1])
+def test_misses_are_actually_rendered(browser, name, w, h):
+    """Claim ledger #3: "Misses are shown. A proof page that hides its failures
+    is not proof."
+
+    True today with nothing stopping a future filter from quietly dropping the
+    failing entries -- which is exactly how a proof page stops being one. If the
+    payload reports misses, at least one must reach the screen.
+    """
+    import json
+    import urllib.request
+
+    with urllib.request.urlopen(f"{BASE}/api/gallery", timeout=10) as r:
+        payload = json.load(r)
+    expected_misses = payload["scored"] - payload["hits"]
+    if expected_misses == 0:
+        pytest.skip("no misses in the current corpus — nothing to assert")
+
+    pg = browser.new_page(viewport={"width": w, "height": h})
+    try:
+        pg.goto(BASE + "/ui", wait_until="networkidle")
+        pg.get_by_text("See how accurate it is first", exact=False).first.click()
+        pg.wait_for_selector('[data-testid="accuracy-grid"]', timeout=20000)
+        pg.wait_for_timeout(800)
+        text = pg.inner_text('[data-testid="accuracy-grid"]')
+        shown = text.upper().count("MISSED")
+        assert shown >= 1, (
+            f"payload reports {expected_misses} miss(es) but none rendered — "
+            "the proof page is hiding its failures"
+        )
+        assert shown == expected_misses, (
+            f"payload reports {expected_misses} miss(es), screen shows {shown}"
+        )
+    finally:
+        pg.close()
