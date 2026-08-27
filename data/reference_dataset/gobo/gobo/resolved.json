@@ -1,8 +1,8 @@
 {
-  "authoritative_pattern": "unknown",
+  "authoritative_pattern": "projected",
   "pattern": "unknown",
   "pattern_confidence": 0.0,
   "light_count": 0,
   "run_vlm": false,
-  "generated_at": "2026-08-26T17:03:02"
+  "generated_at": "2026-08-27T02:05:50"
 }

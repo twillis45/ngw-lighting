@@ -52,7 +52,8 @@ def _read_json(path: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
-def _verdict(meta: Dict[str, Any], signals: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+def _verdict(meta: Dict[str, Any], signals: Optional[Dict[str, Any]],
+             resolved: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Compare our stored read against human-verified ground truth.
 
     Returns the comparison honestly: `match` is None when we have no stored read
@@ -64,10 +65,19 @@ def _verdict(meta: Dict[str, Any], signals: Optional[Dict[str, Any]]) -> Dict[st
 
     read_pattern = None
     read_confidence = None
-    if signals:
+    if resolved:
+        # The engine's ANSWER -- classifier, solver and reconciler applied on
+        # top of the vision passes. This is what the product claims.
+        read_pattern = resolved.get("authoritative_pattern")
+        read_confidence = resolved.get("pattern_confidence")
+    if read_pattern in (None, "unknown") and signals:
+        # Fall back to the single light_structure pass only when there is no
+        # stored resolved read. It is ONE of 30 passes, not the answer, so a
+        # gallery scored on it understates the engine badly -- it reported
+        # 2/29 exact where the engine resolves 17/34.
         ls = signals.get("light_structure") or {}
-        read_pattern = ls.get("pattern_name")
-        read_confidence = ls.get("confidence")
+        read_pattern = read_pattern or ls.get("pattern_name")
+        read_confidence = read_confidence if read_confidence is not None else ls.get("confidence")
 
     if read_pattern is None:
         return {"expected": expected, "read": None, "match": None,
@@ -103,7 +113,7 @@ def list_gallery() -> Dict[str, Any]:
             "expected_light_count": gt.get("expected_light_count"),
             "thumbnail_url": f"/api/gallery/{meta.get('reference_id') or d.name}/thumbnail",
             "has_overlay": (d / "debug_overlay.png").exists(),
-            "verdict": _verdict(meta, signals),
+            "verdict": _verdict(meta, signals, _read_json(d / "resolved.json")),
         })
 
     scored = [i for i in items if i["verdict"]["match"] is not None]

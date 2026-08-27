@@ -68,3 +68,32 @@ def test_only_approved_entries_are_served():
 
 def test_thumbnail_404s_for_an_unknown_entry():
     assert client.get("/api/gallery/not-a-real-entry/thumbnail").status_code == 404
+
+
+def test_gallery_scores_the_engines_resolved_read_not_a_single_pass():
+    """The gallery is the public accuracy claim. It must score what the engine
+    actually answers.
+
+    signals.light_structure.pattern_name is ONE of 30 vision passes. Scoring it
+    reported 2/29 exact while the engine resolves 17/34 exact -- understating
+    the product by ~7x on the page whose entire job is proving it works.
+    """
+    from api.routes.gallery import list_gallery
+
+    payload = list_gallery()
+    scored = [e for e in payload["entries"] if e["verdict"]["match"] is not None]
+    assert scored, "no scored entries -- resolved reads missing"
+
+    # rembrandt_classic: engine resolves 'rembrandt'; the light_structure pass
+    # alone says 'loop'. The gallery must report the former.
+    entry = next((e for e in payload["entries"]
+                  if "rembrandt_classic" in str(e["id"])), None)
+    if entry is not None:
+        assert entry["verdict"]["read"] == "rembrandt", (
+            f"gallery reported {entry['verdict']['read']!r}; the engine resolves "
+            "'rembrandt' -- the verdict is reading a single pass, not the answer")
+
+    exact = sum(1 for e in scored if e["verdict"].get("exact"))
+    assert exact >= 10, (
+        f"only {exact}/{len(scored)} exact; the engine resolves 17/34. "
+        "The gallery is scoring the wrong field and understating the product.")

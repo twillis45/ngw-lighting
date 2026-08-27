@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useDispatch, useAppState } from '../context/AppContext';
 import { loadSetups, onSetupsChanged } from '../data/setupStore';
 import usePlan from '../hooks/usePlan';
+import ExampleGallery from '../components/ExampleGallery';
 
 /* ─── Derive stage card data from last result / saved setup ─────────── */
 const STAGE_BARE = new Set(['none', 'bare', 'direct', 'ambient', 'split', 'build', 'n/a', 'unknown']);
@@ -229,6 +230,10 @@ function FreeHomeContent({ triggerUpload, handleWizard, lastSetup, dispatch, use
           </div>
         </button>
       </div>
+
+      {/* Public accuracy gallery — the "prove it works before signup" surface.
+          Free/signed-out view only. Renders nothing if the endpoint is empty. */}
+      <ExampleGallery onUploadClick={triggerUpload} />
 
       {lastSetup && (
         <button
