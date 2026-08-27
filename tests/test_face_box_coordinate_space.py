@@ -15,22 +15,33 @@ import glob
 import pytest
 from PIL import Image
 
-# KNOWN BUG, DELIBERATELY NOT FIXED YET -- see the A/B below.
+# KNOWN BUG, DELIBERATELY NOT FIXED YET -- and now diagnosed.
 #
-# Fixing the coordinate in isolation is a 29-point accuracy regression:
-# measured over the 34-image corpus (VLM arm, cache disabled),
-#     broken face_box : exact 15/34, acceptable 26/34, mean conf 0.788
-#     fixed  face_box : exact  5/34, acceptable 14/34, mean conf 0.720
-#     net +2 / -14
-# Mechanism: with an out-of-bounds box, light_structure_pass hits its
-# "face box too small" early return and contributes nothing, so resolution
-# falls through to reference_read / definitive_signature -- the accurate
-# resolvers.  A valid box lets the CV geometry passes run; they fail their
-# own consistency checks, get demoted, and hand resolution to `specialty`
-# classifiers that score worse.
+# Re-measured 2026-08-27 against current code (the first A/B was before the
+# gobo remap and several engine changes). The cost REPRODUCES and is larger:
 #
-# The coordinate fix must therefore land together with a retune of its
-# downstream consumers, not before it.  The working patch is preserved.
+#     without the fix : 18/34 exact, 30/34 acceptable
+#     with the fix    :  8/34 exact, 17/34 acceptable
+#                       -10 exact,  -13 acceptable
+#
+# The first diagnosis was incomplete. It is not merely that a valid box lets
+# light_structure_pass run and outrank better sources. Of the 14 reads the fix
+# loses, SIX change answer while staying on the SAME resolver:
+#
+#     butterfly            butterfly -> split      [reference_read -> reference_read]
+#     clamshell_clean      clamshell -> loop       [reference_read -> reference_read]
+#     mixed_light_failure  loop      -> clamshell  [reference_read -> reference_read]
+#
+# reference_read -- the resolver carrying most of the engine's accuracy --
+# concludes differently, and worse, from a CORRECT face box. Its geometry
+# handling is calibrated against the broken coordinate.
+#
+# So the retune named in this comment is not a downstream weighting tweak. It
+# is reference_read's own face-geometry handling, and it needs its own
+# before/after corpus gate. The coordinate fix must land WITH that work, in
+# one change, or accuracy drops by more than half.
+#
+# The working patch is preserved and applies cleanly with `git apply --3way`.
 pytestmark = pytest.mark.xfail(
     reason="face_box coordinate bug is load-bearing; fix requires retuning "
            "the 30+ vision passes calibrated against it",
