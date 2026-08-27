@@ -1,0 +1,8 @@
+{
+  "authoritative_pattern": "short_fashion_key",
+  "pattern": "loop",
+  "pattern_confidence": 0.45,
+  "light_count": 1,
+  "run_vlm": false,
+  "generated_at": "2026-08-27T02:07:53"
+}

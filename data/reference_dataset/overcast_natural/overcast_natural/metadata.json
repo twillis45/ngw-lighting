@@ -12,10 +12,9 @@
   "shadow_pattern": "overcast_natural",
   "notes": "Overcast natural \u2014 outdoor portrait under overcast sky, soft diffused light, no harsh shadows, urban setting",
   "ground_truth": {
-    "expected_pattern": "overcast_natural",
+    "expected_pattern": "flat",
     "acceptable_patterns": [
-      "overcast_natural",
-      "flat_fashion",
+      "flat",
       "high_key",
       "rembrandt",
       "loop",

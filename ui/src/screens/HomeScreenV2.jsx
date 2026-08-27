@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useDispatch, useAppState } from '../context/AppContext';
 import { loadSetups, onSetupsChanged } from '../data/setupStore';
 import usePlan from '../hooks/usePlan';
+import ExampleGallery from '../components/ExampleGallery';
 
 /* ─── Derive stage card data from last result / saved setup ─────────── */
 const STAGE_BARE = new Set(['none', 'bare', 'direct', 'ambient', 'split', 'build', 'n/a', 'unknown']);
@@ -195,7 +196,10 @@ function FreeHomeContent({ triggerUpload, handleWizard, lastSetup, dispatch, use
         >
           Analyze a Photo
         </button>
-        <span className="home-v2__cta-hint">Trusted by photographers who care about light</span>
+        {/* Claim ledger #14, FALSE: there are no users yet, so nobody is
+            trusting anything. Reinstate when a named photographer agrees to
+            be quoted. See docs/CLAIM_LEDGER.md. */}
+        <span className="home-v2__cta-hint">Every reference read published — misses included</span>
       </div>
 
       <div className="home-v2__secondary">
@@ -229,6 +233,10 @@ function FreeHomeContent({ triggerUpload, handleWizard, lastSetup, dispatch, use
           </div>
         </button>
       </div>
+
+      {/* Public accuracy gallery — the "prove it works before signup" surface.
+          Free/signed-out view only. Renders nothing if the endpoint is empty. */}
+      <ExampleGallery onUploadClick={triggerUpload} />
 
       {lastSetup && (
         <button
@@ -309,7 +317,10 @@ function PaidHomeContent({ result, lastSetup, recentSetups, triggerUpload, handl
         >
           Analyze a Photo
         </button>
-        <span className="home-v2__cta-hint">Trusted by photographers who care about light</span>
+        {/* Claim ledger #14, FALSE: there are no users yet, so nobody is
+            trusting anything. Reinstate when a named photographer agrees to
+            be quoted. See docs/CLAIM_LEDGER.md. */}
+        <span className="home-v2__cta-hint">Every reference read published — misses included</span>
       </div>
 
       <div className="home-v2__secondary">

@@ -15,11 +15,10 @@
     "expected_pattern": "editorial_rim_key",
     "acceptable_patterns": [
       "editorial_rim_key",
-      "rim_only",
+      "rim",
       "split",
       "short",
       "low_key",
-      "gobo",
       "unknown"
     ],
     "expected_light_count": 1,

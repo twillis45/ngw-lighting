@@ -15,7 +15,7 @@
     "expected_pattern": "bottle_backlight",
     "acceptable_patterns": [
       "bottle_backlight",
-      "rim_only",
+      "rim",
       "low_key",
       "unknown"
     ],

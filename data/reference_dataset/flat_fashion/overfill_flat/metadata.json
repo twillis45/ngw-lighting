@@ -12,9 +12,9 @@
   "shadow_pattern": "flat_fashion",
   "notes": "Over-filled flat lighting \u2014 multiple sources cancel shadows, very low contrast",
   "ground_truth": {
-    "expected_pattern": "flat_fashion",
+    "expected_pattern": "flat",
     "acceptable_patterns": [
-      "flat_fashion",
+      "flat",
       "high_key",
       "clamshell",
       "unknown"

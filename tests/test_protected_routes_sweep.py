@@ -90,7 +90,6 @@ PUBLIC_ROUTES: dict[str, str] = {
         "including misses. No user data."
     ),
     "/api/gallery/{entry_id}/thumbnail": "Gallery image for a public entry.",
-    "/api/gallery/{entry_id}/overlay": "Debug overlay for a public entry — what the engine saw.",
 
     # ── Share-token addressed ──
     "/api/shared/setup/{share_token}": "Bearer-token-in-URL share link.",
@@ -176,6 +175,23 @@ def test_public_allowlist_has_no_stale_entries():
     live = {p for _, p in _routes()}
     stale = sorted(set(PUBLIC_ROUTES) - live)
     assert not stale, f"PUBLIC_ROUTES names routes that no longer exist: {stale}"
+
+
+# NOTE on writing entries here (added 2026-08-27, after this allowlist let a
+# debug overlay ship publicly):
+#
+#   A reason must argue that PUBLIC IS CORRECT. It must not merely describe
+#   what the route returns.
+#
+#   The entry that failed read: "Debug overlay for a public entry -- what the
+#   engine saw." Accurate, and it justified nothing. The route served a 457KB
+#   debug PNG to anonymous callers while the identical class of material was
+#   403 on /api/analyze?debug=true. The sweep passed because the exemption was
+#   authored by the same person who wrote the route, in the same sitting.
+#
+#   An enumerating gate catches an ungated NEW route. It cannot catch a route
+#   its own allowlist excuses. When adding an entry, state who may see the
+#   data and why that is acceptable -- not what the endpoint is.
 
 
 def test_every_public_route_states_a_reason():

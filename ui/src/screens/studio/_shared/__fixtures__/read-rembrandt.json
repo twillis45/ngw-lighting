@@ -1,0 +1,179 @@
+{
+ "authoritative_pattern": "rembrandt",
+ "authoritative_confidence": 0.59,
+ "authoritative_confidence_label": "partial",
+ "lighting_inference": {
+  "pattern": "loop",
+  "pattern_confidence": 0.45,
+  "key_position_text": "30-45 off-axis left",
+  "key_side": "left",
+  "modifier_family": "softbox_rect",
+  "modifier_confidence": 0.65,
+  "light_count": 1,
+  "fill_method_text": "",
+  "detected_mood": "cinematic",
+  "mood_confidence": 0.274,
+  "detected_skin_tone": "medium",
+  "skin_tone_confidence": 0.3,
+  "background_light_detected": false,
+  "background_light_confidence": 0.0,
+  "detected_cct_kelvin": 5500,
+  "detected_distance_class": null,
+  "detected_environment": "studio",
+  "notes": [
+   "Single catchlight at 10 o'clock \u2192 key camera-left; loop/rembrandt indeterminate without nose shadow data.",
+   "Palette mood 'cinematic' doesn't match catchlight pattern 'loop' \u2014 confidence reduced.",
+   "B&W processing detected \u2014 color-based modifier and environment inferences have reduced reliability.",
+   "High-contrast grading detected \u2014 apparent contrast ratio may not reflect actual lighting ratio.",
+   "Pose-induced shadows detected \u2014 shadow direction and pattern inferences may be partially influenced by subject pose.",
+   "Shadow interruption pattern detected \u2014 shadow direction and pattern inferences reflect projected geometry, not conventional key light angle.",
+   "Catchlights suggest key from left, shadow analysis suggests upper_left."
+  ],
+  "catchlight_intelligence": {
+   "primary_key": {
+    "eye": "left",
+    "position": "10 o'clock",
+    "quad": "upper_left",
+    "intensity": 0.81,
+    "size_ratio": 0.05,
+    "shape": "rectangular",
+    "role": "key"
+   },
+   "modifier": {
+    "type": "softbox_rect",
+    "label": "Small Softbox",
+    "size_class": "small",
+    "size_estimate": "~16-24\" softbox",
+    "size_confidence": "high",
+    "size_caveat": null,
+    "total_relative_area": 0.0025,
+    "contributing_count": 1,
+    "physical_meaning": "Small Softbox (area 0.003 iris\u00b2, ~16-24\" softbox equiv.) \u2014 limited wrap, distinct shadow edge",
+    "cluster_meaning": "Single clean specular \u2014 source appears compact from this working distance. One light, one reflection.",
+    "distance_class": "very_far",
+    "distance_est_ft": "9-12+ ft",
+    "distance_quality": "small angular source \u2014 directional, defined shadow edge"
+   },
+   "fill_bilateral": false,
+   "fill_source_label": null,
+   "key_intensity_pct": 81,
+   "fill_intensity_pct": null,
+   "stops_down": null,
+   "lighting_ratio": null,
+   "key_read": "Small Softbox, camera-left, ~16-24\" softbox at 9-12+ ft. One light.",
+   "fill_read": null,
+   "lighting_summary": "Small Softbox, camera-left, ~16-24\" softbox at 9-12+ ft. One light.",
+   "light_count_from_catchlights": 1,
+   "artifact_count": 0,
+   "catchlights": [
+    {
+     "eye": "left",
+     "position": "10 o'clock",
+     "quad": "upper_left",
+     "intensity": 0.81,
+     "size_ratio": 0.05,
+     "shape": "rectangular",
+     "role": "key"
+    }
+   ],
+   "ring_light_detected": false,
+   "notes": []
+  },
+  "penumbra_source_size": "small"
+ },
+ "edge_case_flags": {
+  "blown_highlights": false,
+  "mixed_color_temperature": false,
+  "outdoor_foliage_shadows": false,
+  "window_light_gradient": false,
+  "extreme_low_key": false,
+  "bw_processing": true,
+  "no_face": false,
+  "earring_catchlight_contamination": false
+ },
+ "observability": {
+  "analysis_id": "d11cda91ea2b41fca182e32b4cac9e3d",
+  "ts": "2026-08-27T14:10:10Z",
+  "pattern": "rembrandt",
+  "confidence": 0.59,
+  "confidence_label": "partial",
+  "source": "lighting_inference",
+  "stage_timings": {
+   "describe_image": 0.88,
+   "extended_pipeline": 4.85,
+   "stage1_signatures": 0.0,
+   "lighting_inference": 0.0,
+   "cue_inference": 0.0,
+   "solver_chain": 0.03,
+   "reference_read": 0.01,
+   "total": 6.19
+  },
+  "signal_coverage": {
+   "signals_available": 24,
+   "signals_total": 24,
+   "overall_strength": 0.536,
+   "weak_signals": [
+    "continuous_source_signals"
+   ],
+   "missing_signals": []
+  },
+  "active_edge_cases": [
+   "bw_processing"
+  ],
+  "active_paradoxes": [],
+  "contradictions": [
+   "reference_read says 'butterfly' but lighting_inference says 'loop'",
+   "signal contradiction (0.90) demoted reference_read 'butterfly'",
+   "cascade (0.90) demoted cue_inference 'butterfly'"
+  ],
+  "ambiguity_flags": [
+   "bw_limits_color_cues"
+  ],
+  "needs_review": true,
+  "face_detected": true,
+  "mode_flags": {
+   "no_face": false,
+   "is_bw": false,
+   "is_hcg": false,
+   "scene_type": "portrait"
+  },
+  "definitive_pattern": null,
+  "analysis_mode": "classical",
+  "mode_confidence": 0.85,
+  "mode_rationale": "",
+  "complexity_summary": {
+   "load_bearing_source_count": 2,
+   "shadow_conflict_score": 0.0,
+   "catchlight_conflict_score": 0.0,
+   "ambient_contamination": 0.0,
+   "multi_catchlight_topology": "single",
+   "catchlight_reliability": "reliable",
+   "rim_load_bearing": false,
+   "overall_complexity": 0.2,
+   "not_yet_computed": [
+    "practical_contamination",
+    "practical_load_bearing",
+    "color_contamination_score",
+    "detected_gels",
+    "occlusion_ratio",
+    "crop_completeness",
+    "face_count",
+    "multi_face_lighting_consistency",
+    "post_processing_risk",
+    "is_composited"
+   ]
+  },
+  "candidate_credibility_summary": [
+   {
+    "pattern": "rembrandt",
+    "credibility": 0.6,
+    "is_classical": true
+   },
+   {
+    "pattern": "butterfly",
+    "credibility": 0.21,
+    "is_classical": true
+   }
+  ]
+ }
+}

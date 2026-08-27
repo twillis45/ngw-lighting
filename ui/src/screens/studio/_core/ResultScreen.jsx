@@ -24,6 +24,8 @@ import { formatSetupText } from '../../../utils/formatSetupText';
 import useStableViewport from '../../../utils/useStableViewport';
 import { resultRevealSound, segmentPressSound, navSlideSound, softClickSound } from '../../../utils/sounds';
 import { loadSettings } from '../../../data/settingsStore';
+import EvidenceReadout from '../_shared/EvidenceReadout';
+import { scoreIsMeaningful } from '../_shared/lightingEvidence';
 import { steel, C, FONT_SMOOTH, VIEWFINDER_INNER_SHADOW, GLASS_REFLECTION, LENS_VIGNETTE, DITHER_STYLE,
          CTA_BG, CTA_SHADOW, CTA_BEVEL, PANEL_SHADOW, PANEL_BEVEL,
          TEXT_SHADOW_ENGRAVED,
@@ -2769,7 +2771,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
             {prettify(pattern, { title: true })}
           </p>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginTop: 6 }}>
-            {confDisplayMode !== 'simple' && (
+            {confDisplayMode !== 'simple' && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: 20, fontWeight: 700,
                 color: confColor,
@@ -2779,19 +2781,25 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
                 ...FONT_SMOOTH,
               }}>{animatedConf}%</span>
             )}
-            {confDisplayMode !== 'numeric' && (
+            {/* Only the >=80 band measured as separable (89% correct). Below it the
+                grade misled: "Uncertain" reads were right 83% of the time and
+                "Tentative" 100%, which teaches photographers to ignore the label.
+                Observations are shown instead -- see lightingEvidence.js. */}
+            {confDisplayMode !== 'numeric' && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: confDisplayMode === 'simple' ? 18 : 13,
                 fontWeight: 600,
-                color: confidence >= 70 ? 'rgba(140,218,160,0.80)' : 'rgba(220,175,95,0.80)',
+                color: 'rgba(140,218,160,0.80)',
                 letterSpacing: '0.4px',
                 ...FONT_SMOOTH,
               }}>
-                {confidence >= 80 ? 'Confident' : confidence >= 60 ? 'Tentative' : 'Uncertain'}
+                Confident
               </span>
             )}
           </div>
-          {confEvidence ? (
+          {result?.evidence?.observations?.length ? (
+            <EvidenceReadout evidence={result.evidence} />
+          ) : confEvidence ? (
             <p style={{
               margin: '4px 0 0',
               fontSize: 13, fontWeight: 500,
@@ -2937,7 +2945,7 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
             display: 'flex', alignItems: 'baseline', gap: 8,
             marginTop: 6, position: 'relative', zIndex: 2,
           }}>
-            {confDisplayMode !== 'simple' && (
+            {confDisplayMode !== 'simple' && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: 20, fontWeight: 700,
                 color: confColor,
@@ -2949,20 +2957,26 @@ export default function ResultScreen({ result, imagePreview, onSetup, onRetry, o
                 {animatedConf}%
               </span>
             )}
-            {confDisplayMode !== 'numeric' && (
+            {/* Only the >=80 band measured as separable (89% correct). Below it the
+                grade misled: "Uncertain" reads were right 83% of the time and
+                "Tentative" 100%, which teaches photographers to ignore the label.
+                Observations are shown instead -- see lightingEvidence.js. */}
+            {confDisplayMode !== 'numeric' && scoreIsMeaningful(confidence) && (
               <span style={{
                 fontSize: confDisplayMode === 'simple' ? 18 : 13,
                 fontWeight: 600,
-                color: confidence >= 70 ? 'rgba(140,218,160,0.80)' : 'rgba(220,175,95,0.80)',
+                color: 'rgba(140,218,160,0.80)',
                 letterSpacing: '0.4px',
                 ...FONT_SMOOTH,
               }}>
-                {confidence >= 80 ? 'Confident' : confidence >= 60 ? 'Tentative' : 'Uncertain'}
+                Confident
               </span>
             )}
           </div>
           {/* Evidence source — which physical signals drove this verdict */}
-          {confEvidence ? (
+          {result?.evidence?.observations?.length ? (
+            <EvidenceReadout evidence={result.evidence} />
+          ) : confEvidence ? (
             <p style={{
               margin: '4px 0 0',
               fontSize: 13, fontWeight: 500,

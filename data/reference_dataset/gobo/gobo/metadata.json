@@ -12,9 +12,9 @@
   "shadow_pattern": "gobo",
   "notes": "Gobo/flag lighting \u2014 cross-shaped light strip across face, deep black surround, dramatic editorial",
   "ground_truth": {
-    "expected_pattern": "gobo",
+    "expected_pattern": "projected",
     "acceptable_patterns": [
-      "gobo",
+      "projected",
       "split",
       "unknown"
     ],

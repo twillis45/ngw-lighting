@@ -1,0 +1,8 @@
+{
+  "authoritative_pattern": "loop",
+  "pattern": "projected",
+  "pattern_confidence": 0.288,
+  "light_count": 0,
+  "run_vlm": false,
+  "generated_at": "2026-08-27T02:08:29"
+}
