@@ -90,5 +90,90 @@
   "bw_processing": true,
   "no_face": false,
   "earring_catchlight_contamination": false
+ },
+ "observability": {
+  "analysis_id": "d11cda91ea2b41fca182e32b4cac9e3d",
+  "ts": "2026-08-27T14:10:10Z",
+  "pattern": "rembrandt",
+  "confidence": 0.59,
+  "confidence_label": "partial",
+  "source": "lighting_inference",
+  "stage_timings": {
+   "describe_image": 0.88,
+   "extended_pipeline": 4.85,
+   "stage1_signatures": 0.0,
+   "lighting_inference": 0.0,
+   "cue_inference": 0.0,
+   "solver_chain": 0.03,
+   "reference_read": 0.01,
+   "total": 6.19
+  },
+  "signal_coverage": {
+   "signals_available": 24,
+   "signals_total": 24,
+   "overall_strength": 0.536,
+   "weak_signals": [
+    "continuous_source_signals"
+   ],
+   "missing_signals": []
+  },
+  "active_edge_cases": [
+   "bw_processing"
+  ],
+  "active_paradoxes": [],
+  "contradictions": [
+   "reference_read says 'butterfly' but lighting_inference says 'loop'",
+   "signal contradiction (0.90) demoted reference_read 'butterfly'",
+   "cascade (0.90) demoted cue_inference 'butterfly'"
+  ],
+  "ambiguity_flags": [
+   "bw_limits_color_cues"
+  ],
+  "needs_review": true,
+  "face_detected": true,
+  "mode_flags": {
+   "no_face": false,
+   "is_bw": false,
+   "is_hcg": false,
+   "scene_type": "portrait"
+  },
+  "definitive_pattern": null,
+  "analysis_mode": "classical",
+  "mode_confidence": 0.85,
+  "mode_rationale": "",
+  "complexity_summary": {
+   "load_bearing_source_count": 2,
+   "shadow_conflict_score": 0.0,
+   "catchlight_conflict_score": 0.0,
+   "ambient_contamination": 0.0,
+   "multi_catchlight_topology": "single",
+   "catchlight_reliability": "reliable",
+   "rim_load_bearing": false,
+   "overall_complexity": 0.2,
+   "not_yet_computed": [
+    "practical_contamination",
+    "practical_load_bearing",
+    "color_contamination_score",
+    "detected_gels",
+    "occlusion_ratio",
+    "crop_completeness",
+    "face_count",
+    "multi_face_lighting_consistency",
+    "post_processing_risk",
+    "is_composited"
+   ]
+  },
+  "candidate_credibility_summary": [
+   {
+    "pattern": "rembrandt",
+    "credibility": 0.6,
+    "is_classical": true
+   },
+   {
+    "pattern": "butterfly",
+    "credibility": 0.21,
+    "is_classical": true
+   }
+  ]
  }
 }

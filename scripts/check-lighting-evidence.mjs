@@ -40,6 +40,21 @@ check('reports source size physically, not as a product name',
 check('surfaces what limited the read',
   limits.some(l => /black and white/i.test(l)), limits);
 
+// The engine records where it was unsure. It reached the API and nothing
+// displayed it; these assert it now survives into the readout.
+const d = buildLightingEvidence(fixture);
+check('surfaces that two readings disagreed',
+  d.disagreements.length > 0 && /vs/.test(d.disagreements[0]), d.disagreements);
+check('names the runner-up pattern',
+  !!d.runnerUp && !!d.runnerUp.pattern, d.runnerUp);
+check('reports signal coverage',
+  !!d.coverage && typeof d.coverage.available === 'number', d.coverage);
+check('does not leak internal resolver names to the photographer',
+  !d.disagreements.some(x => /reference_read|lighting_inference|cue_inference/.test(x)),
+  d.disagreements);
+check('does not repeat the same limitation twice',
+  new Set(d.limits).size === d.limits.length, d.limits);
+
 console.log('\nscoreIsMeaningful — only the band measured as separable');
 check('80 is shown', scoreIsMeaningful(80) === true);
 check('79 is withheld', scoreIsMeaningful(79) === false);

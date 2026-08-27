@@ -21,13 +21,15 @@ REMAP = {
     "rim_only": ("rim", "'rim_only' is a stale alias of canonical 'rim' (Rim / Edge Light)"),
     "window_negative_fill": ("window_negative_fill", "canonical pattern of that exact name exists and is already in acceptable_patterns"),
     "overcast_natural": ("flat", "notes: 'soft diffused light, no harsh shadows' == Flat Lighting"),
+    "gobo": ("projected", "engine/enums.py records gobo_projection -> projected as a migration alias; "
+                          "'projected' is the canonical LightingPattern for gobo/interrupted light. "
+                          "The stale label was showing as a MISS on the public accuracy page."),
 }
 
 # Stale aliases appearing inside acceptable_patterns lists.
 ALIASES = {"flat_fashion": "flat", "rim_only": "rim"}
 
 NEEDS_HUMAN_CALL = {
-    "gobo": "notes describe a light strip across the face with black surround: 'split' or 'strip_light_dramatic'?",
     "golden_hour": "source_context, not a pattern; acceptable lists loop/rembrandt/short -- needs the image to choose",
     "hurley_triangle": "'3 lights, two upper and one lower, even wrap' -- 'clamshell' or 'butterfly'?",
 }

@@ -17,6 +17,25 @@
  * Pure function, no React — verified by scripts/check-lighting-evidence.mjs.
  */
 
+/** Plain-language reasons the engine had less to work with. observability.ambiguity_flags. */
+const AMBIGUITY_TEXT = {
+  // Same wording as LIMIT_TEXT.bw_processing on purpose: both flags mean the
+  // same thing to a photographer, and the dedupe below is by string.
+  bw_limits_color_cues: 'Black and white — color temperature and gel cues are unavailable',
+  low_signal_coverage:  'Fewer usable signals than normal in this frame',
+  face_occluded:        'Part of the face is covered',
+  multi_face:           'More than one face — the read follows the largest',
+};
+
+/** "reference_read says 'butterfly' but lighting_inference says 'loop'"
+ *  -> butterfly vs loop. Internal resolver names are never shown to a
+ *  photographer; what matters is that two reads disagreed, and on what. */
+const DISAGREE_RE = /says\s+'([^']+)'\s+but\s+.*?says\s+'([^']+)'/;
+
+function prettyPattern(p) {
+  return String(p || '').replace(/_/g, ' ');
+}
+
 /** Plain-language reasons a read was constrained. Keys are edge_case_flags. */
 const LIMIT_TEXT = {
   bw_processing:        'Black and white — color temperature and gel cues are unavailable',
@@ -82,7 +101,45 @@ export function buildLightingEvidence(data) {
     .filter(k => flags[k])
     .map(k => LIMIT_TEXT[k]);
 
-  return { observations, limits };
+  // The engine already records where it was unsure -- which readings
+  // disagreed, what was ambiguous, how much signal it had. It reached the
+  // API and nothing displayed it. Showing it is the difference between a
+  // read a photographer can weigh and one they have to take on faith.
+  const obs = (data && data.observability) || {};
+
+  for (const f of obs.ambiguity_flags || []) {
+    const text = AMBIGUITY_TEXT[f];
+    if (text && !limits.includes(text)) limits.push(text);
+  }
+
+  const disagreements = [];
+  for (const c of obs.contradictions || []) {
+    const m = DISAGREE_RE.exec(String(c));
+    if (m && m[1] !== m[2]) {
+      const pair = `${prettyPattern(m[1])} vs ${prettyPattern(m[2])}`;
+      if (!disagreements.includes(pair)) disagreements.push(pair);
+    }
+  }
+
+  // The runner-up, when the engine kept one worth naming.
+  const credible = (obs.candidate_credibility_summary || [])
+    .filter(c => c && c.pattern)
+    .slice(0, 3);
+  const runnerUp = credible.length > 1
+    ? { pattern: prettyPattern(credible[1].pattern), credibility: credible[1].credibility }
+    : null;
+
+  const cov = obs.signal_coverage || null;
+  const coverage = cov && typeof cov.signals_available === 'number'
+    ? {
+        available: cov.signals_available,
+        total: cov.signals_total,
+        strength: cov.overall_strength,
+        weak: cov.weak_signals || [],
+      }
+    : null;
+
+  return { observations, limits, disagreements, runnerUp, coverage };
 }
 
 /**

@@ -19,8 +19,8 @@ const FONT_SMOOTH = {
 
 export default function EvidenceReadout({ evidence, compact = false }) {
   if (!evidence) return null;
-  const { observations = [], limits = [] } = evidence;
-  if (observations.length === 0 && limits.length === 0) return null;
+  const { observations = [], limits = [], disagreements = [], runnerUp = null, coverage = null } = evidence;
+  if (observations.length === 0 && limits.length === 0 && disagreements.length === 0) return null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? 7 : 9, marginTop: 6 }}>
@@ -52,6 +52,38 @@ export default function EvidenceReadout({ evidence, compact = false }) {
             </div>
           ))}
         </>
+      )}
+
+      {/* Where the engine was unsure. It records this and always has; it
+          simply was not shown. A read a photographer can weigh beats one
+          they have to take on faith. */}
+      {(disagreements.length > 0 || runnerUp) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 2 }}>
+          <span style={{
+            fontSize: 9, fontWeight: 600, letterSpacing: '1.1px',
+            textTransform: 'uppercase', color: steel(0.40), ...FONT_SMOOTH,
+          }}>Where it was not certain</span>
+          {disagreements.map(d => (
+            <span key={d} style={{
+              fontSize: 11, fontWeight: 500, color: steel(0.62),
+              lineHeight: 1.4, ...FONT_SMOOTH,
+            }}>Two readings disagreed — {d}</span>
+          ))}
+          {runnerUp && (
+            <span style={{
+              fontSize: 11, fontWeight: 500, color: steel(0.58),
+              lineHeight: 1.4, ...FONT_SMOOTH,
+            }}>Next most credible: {runnerUp.pattern}</span>
+          )}
+          {coverage && coverage.weak && coverage.weak.length > 0 && (
+            <span style={{
+              fontSize: 11, fontWeight: 500, color: steel(0.52),
+              lineHeight: 1.4, ...FONT_SMOOTH,
+            }}>
+              {coverage.available} of {coverage.total} signals usable
+            </span>
+          )}
+        </div>
       )}
 
       {limits.length > 0 && (
