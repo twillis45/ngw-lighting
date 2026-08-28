@@ -14,6 +14,31 @@ services:
         sync: false           # Optional — only needed for VLM features
       - key: PORT
         value: 8000
+
+      # ── Stripe ────────────────────────────────────────────────────────
+      # Declared here so a deploy states what it needs. All are sync:false —
+      # set the values in the Render dashboard, never in git.
+      #
+      # The account is LIVE under No Guesswork Systems LLC (2026-08-27).
+      # Without STRIPE_SECRET_KEY the checkout route returns 503 with
+      # "Stripe is not configured", so a missing value fails loudly rather
+      # than silently taking no payments.
+      - key: STRIPE_SECRET_KEY
+        sync: false           # sk_live_...
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false           # whsec_... from the endpoint below
+      # Endpoint: https://app.noguessworksystems.com/api/stripe/webhook
+      # Subscribe to exactly two events — the only two the handler reads:
+      #   checkout.session.completed      -> records the subscription
+      #   customer.subscription.deleted   -> cancels it
+      - key: STRIPE_PRICE_ID_MONTHLY
+        sync: false           # Pro monthly
+      - key: STRIPE_PRICE_ID_YEARLY
+        sync: false           # Pro yearly
+      - key: STRIPE_PRICE_ID_STUDIO_MONTHLY
+        sync: false           # Studio monthly
+      - key: STRIPE_PRICE_ID_STUDIO_YEARLY
+        sync: false           # Studio yearly
     disk:
       name: ngw-data
       mountPath: /app/data   # SQLite DB persists here across deploys
