@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reverse the Light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#0B0C0E; --surface:#14161A; --surface-2:#1B1E24; --sunk:#07080A;
+  --ink:#F2F4F7; --ink-2:#8E9AA8; --ink-3:#5C6672;
+  --rule:#23272E; --rule-2:#31373F;
+  --key:#C89B45; --kept:#5FBE95; --struck:#D97757; --open:#7C8590;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.4);
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#EDEEF0; --surface:#FFFFFF; --surface-2:#E5E7EA; --sunk:#DCDEE2;
+  --ink:#111318; --ink-2:#4B535D; --ink-3:#7C8590;
+  --rule:#D6D9DE; --rule-2:#B8BDC4;
+  --key:#8A6420; --kept:#1F6B4E; --struck:#A8462A; --open:#6B747E;
+  --shadow:0 1px 2px rgba(17,19,24,.08), 0 14px 40px rgba(17,19,24,.07);
+}}
+:root[data-theme="light"]{
+  --bg:#EDEEF0; --surface:#FFFFFF; --surface-2:#E5E7EA; --sunk:#DCDEE2;
+  --ink:#111318; --ink-2:#4B535D; --ink-3:#7C8590;
+  --rule:#D6D9DE; --rule-2:#B8BDC4;
+  --key:#8A6420; --kept:#1F6B4E; --struck:#A8462A; --open:#6B747E;
+  --shadow:0 1px 2px rgba(17,19,24,.08), 0 14px 40px rgba(17,19,24,.07);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Public Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px 96px}
+.kick{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);display:flex;gap:16px;flex-wrap:wrap;margin:0 0 20px}
+header.top{padding:64px 0 34px;border-bottom:1px solid var(--rule-2)}
+h1{font-family:"Chivo",system-ui,sans-serif;font-weight:900;
+  font-size:clamp(40px,7vw,74px);line-height:.94;letter-spacing:-.035em;margin:0 0 22px;text-wrap:balance}
+.sub{font-size:clamp(16px,2vw,19px);line-height:1.52;color:var(--ink-2);max-width:62ch;margin:0}
+.sub strong{color:var(--ink);font-weight:600}
+section{padding:54px 0 0;border-top:1px solid var(--rule);margin-top:54px}
+section:first-of-type{border-top:none;margin-top:16px;padding-top:26px}
+h2{font-family:"Chivo",sans-serif;font-weight:700;font-size:clamp(24px,3.3vw,34px);
+  line-height:1.08;letter-spacing:-.025em;margin:0 0 6px;text-wrap:balance}
+.h2sub{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 26px}
+p{max-width:66ch;margin:0 0 12px;color:var(--ink-2)}
+p strong{color:var(--ink);font-weight:600}
+.mono{font-family:"JetBrains Mono",monospace;font-size:.82em}
+.decision{border:1px solid var(--rule);border-left:3px solid var(--key);background:var(--surface);
+  padding:20px 22px;margin:0 0 20px;max-width:76ch;box-shadow:var(--shadow)}
+.decision .t{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--key);font-weight:700;margin:0 0 10px}
+.decision p:last-child{margin-bottom:0}
+
+/* ── P2P tracker ─────────────────────────────────────────── */
+.nowbox{border:1px solid var(--rule);border-left:3px solid var(--struck);background:var(--surface);
+  padding:20px 22px;margin:0 0 26px;box-shadow:var(--shadow);max-width:76ch}
+.nowbox .t{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--struck);font-weight:700;margin:0 0 10px}
+.nowbox p{margin:0 0 10px;font-size:14.5px;line-height:1.55;max-width:none}
+.nowbox p:last-child{margin-bottom:0;font-size:12px;color:var(--ink-3)}
+.p2pbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 22px}
+.tabs{display:flex;gap:0;border:1px solid var(--rule);background:var(--surface)}
+.tabs button{background:none;border:none;cursor:pointer;padding:8px 15px;
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.tabs button[aria-pressed="true"]{background:var(--key);color:var(--bg)}
+.tabs button:focus-visible{outline:2px solid var(--key);outline-offset:-2px}
+.meter{flex:1;min-width:180px;height:6px;background:var(--sunk);border:1px solid var(--rule);position:relative}
+.meter i{display:block;height:100%;background:var(--kept)}
+.cnt{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.stage{margin:0 0 10px;border:1px solid var(--rule);background:var(--surface);box-shadow:var(--shadow)}
+.stage>h3{margin:0;padding:12px 16px;border-bottom:1px solid var(--rule);background:var(--surface-2);
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-2);font-weight:700;display:flex;gap:12px;align-items:baseline}
+.stage>h3 .n{color:var(--key)}
+.stage>h3 .st{margin-left:auto;color:var(--ink-3);font-size:10px}
+.it{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:13px 16px;
+  border-bottom:1px solid var(--rule);align-items:start}
+.it:last-child{border-bottom:none}
+.mk{width:17px;height:17px;flex-shrink:0;margin-top:3px;display:grid;place-items:center;
+  font:700 11px/1 ui-monospace,monospace;border:1.5px solid;border-radius:2px}
+.mk.passed{background:var(--kept);border-color:var(--kept);color:var(--bg)}
+.mk.skipped{background:transparent;border-color:var(--ink-3);color:var(--ink-3)}
+.it .box[disabled]{opacity:.4;cursor:not-allowed;border-style:dashed}
+.st-legend{display:flex;gap:18px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 16px}
+.st-legend span{display:flex;align-items:center;gap:6px}
+.it .box{width:17px;height:17px;border:1.5px solid var(--rule-2);background:var(--sunk);
+  cursor:pointer;margin-top:3px;padding:0;position:relative;flex-shrink:0}
+.it .box[aria-checked="true"]{background:var(--kept);border-color:var(--kept)}
+.it .box[aria-checked="true"]::after{content:"";position:absolute;left:4.5px;top:1px;
+  width:5px;height:10px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.it .box:focus-visible{outline:2px solid var(--key);outline-offset:2px}
+.it .tx{min-width:0}
+.it .ttl{font-weight:600;color:var(--ink);font-size:14.5px;line-height:1.4;
+  display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.it[data-done="1"] .ttl{color:var(--ink-3);text-decoration:line-through;text-decoration-thickness:1px}
+.it .tag{font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;padding:2px 6px;border:1px solid currentColor;white-space:nowrap}
+.tag.b{color:var(--key)} .tag.m{color:var(--open)}
+.tag.blocked{color:var(--struck)}
+.it .n{font-size:12.5px;color:var(--ink-2);line-height:1.5;margin:4px 0 0;max-width:78ch}
+.saveline{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--ink-3);
+  margin:14px 0 0;min-height:15px}
+
+/* ── marketing phases ────────────────────────────────────── */
+.ph{display:flex;flex-direction:column;gap:14px}
+.phase{background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.phase .num{font-family:"Chivo",sans-serif;font-weight:900;font-size:34px;line-height:.9;
+  color:var(--rule-2);font-variant-numeric:tabular-nums}
+.phase.now .num{color:var(--key)}
+.phase.done .num{color:var(--kept)}
+.phase h3{font-family:"Chivo",sans-serif;font-weight:700;font-size:19px;line-height:1.2;
+  letter-spacing:-.018em;margin:0 0 3px;color:var(--ink);text-wrap:balance}
+.phase .stage{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 9px}
+.phase p{margin:0 0 10px;font-size:14.5px;line-height:1.55;max-width:none}
+.exit{border-top:1px solid var(--rule);padding-top:10px;margin-top:2px;
+  font-size:13px;line-height:1.5;color:var(--ink-2)}
+.exit b{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--key);display:block;margin-bottom:4px;font-weight:700}
+.phase.done .exit b{color:var(--kept)}
+.state{font-family:"JetBrains Mono",monospace;font-size:9.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;padding:2px 7px;border:1px solid currentColor;
+  margin-left:8px;white-space:nowrap}
+.state.met{color:var(--kept)} .state.part{color:var(--key)} .state.blocked{color:var(--struck)}
+
+/* ── direction frames ────────────────────────────────────── */
+.sheet{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px}
+.frame{background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:20px 22px 22px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+.frame::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--key)}
+.frame.struck::before{background:var(--struck)}
+.frame .no{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;
+  letter-spacing:.14em;color:var(--key)}
+.frame.struck .no{color:var(--struck)}
+.frame h3{font-family:"Chivo",sans-serif;font-weight:700;font-size:20px;line-height:1.18;
+  letter-spacing:-.018em;margin:0;color:var(--ink);text-wrap:balance}
+.frame p{margin:0;font-size:14.5px;line-height:1.55;max-width:none}
+.ev{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3);
+  border-top:1px solid var(--rule);padding-top:9px;margin-top:2px;line-height:1.5}
+.ev b{color:var(--kept);font-weight:700}
+.frame.struck .ev b{color:var(--struck)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th{text-align:left;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:700;padding:11px 14px;
+  border-bottom:1px solid var(--rule-2);background:var(--surface-2);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--rule);color:var(--ink-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.n{color:var(--ink);font-weight:600}
+td.num{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{border-top:1px solid var(--rule-2);margin-top:60px;padding-top:20px;
+  font-size:13px;color:var(--ink-3);max-width:74ch}
+a{color:var(--key)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="kick"><span>NGW Lighting</span><span>Direction Board &amp; Path to Production</span><span>Recorded 2026-08-28</span></div>
+  <h1>Reverse the light.</h1>
+  <div class="nowbox">
+    <p class="t">Current state · recorded 2026-08-28</p>
+    <p><strong>Shipping and deployed. Blocked on one decision, and it is a pricing decision, not an engineering one.</strong></p>
+    <p>The engine resolves <strong>18 of 34 exactly and 30 of 34 within the accepted range</strong> on the reference corpus, and the public proof page reports its own misses. Production is current and verified.</p>
+    <p><strong>The blocker:</strong> the app displays an adaptive price (<span class="mono">[39, 49, 59, 79]</span>, varied by inferred user state) while checkout charges a single fixed price ID. Nobody has been charged because Stripe was not wired — <em>setting the secret key activates the mismatch</em>. Display and charge must agree before a payment is taken, and whether behavioural pricing ships at all is an owner ruling that has not been made.</p>
+    <p class="mono">Stripe live under the LLC · one settled transaction still owed · three checks await people, not code.</p>
+  </div>
+  <p class="sub">Every competitor simulates a room you have not shot yet. We read a photograph that already exists and say how it was lit. <strong>This board carries the directions that survived measurement and the path to production they have to travel</strong> — ten stages, two tracks, ticked as they close.</p>
+</header>
+
+<section>
+  <h2>The frame we are working in</h2>
+  <p class="h2sub">Positioning · one sentence each</p>
+  <div class="decision">
+    <p class="t">The split</p>
+    <p><strong>set.a.light 3D asks "what will this look like?"</strong> Build a setup in a physics room, render before you shoot. Deterministic, zero marginal cost, sells a perpetual license.</p>
+    <p><strong>NGW asks "how was that done?"</strong> Upload a photograph, get the setup that made it. There is no forward simulation to fall back on — the read is the product, so the read has to be right, and it has to be checkable.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Path to production</h2>
+  <p class="h2sub">10-stage spine × tracks · tick to record · <span id="scope">build + promotion</span></p>
+  <p>Stages come from the house methodology: <strong>Idea → Scope → Build → Verify → Security → Deploy → Observe → Maintain → Promotion → Sunset</strong>. Two tracks run <em>alongside</em> the spine, never inside it: <strong>build</strong> and <strong>marketing &amp; promotion</strong>. The marketing track has its own governing rule, recorded at stage 2 — <em>promotion readiness is gated by payment capability, not build state</em> — which is why most of it sits behind one blocker rather than spread across the quarter. An item is ticked only when something checkable says so — a passing gate, a measured number, a screenshot on a real device.</p>
+  <p class="st-legend">
+    <span><span class="mk passed">&#10003;</span> Recorded — passed</span>
+    <span><span class="mk skipped">&ndash;</span> Recorded — skipped</span>
+    <span><span class="box" style="display:inline-block"></span> Open — live work</span>
+    <span><span class="box" style="display:inline-block;opacity:.4;border-style:dashed"></span> Locked — stage not entered</span>
+  </p>
+  <div class="p2pbar">
+    <div class="tabs" role="group" aria-label="Track filter">
+      <button type="button" data-tr="all">All</button>
+      <button type="button" data-tr="b">Build</button>
+      <button type="button" data-tr="m">Marketing</button>
+    </div>
+    <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+    <span class="cnt" id="cnt"></span>
+  </div>
+  <div id="stages"></div>
+  <p class="saveline" id="save"></p>
+</section>
+
+<section>
+  <h2>Marketing &amp; promotion roadmap</h2>
+  <p class="h2sub">Track 2 · starts at stage 2 · four phases, four exit conditions</p>
+  <p>Per doctrine this starts at <strong>stage 2, not after deploy</strong> — positioning shapes the product. The
+  worked example is from this project: the confidence grade was removed because copy could not honestly say
+  &ldquo;every time,&rdquo; and that changed what the result screen renders. Marketing found it, not engineering.</p>
+  <p><strong>Each phase exits on a condition, not a date.</strong> The governing rule sits above all four —
+  <em>promotion readiness is gated by payment capability, not build state</em> — so phase 3 blocks everything
+  after it however finished the product looks.</p>
+  <div id="phases"></div>
+</section>
+
+<section>
+  <h2>Directions kept</h2>
+  <p class="h2sub">Each one carries the measurement that earned it</p>
+  <div class="sheet">
+    <div class="frame"><span class="no">D1</span>
+      <h3>The engine analyzes. The AI supplements.</h3>
+      <p>Physical CV — catchlights, shadow geometry, face landmarks — resolves the pattern. The VLM is a hint, never the answer, and never outranks strong physical evidence.</p>
+      <div class="ev">Ran the corpus with the VLM on and off: <b>identical results on 34 of 34</b> — same pattern, same confidence, same resolver. It costs ~$0.0152 and ~10s per image and changes nothing.</div>
+    </div>
+    <div class="frame"><span class="no">D2</span>
+      <h3>Evidence over verdict.</h3>
+      <p>Show what the engine saw — catchlight at 10 o'clock, key 30–45° off-axis left, ~16–24″ softbox — not how sure it claims to be. A photographer can check an observation against the photo. They cannot check a percentage.</p>
+      <div class="ev">Reads labelled "Uncertain" were right <b>83%</b> of the time; "Tentative" <b>100%</b>. Correlation between score and correctness: <b>+0.035</b>. The grade was teaching people to ignore it.</div>
+    </div>
+    <div class="frame"><span class="no">D3</span>
+      <h3>Publish the misses.</h3>
+      <p>The accuracy gallery shows every reference read against human-verified truth, failures included, with the strict number next to the generous one. A proof surface that hides its failures is not a proof surface.</p>
+      <div class="ev">Reports <b>exact</b> and <b>acceptable</b> separately — 14 vs 26 of 29. Quoting only the second would be a lie of omission.</div>
+    </div>
+    <div class="frame"><span class="no">D4</span>
+      <h3>Free is the product, not the trial.</h3>
+      <p>The full CV read costs nothing to serve. Gating it behind a counter hides the one thing a buyer needs to audit before paying — whether it is actually right.</p>
+      <div class="ev">CV-only: <b>7.7s</b>, no API spend, and <b>the same accuracy</b> as the paid path. Whatever the paid tier sells, it is not a better answer.</div>
+    </div>
+    <div class="frame"><span class="no">D5</span>
+      <h3>Geometry first, semantics last.</h3>
+      <p>Catchlight position before pattern. Pattern before setup family. Pattern before source context. Unknown direction is not on-axis. Semantic hints only after physical grounding.</p>
+      <div class="ev">Enforced as ordering, not preference. When a coordinate bug silenced the geometry passes, resolution fell through to other sources and <b>nobody noticed for months</b>.</div>
+    </div>
+    <div class="frame"><span class="no">D6</span>
+      <h3>One vocabulary per question.</h3>
+      <p>Shadow geometry, tonality, source context, and named setup are four different questions. One field cannot answer all four without lying about at least three.</p>
+      <div class="ev">Three pattern vocabularies exist today, overlapping on <b>5 of 28</b> values. The migration meant to separate them expired <b>2026-05-06</b> and never finished.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Directions struck</h2>
+  <p class="h2sub">Considered, measured, rejected — kept here so they are not re-proposed</p>
+  <div class="sheet">
+    <div class="frame struck"><span class="no">✕ S1</span>
+      <h3>Paid tier = "Deep Read" with the VLM.</h3>
+      <p>The ladder assumed the VLM bought a better answer, so the paid tier could sell depth. It does not buy a better answer.</p>
+      <div class="ev"><b>Struck.</b> Identical on 34/34. A tier that sells 10 extra seconds and an API bill is not a tier. The ladder needs a different value metric.</div>
+    </div>
+    <div class="frame struck"><span class="no">✕ S2</span>
+      <h3>Fix the coordinate bug, ship the fix.</h3>
+      <p>A face-detection box was emitted in the wrong coordinate space — provably wrong, negative width, red-proofed test. Fixing it alone made the product worse.</p>
+      <div class="ev"><b>Struck.</b> Corpus accuracy fell <b>15/34 → 5/34 exact</b>. The downstream passes are calibrated against the broken values. It lands with its consumers retuned, or not at all.</div>
+    </div>
+    <div class="frame struck"><span class="no">✕ S3</span>
+      <h3>Recalibrate confidence from the corpus.</h3>
+      <p>Tempting: fit a mapping from stated confidence to measured accuracy and ship a calibrated number.</p>
+      <div class="ev"><b>Struck.</b> <b>n=29</b>. A map fitted to 29 samples is overfitting wearing a lab coat — the same error as S2, one layer up. It needs more labelled data, not more arithmetic.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Companion boards</h2>
+  <p><a href="https://claude.ai/code/artifact/96afa5b1-805f-4939-b698-3b590a715516">Gate Zero</a> — 17 verifiable checks on the first sixty seconds. <a href="https://claude.ai/code/artifact/3341d158-78f9-4d59-8e42-6a383c102c36">Elixxier Gap Tracker</a> — every capability the competitor ships that we don't, scored by impact per day.</p>
+</section>
+
+<footer>
+  Every number on this board was measured on the 34-image reference corpus between August 26–27, 2026, and each is reproducible from the repository. Directions without a measurement behind them were not admitted. A struck direction is not a mistake to hide — it is the most expensive thing here, because it was believed. Ticks are saved to the page for everyone; if the page is read-only for you, they stay in your browser.
+</footer>
+</div>
+
+<script id="state" type="application/json">__STATE__</script>
+<script>
+var TPL="__TPL__";
+var STATE=JSON.parse(document.getElementById('state').textContent);
+var LS="ngw-lighting-p2p-v1";
+var STAGES=[["00","Adoption"],["01","Idea → Problem statement"],["02","Scope &amp; design"],["03","Build"],["04","Verify"],
+  ["05","Security &amp; data review"],["06","Deploy"],["07","Observe &amp; handoff"],["08","Maintain"],
+  ["09","Promotion"],["10","Sunset"]];
+/* tr: b = build, m = promotion. s = spine stage. bl = blocked. */
+var ITEMS=[
+ {k:"a0",tr:"b",s:0,rec:"skipped",t:"Adoption — not applicable, and recorded rather than omitted",n:"Stage 0 exists for INBOUND projects: something inherited, acquired, or handed over, where the first work is understanding what you have. NGW Lighting was built here from the start, so the stage is skipped by fact rather than by oversight. It is shown, not hidden — a stage that silently disappears cannot be told apart from one nobody checked."},
+
+ /* ---- MARKETING & PROMOTION ----------------------------------------
+    Per doctrine this track starts at STAGE 2, not after deploy: positioning
+    shapes the product. Worked example from this project — the confidence
+    grade was removed because copy could not honestly say "every time", and
+    that changed what the result screen renders. Marketing found it.
+
+    Four phases, each exiting on a CONDITION rather than a date. ph: the
+    phase. The governing rule sits above all four: promotion readiness is
+    gated by payment capability, not build state — so phase 3 blocks
+    everything after it however finished the product looks. */
+
+ /* -- phase 1 · SAY ONLY WHAT IS PROVEN ------------------------------ */
+ {k:"m1a",tr:"m",ph:1,s:1,rec:"passed",t:"Buyer bench named, with a canary seat",n:"20 archetypes. The Working Photographer is this bench's canary — a commercial shooter who buys tools, is not impressed, and closes the tab. If a read does not survive that seat, the segment does not matter."},
+ {k:"m1b",tr:"m",ph:1,s:1,rec:"passed",t:"Acquisition thesis stated: the proof page is the front door",n:"Every competitor in this category asks to be trusted. The only asset that cannot be argued with is 29 scored reads against recorded expected patterns, misses visible. If that page does not convince, no landing copy rescues it."},
+ {k:"m2a",tr:"m",ph:1,s:2,rec:"passed",t:"Claim ledger stands between copy and the buyer",n:"docs/CLAIM_LEDGER.md. 14 claims, each paired with the executed check that proves it. Copy ships only against a PROVEN or PARTIAL row."},
+ {k:"m2b",tr:"m",ph:1,s:2,rec:"passed",t:"EXIT 1 — zero FALSE claims shipping",n:"MET 2026-08-27. Two were live: \"Nail the shot, every time\" (the first sentence a visitor read, contradicted by our own proof page two taps away) and \"Trusted by photographers who care about light\" (there are no users). Both reworded. \"Verified by hand\" reworded to what provenance supports — 32 of 34 entries carry a placeholder string, not a person."},
+
+ /* -- phase 2 · MAKE THE PROOF REACHABLE ----------------------------- */
+ {k:"m2c",tr:"m",ph:2,s:2,rec:"passed",t:"Positioning wedge recorded: reverse, not forward",n:"They simulate a room you have not shot; we read a photograph that exists. Different buyer moment, different failure mode — and ours has no simulation to fall back on, so correctness IS the product."},
+ {k:"m9a",tr:"m",ph:2,s:9,rec:"passed",t:"Proof reachable without an account",n:"The accuracy screen sits outside the Studio login gate, entered from \"See how accurate it is first →\". Verified signed-out on an iPhone 17 Pro Max and in production. Gating the proof behind the signup it exists to justify is circular."},
+ {k:"m9b",tr:"m",ph:2,s:9,t:"EXIT 2 — reachable from OUTSIDE the product",tag:"gap",n:"NOT MET. A person who has never signed in must reach the scored reads from a link that is not inside the app. Today nothing external points at it, so the strongest asset we own is invisible to anyone not already using the product."},
+ {k:"m9c",tr:"m",ph:2,s:9,bl:1,t:"Skin-tone range visible in the proof set",n:"BLOCKED, and this was under-scored as \"1 day, curation\". 23 of 34 references are monochrome or near-monochrome, and the estimator is luma-based so it reads underexposure as pigmentation. Needs sourced colour references and human tone labels — acquisition, not curation."},
+
+ /* -- phase 3 · BE ABLE TO TAKE A PAYMENT ---------------------------- */
+ {k:"m9d",tr:"m",ph:3,s:9,tag:"gap",t:"EXIT 3 — Stripe live on the LLC, one settled transaction",n:"HALF MET 2026-08-27. A new standalone account is LIVE under No Guesswork Systems LLC — not the legacy livemode:false \"Toddwillisphoto\" account, and deliberately outside any organization, since an org is a container for multiple entities and there is one. Configured: category Apps, Radar Standard, Climate off, 2FA on, statement descriptor prefix NOGUESSWRK (leaving 10 characters for a per-brand suffix). Nothing copied from sandbox — a clean account was the whole reason for not reusing the old one. STILL OPEN: no transaction has settled, which is the other half of this condition, and it waits on m9e (the pricing ladder) before a Product can honestly be priced."},
+ {k:"m9e",tr:"m",ph:3,s:9,t:"Pricing ladder rebuilt on a real value metric",n:"OPEN, and now the critical path — Stripe no longer blocks it. \"Deep Read\" was struck: the VLM changes no answers on 34/34, so it sold latency. Perpetual license is the strongest remaining candidate now that CV-only is proven to cost ~$0 to serve."},
+ {k:"m9f",tr:"m",ph:3,s:9,t:"Pricing page quotes the strict number beside the generous one",n:"OPEN, follows m9e and m2a. 15 of 29 exact must appear next to 27 of 29 acceptable. Quoting only the second is the lie of omission the gallery route already refuses to make."},
+
+ /* -- phase 4 · ONE COHORT, ONE CHANNEL, ONE ASSET ------------------- */
+ {k:"m4a",tr:"m",ph:4,s:4,t:"A working photographer says the setup is shootable",tag:"gap",n:"NEVER RUN. Gate Zero G0.14: five commercial shooters, three outputs each, none calling it impractical. This is the check the entire product rests on and it has no result."},
+ {k:"m4b",tr:"m",ph:4,s:4,t:"Read against photographs we did not choose",tag:"gap",n:"NEVER RUN. Gate Zero G0.15. Every accuracy number to date comes from a 34-image corpus we assembled ourselves. 20 photographer-supplied frames, scored blind against their own account of the setup."},
+ {k:"m9g",tr:"m",ph:4,s:9,t:"Ten strangers can say what this does in ten seconds",tag:"gap",n:"NEVER RUN. Gate Zero G0.1. The protocol is written; the strangers do not exist. Until then the wedge is our sentence, not theirs."},
+ {k:"m9h",tr:"m",ph:4,s:9,t:"One channel, one asset — a single read broken down, misses included",n:"OPEN. Not a campaign. The bench names 20 archetypes and no channel; pick the canary seat and ship one breakdown of one reference read."},
+ {k:"m10a",tr:"m",ph:4,s:10,lock:1,t:"EXIT 4 — a named first cohort, before any broad push",tag:"gap",n:"promote-surface treats the second user as the moment every assumption made for one user becomes a defect. A named cohort is reversible; a public launch is not. No broad push until a photographer who is not us has said the setup is shootable."},
+ {k:"i1",tr:"b",s:1,rec:"passed",t:"Reverse-read thesis recorded against the competitor's opposite",n:"They simulate forward from a room; we read backward from a photograph. Different buyer moment, different failure mode. Ours has no simulation to fall back on, so correctness is the whole product."},
+ {k:"i2",tr:"b",s:1,rec:"passed",t:"Differentiator is the read being checkable, not the read existing",n:"Anyone can print a pattern name. The defensible thing is showing the catchlight and shadow evidence a photographer can verify against their own frame in one glance."},
+
+ {k:"s1",tr:"b",s:2,rec:"passed",t:"Surfaces enumerated with facing and platform",n:"docs/SURFACES.md. Studio Matte app, Lab, admin console, marketing. Each traverses the spine on its own; facing is an attribute, not a second methodology."},
+ {k:"s2",tr:"b",s:2,rec:"passed",t:"Taxonomy separation staged",n:"docs/TAXONOMY_SEPARATION.md. pattern / setup_family / source_context split, four stages, engine change last and only behind the corpus gate."},
+ {k:"s3",tr:"b",s:2,t:"Value metric for the paid tier",n:"OPEN. S1 removed the answer: the VLM changes no answers, so \"Deep Read\" sells latency. Speed, volume, deliverables and teams are all still on the table."},
+
+ {k:"b1",tr:"b",s:3,rec:"passed",t:"CV pipeline runs without the VLM",n:"One 109-line block was gated on `describe_mode == \"vision\" and run_vlm`, so disabling the VLM disabled MediaPipe, masks, catchlights and the 30+ passes with it. run_vlm now gates only the VLM. Red-proofed."},
+ {k:"b2",tr:"b",s:3,rec:"passed",t:"Evidence-forward confidence display",n:"Score and grade render only in the >=80 band that measured as separable (89% correct). Below it the screen shows catchlight position, key direction, source size, and what limited the read."},
+ {k:"b3",tr:"b",s:3,rec:"passed",t:"Public accuracy gallery scored on the engine's resolved read",n:"It was scoring one of 30 vision passes and claiming 2 of 29 exact where the engine resolves 17 of 34 — understating the product 7x on the page whose whole job is proving it."},
+ {k:"b4",tr:"b",s:3,rec:"passed",t:"Proof surface reachable without an account",n:"The accuracy screen sits outside the Studio login gate, entered from \"See how accurate it is first →\". Gating the proof behind the signup it justifies is circular."},
+ {k:"b5",tr:"b",s:3,t:"A decline path — the engine can say \"I cannot read this\"",n:"OPEN, and the more important half of the confidence work. 0 of 34 reads ever resolve to unknown, including the entry whose ground truth IS unknown. Without a floor, nothing above it means anything."},
+ {k:"b6",tr:"b",s:3,t:"face_box coordinate fix landed with its consumers retuned",n:"OPEN. The fix is correct in isolation and costs 10 points of exact accuracy in situ. Patch preserved; test kept as xfail carrying the A/B."},
+ {k:"b7",tr:"b",s:3,t:"Analysis reachable without an account",n:"OPEN, and NOT the one-line change this item first claimed. The proof surface reads precomputed data; analysis is compute. The handler's own docstring gives the reason: the free-tier allowance is metered on a user id and an anonymous caller cannot be metered. Opening it is a product and security decision — IP rate limiting exists (auth/rate_limit.py) and the CV path costs ~$0 to serve, so it is defensible, but it is a decision, not a fix."},
+
+ {k:"v1",tr:"b",s:4,rec:"passed",t:"Scored corpus accuracy gate in the suite, red-proofed",n:"8 fast per-image checks by default plus a full sweep under the benchmark marker. Baselines 17/34 exact and 29/34 acceptable are measured. 7 of 8 fail when the regression is reintroduced."},
+ {k:"v2",tr:"b",s:4,t:"Confidence calibration guard",n:"UNTICKED 2026-08-27. The guard exists and passes, but I never watched it fail. By the standing rule — a green gate never shown to fail is not evidence — it is UNPROVEN, not passing. Red-proof it by raising the non-canonical label count above its pin and confirming it goes red."},
+ {k:"v3",tr:"b",s:4,rec:"passed",t:"Verified on a real device, not just in tests",n:"iPhone 17 Pro Max. Caught three checks marked passing that were not — the whole app sat behind a login wall — plus a back button rendering under the status bar."},
+ {k:"v4",tr:"b",s:4,t:"Ground-truth labels all canonical",n:"2 of 34 remain: golden_hour and hurley_triangle, both needing a human call. gobo is settled — enums.py records gobo_projection -> projected, so the stale label was producing a false MISS on the public proof page. Gallery moved 14 -> 15 exact, 26 -> 27 acceptable."},
+ {k:"v5",tr:"b",s:4,t:"Scored against photographs we did not choose",n:"OPEN. Gate Zero G0.15. Every accuracy number to date comes from a 34-image corpus we assembled. 20 photographer-supplied frames, scored blind against their own account of the setup."},
+
+ {k:"sec1",tr:"b",s:5,rec:"passed",t:"Enumerating route sweep over every live route",n:"275 routes, every public one carrying a written reason. It passed while a debug overlay served 457KB PNGs to anonymous callers — because the allowlist entry I wrote excused it. An enumerating gate catches an ungated NEW route; it cannot catch one its own allowlist excuses. Entry removed, route now 403, and the sweep documents that a reason must argue PUBLIC IS CORRECT, not describe the endpoint."},
+ {k:"sec2",tr:"b",s:5,rec:"passed",t:"Admin identity centralized behind one source",n:"config/admin.py, env-overridable, replacing scattered literals across a dozen sites."},
+ {k:"sec3",tr:"b",s:5,rec:"passed",t:"No secrets in anything published",n:"Was an ASSERTION carried as if verified — no scanner was ever configured. Now an executed gate: tests/test_no_secrets_committed.py scans tracked files, full git history (a secret survives its own deletion) and every ENUMERATED bundle chunk (5 — grepping \"the bundle\" as one file is a false zero). Red-proofed by planting a key in a 6th chunk and in a tracked file; both went red."},
+
+ {k:"d1",tr:"b",s:6,rec:"passed",t:"Deploys and verified in production",n:"Re-ticked 2026-08-27 11:51 EDT against LIVE production, not a green build. app.noguessworksystems.com: health 200 · gallery 15 exact / 27 acceptable of 29 scored, matching local exactly · debug overlay 403 · source_type withheld · gobo resolves projected. Bundle hash index-52a8a3ad matches the local build. Both false marketing claims and \"verified by hand\" absent from the shipped chunk AND from all 5 local chunks — the cross-check rules out a string hiding in a lazy chunk. A pre-deploy worry that render.yaml's disk at /app/data would shadow the committed dataset was DISPROVEN: data updated from 4 scored to 29."},
+ {k:"d2",tr:"b",s:6,rec:"passed",t:"Analysis timeout inside the edge limit",n:"90s, under Cloudflare's 100s origin default. Measured full-VLM wall time is ~18s."},
+
+ {k:"o1",tr:"b",s:7,rec:"passed",t:"Per-analysis L1 record with contradictions and coverage",n:"Pattern, confidence, source, stage timings, signal coverage, active paradoxes, contradictions, needs_review."},
+ {k:"o2",tr:"b",s:7,rec:"passed",t:"Ambiguity surfaced to the product, not only the log",n:"Closed — and the item was wrong when written. contradictions, ambiguity_flags, signal_coverage and candidate credibility DO reach the API, under `observability`; two earlier looks checked signal_diagnostics and pattern_candidates and concluded it was missing engine work. The result screen now shows \"Two readings disagreed — butterfly vs loop\", the runner-up, and usable signal count, with internal resolver names stripped."},
+
+ {k:"m1",tr:"b",s:8,t:"Expired migration aliases removed",n:"OPEN. engine/enums.py marks rim_only, flat_fashion, gobo_projection, golden_hour and overcast_natural for removal after 2026-05-06. Three and a half months past, still live, still used as corpus ground truth."},
+
+
+ {k:"x1",tr:"b",s:10,lock:1,t:"Legacy shell retirement decided",n:"OPEN. HomeScreenV2 and its App.jsx shell are still shipped behind ?studio=off. Two homes means every surface change has to be made twice — and three times today it was made in the wrong one."}
+];
+
+/* Three states, deliberately.  RECORDED is a fact from the gate record and is
+   rendered as a STATIC MARKER — not the viewer's to toggle, and visible on first
+   load with no localStorage.  LOCKED is a stage not yet entered: a disabled box,
+   because ticking work in a stage that has not run is how a plan becomes a claim.
+   OPEN is live work: a real checkbox, persisted per project. */
+function control(i,done){
+  if(i.rec) return '<span class="mk '+i.rec+'" title="Recorded from the gate record: '+i.rec+'" '+
+                   'aria-label="Recorded — '+i.rec+'">'+(i.rec==='passed'?'\u2713':'\u2013')+'</span>';
+  if(i.lock) return '<button class="box" role="checkbox" aria-checked="false" disabled '+
+                    'title="Stage not yet entered" aria-label="Locked — '+esc(i.t)+'"></button>';
+  return '<button class="box" role="checkbox" aria-checked="'+(done?'true':'false')+'" data-k="'+i.k+'" '+
+         'aria-label="'+esc(i.t)+'"></button>';
+}
+function esc(s){return String(s).replace(/&(?![a-z#0-9]+;)/g,'&amp;').replace(/</g,'&lt;');}
+function isDone(i){return i.rec==='passed'||(!i.rec&&!i.lock&&!!STATE.done[i.k]);}
+function pct(){return{t:ITEMS.length,d:ITEMS.filter(isDone).length};}
+
+function render(){
+  var tr=STATE.track||'all';
+  document.getElementById('scope').textContent = tr==='b'?'build':tr==='m'?'marketing & promotion':'build + marketing';
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){
+    b.setAttribute('aria-pressed', String(b.dataset.tr===tr));
+  });
+  var shown=ITEMS.filter(function(i){return tr==='all'||i.tr===tr;});
+  var html='';
+  STAGES.forEach(function(st,ix){
+    var n=ix, its=shown.filter(function(i){return i.s===n;});  /* STAGES starts at 0 */
+    if(!its.length) return;  /* every stage has items; none are hidden */
+    var dn=its.filter(isDone).length;
+    /* A stage whose every item is a recorded SKIP is not "0 of 1 done" — it is
+       not applicable, and a chip implying outstanding work contradicts its own
+       content. Say so instead of counting it. */
+    var allSkipped = its.every(function(i){return i.rec==='skipped';});
+    var chip = allSkipped ? 'n/a' : dn+'/'+its.length;
+    html+='<div class="stage"><h3><span class="n">'+st[0]+'</span><span>'+st[1]+'</span>'+
+          '<span class="st">'+chip+'</span></h3>';
+    its.forEach(function(i){
+      var done=isDone(i)?1:0;
+      html+='<div class="it" data-done="'+done+'">'+ control(i,done)+
+        '<div class="tx"><div class="ttl">'+esc(i.t)+
+          '<span class="tag '+i.tr+'">'+(i.tr==='b'?'build':'mktg')+'</span>'+
+          (i.bl?'<span class="tag blocked">blocked</span>':'')+
+        '</div><p class="n">'+esc(i.n)+'</p></div></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('stages').innerHTML=html;
+
+  // Marketing phases — same items, grouped by the roadmap rather than the spine.
+  var PH=[[1,'Say only what is proven'],[2,'Make the proof reachable'],
+          [3,'Be able to take a payment'],[4,'One cohort, one channel, one asset']];
+  var ph='';
+  PH.forEach(function(pp){
+    var its=ITEMS.filter(function(i){return i.ph===pp[0];});
+    if(!its.length) return;  /* every stage has items; none are hidden */
+    var dn=its.filter(isDone).length;
+    var state = dn===its.length ? 'met' : dn ? 'part' : 'blocked';
+    ph+='<div class="stage"><h3><span class="n">0'+pp[0]+'</span><span>'+pp[1]+'</span>'+
+        '<span class="st">'+dn+'/'+its.length+'</span></h3>';
+    its.forEach(function(i){
+      var done=isDone(i)?1:0;
+      ph+='<div class="it" data-done="'+done+'">'+ control(i,done)+
+        '<div class="tx"><div class="ttl">'+esc(i.t)+
+          (i.tag==='gap'?'<span class="tag blocked">gap</span>':'')+
+          (i.bl?'<span class="tag blocked">blocked</span>':'')+
+        '</div><p class="n">'+esc(i.n||'')+'</p></div></div>';
+    });
+    ph+='</div>';
+  });
+  var pel=document.getElementById('phases'); if(pel) pel.innerHTML=ph;
+  var p=pct();
+  document.getElementById('bar').style.width=(p.t?Math.round(p.d/p.t*100):0)+'%';
+  document.getElementById('cnt').textContent=p.d+' / '+p.t+' closed';
+}
+
+var api=null, saving=false;
+function say(m){document.getElementById('save').textContent=m||'';}
+
+function persist(){
+  try{localStorage.setItem(LS,JSON.stringify(STATE));}catch(e){}
+  if(!api||STATE.readOnly){say('Saved in this browser only');return;}
+  if(saving){return;} saving=true; say('Saving…');
+  var doc=atob(TPL).replace('__STATE__',JSON.stringify(STATE)).replace('__TPL__',TPL);
+  api.publish(doc).then(function(){saving=false;}).catch(function(e){
+    saving=false;
+    var c=(e&&e.code)||'';
+    if(c==='conflict'){say('Someone else saved first — reloading');return;}
+    if(c==='not_granted'||c==='not_writer'){STATE.readOnly=true;say('Read-only view — ticks stay in this browser');return;}
+    say('Not saved to the page ('+(c||'error')+') — kept in this browser');
+  });
+}
+
+document.getElementById('stages').addEventListener('click',function(e){
+  var b=e.target.closest('.box'); if(!b) return;
+  var k=b.dataset.k;
+  if(STATE.done[k]) delete STATE.done[k]; else STATE.done[k]=1;
+  render(); persist();
+});
+Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){
+  b.addEventListener('click',function(){STATE.track=b.dataset.tr;render();persist();});
+});
+
+try{
+  var saved=JSON.parse(localStorage.getItem(LS)||'null');
+  if(saved&&saved.done&&Object.keys(STATE.done).length===0){STATE.done=saved.done;STATE.track=saved.track||STATE.track;}
+}catch(e){}
+render();
+(window.claude&&window.claude.use?window.claude.use('artifact'):Promise.resolve(null))
+  .then(function(a){api=a; if(!a) say('Progress saves in this browser only');})
+  .catch(function(){});
+</script>
+</body>
+</html>
