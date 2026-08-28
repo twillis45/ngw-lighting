@@ -12,6 +12,7 @@
  */
 import { useEffect, useState } from 'react';
 import { steel } from '../../../theme/studioMatte';
+import prettify from '../../../utils/prettify';
 
 const FONT_SMOOTH = {
   WebkitFontSmoothing: 'antialiased',
@@ -111,7 +112,7 @@ export default function AccuracyScreen({ onBack }) {
                 <div key={e.id} data-testid="accuracy-tile" style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <img
                     src={e.thumbnail_url}
-                    alt={`Reference — expected ${e.verdict?.expected || 'unknown'} lighting`}
+                    alt={`Reference — expected ${prettify(e.verdict?.expected, { title: true }) || 'unknown'} lighting`}
                     loading="lazy"
                     style={{
                       width: '100%', aspectRatio: '1 / 1', objectFit: 'cover',
@@ -122,7 +123,7 @@ export default function AccuracyScreen({ onBack }) {
                   <span style={{
                     fontSize: 11, fontWeight: 600, color: 'rgba(245,247,250,0.88)',
                     lineHeight: 1.25, ...FONT_SMOOTH,
-                  }}>{e.verdict?.expected || e.pattern}</span>
+                  }}>{prettify(e.verdict?.expected || e.pattern, { title: true })}</span>
                   <span style={{
                     fontSize: 9.5, fontWeight: 600, letterSpacing: '0.6px',
                     textTransform: 'uppercase', color: v.color, ...FONT_SMOOTH,

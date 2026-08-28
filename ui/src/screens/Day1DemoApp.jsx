@@ -1443,7 +1443,8 @@ export default function Day1DemoApp() {
   };
 
   const handleRetry = () => {
-    // Abort any in-flight analysis
+    // Start over: abort, discard the photo, go home. This is the honest
+    // behavior for the controls labeled "New Photo" / "Try Again".
     if (abortRef.current) abortRef.current.abort();
     setScreen('home');
     setImageFile(null);
@@ -1451,6 +1452,27 @@ export default function Day1DemoApp() {
     setResult(null);
     setAnalysisError(null);
     setAnalysisReady(false);
+  };
+
+  //: Nielsen H9 (8/28): the control labeled "Retry" called handleRetry, which
+  //: threw the photo away and went home — so the four transient failures where
+  //: re-sending is exactly right (quota, timeout, offline, server) forced the
+  //: user back through the file picker. The file was in hand the whole time.
+  const handleRerun = () => {
+    if (!imageFile) return handleRetry();   // nothing to re-send
+    if (abortRef.current) abortRef.current.abort();
+    handleAnalyze(imageFile, imagePreview, exifData);
+  };
+
+  //: Nielsen H3 (8/28): result-screen back was bound to handleRetry, so a user
+  //: glancing at home lost the analysis AND the loaded photo. Back navigates;
+  //: it does not destroy. State is preserved, which is also what makes the
+  //: existing long-press recall on the analyze button actually have something
+  //: to recall. Deliberately setScreen('home') rather than goBack() — the trail
+  //: holds 'processing' behind 'result', and popping to a finished processing
+  //: screen is not a back destination.
+  const handleResultBack = () => {
+    setScreen('home');
   };
 
   // Login gate — unauthenticated users see the Studio login screen.
@@ -1611,7 +1633,7 @@ export default function Day1DemoApp() {
           result={result}
           imagePreview={imagePreview}
           onSetup={handleSetup}
-          onRetry={handleRetry}
+          onRetry={handleResultBack}
           onShotMatch={handleShotMatch}
           isPaid={appIsPaid}
           plan={appPlan}
@@ -1787,6 +1809,8 @@ export default function Day1DemoApp() {
         <FallbackReveal
           message={analysisError}
           onRetry={handleRetry}
+          onRerun={handleRerun}
+          canRerun={!!imageFile}
           onHome={handleRetry}
         />
       );
@@ -1907,7 +1931,7 @@ export default function Day1DemoApp() {
  *   • Glass viewfinder showing the failure label / headline / subtext
  *   • Recessed indicator well + "TRY AGAIN" label as the retry affordance
  */
-function FallbackReveal({ message, onRetry }) {
+function FallbackReveal({ message, onRetry, onRerun, canRerun = false }) {
   // Run mount sound + warn haptic so the user feels something landed
   useEffect(() => { warnHaptic(); }, []);
 
@@ -1982,20 +2006,27 @@ function FallbackReveal({ message, onRetry }) {
   // retry indicator dot, glows.  Layout stays consistent; signaling adapts.
   const scenario =
     isNoFace  ? { kicker: 'Analysis Failed', headline: 'No face detected',       detail: "Make sure the subject's face is visible.",                                       retry: 'Try Again', tone: TONE.danger }
-  : isQuota   ? { kicker: 'Limit Reached',   headline: 'Daily quota exceeded',   detail: 'Usage limit reached. Try again in a moment.',                                    retry: 'Retry',     tone: TONE.caution }
-  : isTimeout ? { kicker: 'Timed Out',       headline: 'Server is slow',         detail: 'The analysis took too long. Check your connection and try again.',               retry: 'Retry',     tone: TONE.caution }
-  : isNetwork ? { kicker: 'No Connection',   headline: 'Offline',                detail: "Can't reach the server. Check your connection.",                                  retry: 'Retry',     tone: TONE.danger }
+  : isQuota   ? { kicker: 'Limit Reached',   headline: 'Daily quota exceeded',   detail: 'Usage limit reached. Try again in a moment.',                                    retry: 'Retry',     tone: TONE.caution, rerun: true }
+  : isTimeout ? { kicker: 'Timed Out',       headline: 'Server is slow',         detail: 'The analysis took too long. Check your connection and try again.',               retry: 'Retry',     tone: TONE.caution, rerun: true }
+  : isNetwork ? { kicker: 'No Connection',   headline: 'Offline',                detail: "Can't reach the server. Check your connection.",                                  retry: 'Retry',     tone: TONE.danger, rerun: true }
   : isAccess  ? { kicker: 'Connection Refused', headline: "Request blocked",       detail: "The connection was blocked. If you loaded from a cloud link, save to your device first.", retry: 'New Photo', tone: TONE.caution }
-  : isServer  ? { kicker: 'Server Error',    headline: 'Engine unavailable',     detail: 'The analysis engine is temporarily down. Please try again.',                     retry: 'Retry',     tone: TONE.danger }
+  : isServer  ? { kicker: 'Server Error',    headline: 'Engine unavailable',     detail: 'The analysis engine is temporarily down. Please try again.',                     retry: 'Retry',     tone: TONE.danger, rerun: true }
   : isUpload  ? { kicker: 'Upload Failed',   headline: 'Image not accepted',     detail: 'The photo could not be processed. Try a different shot.',                        retry: 'New Photo', tone: TONE.caution }
   :             { kicker: 'Analysis Failed', headline: 'Something went wrong',   detail: message || 'An unexpected error occurred.',                                       retry: 'Try Again', tone: TONE.danger };
 
-  const { kicker, headline, detail, retry: retryLabel, tone } = scenario;
+  const { kicker, headline, detail, retry: retryLabel, tone, rerun } = scenario;
+
+  //: A control labeled "Retry" must re-send the same photo. It can only do
+  //: that while the file is still in hand; without one, fall back to the
+  //: start-over path AND relabel, so the button never overpromises.
+  const doesRerun = !!rerun && canRerun && typeof onRerun === 'function';
+  const actionLabel = (!!rerun && !doesRerun) ? 'New Photo' : retryLabel;
 
   const handleRetryClick = () => {
     softClickSound();
     tapHaptic();
-    onRetry?.();
+    if (doesRerun) onRerun();
+    else onRetry?.();
   };
 
   return (
@@ -2163,7 +2194,7 @@ function FallbackReveal({ message, onRetry }) {
             textShadow: `0 0 6px ${steel(0.18)}`,
             ...FS,
           }}>
-            {retryLabel.toUpperCase()}
+            {actionLabel.toUpperCase()}
           </span>
         </button>
 

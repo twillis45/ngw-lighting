@@ -19,9 +19,8 @@ import usePlan from '../../../hooks/usePlan';
 import { PLAN_LABELS } from '../../../data/planStore';
 
 const SUPPORT_EMAIL = 'hello@noguesswork.com';
-const HELP_URL      = 'https://noguessworksystems.com/help';
-const PRIVACY_URL   = 'https://noguessworksystems.com/privacy';
-const TERMS_URL     = 'https://noguessworksystems.com/terms';
+const PRIVACY_URL   = 'https://noguessworksystems.com/privacy-policy';
+const TERMS_URL     = 'https://noguessworksystems.com/terms-of-service';
 const APP_VERSION   = 'v1.4.0';
 const DEV_TAP_COUNT  = 5;
 const DEV_TAP_WINDOW = 3000;
@@ -636,8 +635,6 @@ export default function Day1SettingsScreen({ user, onBack, onLogout, onLab }) {
         {/* ── SUPPORT ── */}
         <SectionLabel label="SUPPORT" />
         <Panel>
-          <NavRow label="Help & FAQ" onClick={() => window.open(HELP_URL, '_blank')} />
-          <Divider />
           <NavRow label="Contact support" onClick={() => window.open(`mailto:${SUPPORT_EMAIL}?subject=NGW%20Support`, '_blank')} />
           <Divider />
           <NavRow label="Rate NGW" onClick={() => {}} />
