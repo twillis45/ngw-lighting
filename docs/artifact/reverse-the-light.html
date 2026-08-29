@@ -70,6 +70,14 @@ p strong{color:var(--ink);font-weight:600}
   text-transform:uppercase;color:var(--ink-3);font-weight:700}
 .tabs button[aria-pressed="true"]{background:var(--key);color:var(--bg)}
 .tabs button:focus-visible{outline:2px solid var(--key);outline-offset:-2px}
+button.hidedone{padding:8px 15px;cursor:pointer;font:inherit;font-size:11px;
+  font-family:"JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-2);background:var(--surface);border:1px solid var(--rule)}
+button.hidedone[aria-pressed="true"]{background:var(--key);color:var(--bg);border-color:var(--key)}
+button.hidedone:focus-visible{outline:2px solid var(--key);outline-offset:2px}
+/* A stage emptied only by the filter must say so rather than vanish — a stage
+   silently missing reads as a stage that does not exist. */
+.allclear{font-size:13px;color:var(--ink-3);padding:2px 0 4px;font-style:italic}
 .meter{flex:1;min-width:180px;height:6px;background:var(--sunk);border:1px solid var(--rule);position:relative}
 .meter i{display:block;height:100%;background:var(--kept)}
 .cnt{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-3);
@@ -204,6 +212,7 @@ a{color:var(--key)}
       <button type="button" data-tr="b">Build</button>
       <button type="button" data-tr="m">Marketing</button>
     </div>
+    <button type="button" class="hidedone" id="hidedone" aria-pressed="false">Hide completed</button>
     <div class="meter" aria-hidden="true"><i id="bar"></i></div>
     <span class="cnt" id="cnt"></span>
   </div>
@@ -409,19 +418,31 @@ function render(){
   Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){
     b.setAttribute('aria-pressed', String(b.dataset.tr===tr));
   });
+  var hd=!!STATE.hideDone;
+  var hdBtn=document.getElementById('hidedone');
+  hdBtn.setAttribute('aria-pressed', String(hd));
+  hdBtn.textContent = hd ? 'Show completed' : 'Hide completed';
   var shown=ITEMS.filter(function(i){return tr==='all'||i.tr===tr;});
   var html='';
   STAGES.forEach(function(st,ix){
-    var n=ix, its=shown.filter(function(i){return i.s===n;});  /* STAGES starts at 0 */
-    if(!its.length) return;  /* every stage has items; none are hidden */
-    var dn=its.filter(isDone).length;
+    var n=ix, all=shown.filter(function(i){return i.s===n;});  /* STAGES starts at 0 */
+    if(!all.length) return;  /* every stage has items; none are hidden */
+    /* The chip and its n/m are computed over EVERY item in the stage, always.
+       A filter is a view, not a change in what is true — a stage reading 2/2
+       while four items sat hidden would be the artifact lying about its own
+       record. Only the LIST below is filtered. */
+    var its = hd ? all.filter(function(i){return !isDone(i);}) : all;
+    var dn=all.filter(isDone).length;
     /* A stage whose every item is a recorded SKIP is not "0 of 1 done" — it is
        not applicable, and a chip implying outstanding work contradicts its own
        content. Say so instead of counting it. */
-    var allSkipped = its.every(function(i){return i.rec==='skipped';});
-    var chip = allSkipped ? 'n/a' : dn+'/'+its.length;
+    var allSkipped = all.every(function(i){return i.rec==='skipped';});
+    var chip = allSkipped ? 'n/a' : dn+'/'+all.length;
     html+='<div class="stage"><h3><span class="n">'+st[0]+'</span><span>'+st[1]+'</span>'+
           '<span class="st">'+chip+'</span></h3>';
+    /* A stage emptied by the filter says so. A stage that silently vanished
+       would read as a stage that does not exist. */
+    if(!its.length) html+='<p class="allclear">All '+all.length+' recorded — nothing open here.</p>';
     its.forEach(function(i){
       var done=isDone(i)?1:0;
       html+='<div class="it" data-done="'+done+'">'+ control(i,done)+
@@ -439,12 +460,14 @@ function render(){
           [3,'Be able to take a payment'],[4,'One cohort, one channel, one asset']];
   var ph='';
   PH.forEach(function(pp){
-    var its=ITEMS.filter(function(i){return i.ph===pp[0];});
-    if(!its.length) return;  /* every stage has items; none are hidden */
-    var dn=its.filter(isDone).length;
-    var state = dn===its.length ? 'met' : dn ? 'part' : 'blocked';
+    var all=ITEMS.filter(function(i){return i.ph===pp[0];});
+    if(!all.length) return;  /* every stage has items; none are hidden */
+    var dn=all.filter(isDone).length;
+    var its = hd ? all.filter(function(i){return !isDone(i);}) : all;
+    var state = dn===all.length ? 'met' : dn ? 'part' : 'blocked';
     ph+='<div class="stage"><h3><span class="n">0'+pp[0]+'</span><span>'+pp[1]+'</span>'+
-        '<span class="st">'+dn+'/'+its.length+'</span></h3>';
+        '<span class="st">'+dn+'/'+all.length+'</span></h3>';
+    if(!its.length) ph+='<p class="allclear">All '+all.length+' recorded — nothing open here.</p>';
     its.forEach(function(i){
       var done=isDone(i)?1:0;
       ph+='<div class="it" data-done="'+done+'">'+ control(i,done)+
@@ -478,6 +501,20 @@ function persist(){
   });
 }
 
+/* Hide completed. A VIEW toggle: it changes what is listed, never what is
+   recorded, and it is kept per viewer in localStorage rather than published —
+   one reader collapsing the closed work must not rewrite the page for everyone.
+   That is why it is not routed through persist(), which publishes. */
+document.getElementById('hidedone').addEventListener('click',function(){
+  STATE.hideDone=!STATE.hideDone;
+  render();
+  try{
+    var cur=JSON.parse(localStorage.getItem(LS)||'{}');
+    cur.hideDone=STATE.hideDone;
+    localStorage.setItem(LS,JSON.stringify(cur));
+  }catch(e){/* private window or blocked storage — the toggle still works */}
+});
+
 document.getElementById('stages').addEventListener('click',function(e){
   var b=e.target.closest('.box'); if(!b) return;
   var k=b.dataset.k;
@@ -491,6 +528,7 @@ Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(
 try{
   var saved=JSON.parse(localStorage.getItem(LS)||'null');
   if(saved&&saved.done&&Object.keys(STATE.done).length===0){STATE.done=saved.done;STATE.track=saved.track||STATE.track;}
+  if(saved&&typeof saved.hideDone!=='undefined'&&typeof STATE.hideDone==='undefined'){STATE.hideDone=saved.hideDone;}
 }catch(e){}
 render();
 (window.claude&&window.claude.use?window.claude.use('artifact'):Promise.resolve(null))
