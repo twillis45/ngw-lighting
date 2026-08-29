@@ -65,13 +65,17 @@ quoted outward clears `claim-verification` first.
 
 Every one of these cost a wrong turn this session.
 
-- **`.venv` is broken — the API cannot be started locally.** `.venv/bin/uvicorn`
-  carries a shebang pointing at `/Users/toddwillis/Code/ngw-core/.venv/bin/python3`,
-  a path that no longer exists, so any attempt to run the server dies with
-  `bad interpreter`. Rebuild the venv before trying to drive real endpoints.
-  Frontend work can be verified without it: build, serve the repo over
-  `python3 -m http.server`, load `/static/ui/index.html`, and intercept
-  `/api/**` in puppeteer.
+- **`.venv` console scripts had stale shebangs — FIXED 2026-08-29.** I first
+  recorded this as "the venv is broken." That was too broad and cost time. The
+  *interpreter* was always fine: `.venv/bin/python3` resolves to a working
+  Python 3.10.6 and every dependency imports. Only the 23 generated console
+  scripts carried `#!/Users/toddwillis/Code/ngw-core/.venv/bin/python3` — a path
+  from a repo rename — so `.venv/bin/uvicorn` died with `bad interpreter` while
+  `.venv/bin/python3 -m uvicorn` would have worked all along. Shebangs and the
+  three `activate*` scripts are rewritten; the API starts and answers on
+  `/api/health`. **If a venv script ever fails again, check the shebang before
+  concluding the environment is broken** — and prefer `.venv/bin/python3 -m <mod>`,
+  which cannot go stale.
 - **`input[0]` is not the first visible field on the login screen.** The username
   input lives in an animated slot that is present-and-`disabled` in every mode
   except register, rather than unmounted. A test that grabs `querySelectorAll(
