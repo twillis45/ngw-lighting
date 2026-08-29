@@ -6225,6 +6225,37 @@ def analyze_image(
         logger.debug("L1 observability emission failed", exc_info=True)
 
     # ── Sentry: finish transaction with final tags ─────────────────────
+    # ── Decline floor — b5, added 2026-08-29 ─────────────────────────────
+    # Enforced HERE, at the single exit, because authoritative_pattern is
+    # assigned in three places and the last two overwrite the first; guarding
+    # only the resolver left "flat" on pure noise.
+    #
+    # Handed inputs carrying no lighting information at all, the engine still
+    # named a pattern: random noise, flat grey and pure white all returned
+    # "flat" at 0.0 confidence. "flat" is a claim about how a photograph was
+    # lit. Asserting it about random noise is a category error, not an
+    # inaccuracy.
+    #
+    # NOT a tuned threshold, deliberately. The earlier decline attempt was
+    # abandoned because fitting a cutoff to the single labelled decline case
+    # would have repeated the face_box mistake. 0.0 is not fitted: it is the
+    # structural value meaning "no evidence found", and naming a pattern on no
+    # evidence is wrong whatever a corpus says. Measured before shipping: the
+    # 33 scoreable corpus reads bottom out at 0.28 with nothing at or below
+    # 0.1, so this costs zero real reads.
+    #
+    # It does not catch confident nonsense — a gradient still reads "loop" at
+    # 0.70. That gap is recorded as an xfail in
+    # tests/test_decline_on_no_evidence.py rather than papered over with a
+    # higher number.
+    if not result.pattern_confidence and result.authoritative_pattern not in (None, "", "unknown"):
+        logger.info(
+            "[decline] no evidence (confidence=%r) — withholding pattern %r",
+            result.pattern_confidence, result.authoritative_pattern,
+        )
+        result.authoritative_pattern = "unknown"
+        result.authoritative_pattern_source = "decline:no_evidence"
+
     if _txn:
         try:
             _txn.set_tag("pattern", result.authoritative_pattern or "unknown")
