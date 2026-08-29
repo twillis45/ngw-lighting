@@ -203,6 +203,81 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetToken, setResetToken] = useState(null);
   const [forgotSent, setForgotSent] = useState(false);
+  //: Google Sign-In (8/29). The button renders ONLY once the server says a
+  //: client ID is configured. That is deliberate: the control cannot drift
+  //: back into rendering with nothing behind it, which is the stage-4 P0.
+  const [googleReady, setGoogleReady] = useState(false);
+  const googleIdRef = useRef(null);
+  const googleBtnRef = useRef(null);
+
+  //: Ask the server which providers are actually usable. Absent, misconfigured
+  //: or unreachable all resolve the same way — no button. Failing closed is the
+  //: only safe default for a control whose whole defect was existing when its
+  //: backend did not.
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/auth/providers')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!alive || !d || !d.google || !d.google_client_id) return;
+        googleIdRef.current = d.google_client_id;
+        setGoogleReady(true);
+      })
+      .catch(() => { /* no provider button */ });
+    return () => { alive = false; };
+  }, []);
+
+  //: Load Google Identity Services and hand it the button element. GIS renders
+  //: its own control into the container — Google's branding rules require it,
+  //: and it is what carries the One Tap / FedCM behaviour.
+  useEffect(() => {
+    if (!googleReady || !googleBtnRef.current) return;
+    let alive = true;
+    const init = () => {
+      if (!alive || !window.google?.accounts?.id || !googleBtnRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: googleIdRef.current,
+        callback: async ({ credential }) => {
+          setLoading(true);
+          setError(null);
+          try {
+            const res = await fetch('/api/auth/google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ credential }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.detail || 'Google sign-in failed.');
+            saveAuth(data.token, data.user);
+            successHaptic();
+            onLogin(data.user);
+          } catch (err) {
+            warnHaptic();
+            setError(err.message || 'Google sign-in failed.');
+          } finally {
+            setLoading(false);
+          }
+        },
+      });
+      googleBtnRef.current.innerHTML = '';
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        theme: 'filled_black', size: 'large', shape: 'pill',
+        text: 'continue_with', width: 320,
+      });
+    };
+    if (window.google?.accounts?.id) { init(); return () => { alive = false; }; }
+    const existing = document.getElementById('gsi-client');
+    if (existing) { existing.addEventListener('load', init); return () => { alive = false; existing.removeEventListener('load', init); }; }
+    const sc = document.createElement('script');
+    sc.id = 'gsi-client';
+    sc.src = 'https://accounts.google.com/gsi/client';
+    sc.async = true; sc.defer = true;
+    sc.onload = init;
+    //: The script failing to load must not leave a dead button behind.
+    sc.onerror = () => { if (alive) setGoogleReady(false); };
+    document.head.appendChild(sc);
+    return () => { alive = false; };
+  }, [googleReady, onLogin]);
 
   //: Returning from the reset email. Same contract AuthScreen uses, so a
   //: link works whichever shell the user lands in.
@@ -323,18 +398,6 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
     setForgotSent(false);
     setPassword('');
     setConfirmPassword('');
-  }, []);
-
-  const handleAppleSignIn = useCallback(() => {
-    tapHaptic();
-    // TODO: wire Apple Sign-In; left as placeholder per safety rules
-    // (no automated OAuth flow without explicit user authorization).
-  }, []);
-
-  const handleGoogleSignIn = useCallback(() => {
-    tapHaptic();
-    // TODO: wire Google Sign-In; left as placeholder per safety rules
-    // (no automated OAuth flow without explicit user authorization).
   }, []);
 
   return (
@@ -618,8 +681,14 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             >Back to sign in</button>
           )}
 
-          {/* OR divider + Apple Sign In (placeholder — wiring deferred) */}
-          {(mode === 'login' || mode === 'register') && (<>
+          {/* OR divider + Google. Apple was REMOVED 2026-08-29: it had no route,
+              no config and no code anywhere, and standing it up needs a paid
+              Apple Developer membership. Deferral recorded in
+              PROMOTION-DEFERRED.md, due at iOS launch — Apple requires Sign in
+              with Apple of App Store apps offering any third-party sign-in.
+              The whole block hides when no provider is configured, so the OR
+              rule never floats above nothing. */}
+          {(mode === 'login' || mode === 'register') && googleReady && (<>
           <div style={{
             display: 'flex', alignItems: 'center',
             margin: '6px 0 12px',
@@ -633,58 +702,13 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             }}>OR</span>
             <div style={{ flex: 1, height: 1, background: C.divider }} />
           </div>
-          <button
-            onClick={handleAppleSignIn}
-            style={{
-              width: '100%', height: 46, borderRadius: 23,
-              background: '#0a0b0d',
-              boxShadow: `inset 0 0 0 1px ${steel(0.18)}, 1px 2px 6px rgba(0,0,0,0.5)`,
-              border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 8,
-              WebkitTapHighlightColor: 'transparent',
-              marginBottom: 10,
-              ...FONT_SMOOTH,
-            }}
-          >
-            <svg width="14" height="16" viewBox="0 0 14 16" fill="rgba(245,247,250,0.92)">
-              <path d="M11.6 8.5c0-2 1.6-3 1.7-3-0.9-1.4-2.4-1.5-2.9-1.6-1.2-0.1-2.4 0.7-3 0.7-0.6 0-1.6-0.7-2.6-0.7-1.3 0-2.6 0.8-3.3 2-1.4 2.4-0.4 6 1 8 0.7 1 1.5 2 2.6 2 1 0 1.4-0.7 2.7-0.7 1.2 0 1.6 0.7 2.7 0.7 1.1 0 1.8-1 2.5-2 0.8-1.1 1.1-2.2 1.1-2.3-0.1 0-2.5-0.9-2.5-3.1zM9.7 2.6c0.6-0.7 1-1.6 0.9-2.6-0.8 0-1.8 0.5-2.4 1.2-0.5 0.6-1 1.6-0.9 2.5 0.9 0.1 1.8-0.4 2.4-1.1z" />
-            </svg>
-            <span style={{
-              fontSize: 15, fontWeight: 600,
-              color: 'rgba(245,247,250,0.9)',
-              letterSpacing: '0.2px',
-            }}>Continue with Apple</span>
-          </button>
-
-          <button
-            onClick={handleGoogleSignIn}
-            style={{
-              width: '100%', height: 46, borderRadius: 23,
-              background: '#0a0b0d',
-              boxShadow: `inset 0 0 0 1px ${steel(0.18)}, 1px 2px 6px rgba(0,0,0,0.5)`,
-              border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: 8,
-              WebkitTapHighlightColor: 'transparent',
-              marginBottom: 14,
-              ...FONT_SMOOTH,
-            }}
-          >
-            {/* Google "G" — official 4-color mark */}
-            <svg width="16" height="16" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-            </svg>
-            <span style={{
-              fontSize: 15, fontWeight: 600,
-              color: 'rgba(245,247,250,0.9)',
-              letterSpacing: '0.2px',
-            }}>Continue with Google</span>
-          </button>
-
+          {/* Google Identity Services renders its own button in here. We do
+              not draw our own: Google's branding terms require theirs, and a
+              hand-drawn one was exactly how this control came to exist with no
+              backend behind it. */}
+          <div ref={googleBtnRef} style={{
+            display: 'flex', justifyContent: 'center', marginBottom: 10, minHeight: 44,
+          }} />
           </>)}
 
           {/* Mode toggle */}

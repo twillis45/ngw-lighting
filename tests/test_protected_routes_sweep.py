@@ -67,6 +67,14 @@ PUBLIC_ROUTES: dict[str, str] = {
     "/api/auth/register": "Creates the account.",
     "/api/auth/login": "Issues the token.",
     "/api/auth/google": "OAuth sign-in.",
+    "/api/auth/providers": (
+        "The SIGNED-OUT login screen is the only consumer, so it cannot carry a "
+        "token. Returns whether a provider is configured plus the Google client "
+        "ID, which is public by design — every site using Google Sign-In ships it "
+        "in page source. The client SECRET is never read here and never returned. "
+        "Exists so a provider button cannot render without a working backend "
+        "behind it, which is the stage-4 P0 it was written to make unrepeatable."
+    ),
     "/api/auth/magic-link/request": "Passwordless sign-in request.",
     "/api/auth/magic-link/verify": "Passwordless sign-in verification.",
     "/api/auth/password-reset/request": "Reset for a user who cannot sign in.",

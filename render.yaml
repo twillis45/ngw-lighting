@@ -23,6 +23,15 @@ services:
       # Without STRIPE_SECRET_KEY the checkout route returns 503 with
       # "Stripe is not configured", so a missing value fails loudly rather
       # than silently taking no payments.
+      # Google Sign-In. The web OAuth client ID is public (it ships in page
+      # source) but is kept out of git so staging and prod can differ and so
+      # the login screen's provider button stays absent until it is set.
+      # Create at console.cloud.google.com -> APIs & Services -> Credentials
+      # -> OAuth client ID -> Web application. Authorized JavaScript origin
+      # must be the app origin exactly, scheme included.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
       - key: STRIPE_SECRET_KEY
         sync: false           # sk_live_...
       - key: STRIPE_WEBHOOK_SECRET

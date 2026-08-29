@@ -256,6 +256,35 @@ class GoogleAuthBody(BaseModel):
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 
+@router.get("/providers")
+def auth_providers() -> dict:
+    """Which third-party sign-in routes are actually usable right now.
+
+    The login screen renders a provider button ONLY when this says the
+    provider is configured. That is the point: on 2026-08-28 the stage-4
+    heuristics gate found "Continue with Google" and "Continue with Apple"
+    rendering as real buttons with nothing behind them, each firing a
+    POSITIVE haptic and returning. A button whose existence is conditioned
+    on server state cannot drift back into lying — if the credential is
+    absent the control is absent, and nobody has to remember to check.
+
+    Deliberately unauthenticated: the signed-out login screen is the only
+    consumer, so it cannot require a token. The client ID it returns is a
+    PUBLIC value by design — every site using Google Sign-In ships it in
+    page source; the secret half of the pair is the client SECRET, which
+    lives only in the server env and is never returned here.
+
+    apple is hard-false: Sign in with Apple has no route, no config and no
+    code. Recorded as a deferral due at iOS launch, since Apple requires it
+    of App Store apps that offer any third-party sign-in.
+    """
+    return {
+        "google": bool(GOOGLE_CLIENT_ID),
+        "google_client_id": GOOGLE_CLIENT_ID or None,
+        "apple": False,
+    }
+
+
 @router.post("/google")
 def google_auth(body: GoogleAuthBody, request: Request):
     if not GOOGLE_CLIENT_ID:
