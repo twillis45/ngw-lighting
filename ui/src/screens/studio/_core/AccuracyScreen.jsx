@@ -6,9 +6,25 @@
  * human-verified ground truth, MISSES INCLUDED, with the strict number next
  * to the generous one.
  *
- * The two figures are far apart on this corpus (14 exact vs 26 acceptable of
- * 29). Publishing only the second would be a lie of omission, so both are
- * always shown with the denominator.
+ * The two figures are far apart on this corpus. Publishing only the generous
+ * one would be a lie of omission, so both are always shown with the
+ * denominator, read live from /api/gallery rather than hardcoded.
+ *
+ * 2026-08-29 — TWO corrections, both measured:
+ *
+ * 1. `reflector_fill` is an approved entry, a genuine MISS, and was absent
+ *    from this page only because its thumbnail file did not exist — the
+ *    source is a PNG named image.jpg, so the JPEG writer had failed on it
+ *    silently. A missing file was dropping a failure out of the denominator
+ *    and lifting the published within-range rate from 90% to 93%. Thumbnail
+ *    generated; the miss is now shown, which is this page's whole premise.
+ *
+ * 2. The reference set is SMALL. Median long edge 711px, range 249-3888, and
+ *    only 1 of 34 images is above the 2048px threshold at which the pipeline
+ *    stops upscaling internally. A photographer's camera file is several
+ *    thousand pixels, so it takes a different code path — one this corpus
+ *    barely exercises. That limit is now stated on the page. Do not remove it
+ *    without measuring accuracy on camera-sized files first.
  */
 import { useEffect, useState } from 'react';
 import { steel } from '../../../theme/studioMatte';
@@ -96,8 +112,17 @@ export default function AccuracyScreen({ onBack }) {
             <strong style={{ color: 'rgba(245,247,250,0.92)' }}> {data.hits} of {data.scored}</strong> fell
             within the accepted range.
           </p>
-          <p style={{ fontSize: 11.5, color: steel(0.42), margin: '0 0 20px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: 11.5, color: steel(0.42), margin: '0 0 8px', lineHeight: 1.5 }}>
             Misses are shown. A proof page that hides its failures is not proof.
+          </p>
+          {/* The denominator is only half the claim. A reader is entitled to
+              know what the reference set IS before deciding what the number
+              means for their own files. Measured 2026-08-29: median long edge
+              711px, range 249–3888, 1 of 34 above 2048px. */}
+          <p style={{ fontSize: 11.5, color: steel(0.42), margin: '0 0 20px', lineHeight: 1.5 }}>
+            These reference images are small — a median long edge of 711 pixels.
+            Your camera files are several thousand, and we have not yet scored
+            the engine on files that size. Read this as a floor, not a forecast.
           </p>
 
           <div style={{

@@ -26,11 +26,41 @@ import pytest
 
 from engine.orchestrator import analyze_image
 
-CORPUS = sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
+_ALL = sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
 
-# Measured 2026-08-26 over the full 34-image corpus, run_vlm=False.
+
+def _expected(path):
+    try:
+        meta = json.load(open(os.path.join(os.path.dirname(path), "metadata.json")))
+    except (OSError, ValueError):
+        return None
+    return (meta.get("ground_truth") or {}).get("expected_pattern")
+
+
+# An entry with NO recorded expected pattern cannot be scored: `_acceptable`
+# returns False for every answer, so it counts as a permanent miss against a
+# truth that does not exist. Found 2026-08-29 — `images__5_` was dragging the
+# denominator down that way while also being approval=rejected.
+#
+# Excluded entries are NAMED, not silently dropped. A missing thumbnail
+# quietly removing a real miss from the public page is the same failure class,
+# found the same day, and the fix for both is that nothing leaves the count
+# without saying so.
+UNSCOREABLE = [p for p in _ALL if not _expected(p)]
+CORPUS = [p for p in _ALL if _expected(p)]
+
+# Measured 2026-08-29 over the scoreable corpus, run_vlm=False.
 BASELINE_EXACT = 18
 BASELINE_ACCEPTABLE = 30
+
+
+def test_unscoreable_entries_are_named_not_hidden():
+    """Whatever cannot be scored must be visible, with its reason."""
+    names = sorted(os.path.basename(os.path.dirname(p)) for p in UNSCOREABLE)
+    assert names == ["images__5_"], (
+        "the set of unscoreable entries changed -- confirm each one really has "
+        f"no recorded expected_pattern before updating this list: {names}"
+    )
 
 # A fast subset for the default suite. These are entries that resolved to an
 # acceptable pattern at baseline, so any drop here is a real regression.
