@@ -6,7 +6,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { tapHaptic, successHaptic, warnHaptic, grainHaptic } from '../../../utils/haptics';
 import { softClickSound, navSlideSound } from '../../../utils/sounds';
-import { login, register } from '../../../data/authApi';
+import { login, register, saveAuth } from '../../../data/authApi';
 import MatteBackground from '../_shared/MatteBackground';
 
 // ─── Studio Matte Token Palette ──────────────────────────────────────────────
@@ -186,7 +186,7 @@ function InsetField({
 }
 
 export default function StudioLoginScreen({ onLogin, onAccuracy }) {
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'forgot' | 'reset'
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -195,6 +195,27 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
   const [error, setError] = useState(null);
   const [ctaPressed, setCtaPressed] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
+  //: Password reset (8/29). The endpoints and the URL plumbing already
+  //: existed — /api/auth/password-reset/{request,confirm} are implemented,
+  //: and main.jsx already stashes ?reset_token into sessionStorage for any
+  //: shell to pick up. Only this screen was never wired, so the control
+  //: rendered and did nothing.
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetToken, setResetToken] = useState(null);
+  const [forgotSent, setForgotSent] = useState(false);
+
+  //: Returning from the reset email. Same contract AuthScreen uses, so a
+  //: link works whichever shell the user lands in.
+  useEffect(() => {
+    try {
+      const t = sessionStorage.getItem('ngw_reset_token');
+      if (t) {
+        sessionStorage.removeItem('ngw_reset_token');
+        setResetToken(t);
+        setMode('reset');
+      }
+    } catch { /* sessionStorage unavailable — stay on login */ }
+  }, []);
 
   // ── Field-level validation — runs every render off live state ──
   // Empty fields don't surface errors until the user has touched the input
@@ -205,27 +226,62 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
   const emailError = !trimmedEmail
     ? 'Email is required.'
     : !isValidEmail(trimmedEmail) ? 'Enter a valid email address.' : null;
-  const passwordError = !password
+  const passwordError = mode === 'forgot' ? null       // email only
+    : !password
     ? 'Password is required.'
-    : (mode === 'register' && password.length < MIN_PASSWORD_LEN)
+    : ((mode === 'register' || mode === 'reset') && password.length < MIN_PASSWORD_LEN)
       ? `At least ${MIN_PASSWORD_LEN} characters.` : null;
+  const confirmError = mode !== 'reset' ? null
+    : !confirmPassword ? 'Confirm your new password.'
+    : confirmPassword !== password ? 'Passwords do not match.' : null;
+  const emailErrorActive = mode === 'reset' ? null : emailError;
   const usernameError = mode !== 'register' ? null
     : !trimmedUsername ? 'Username is required.'
     : trimmedUsername.length < MIN_USERNAME_LEN ? `At least ${MIN_USERNAME_LEN} characters.`
     : !USERNAME_RE.test(trimmedUsername) ? 'Letters, numbers, . _ - only.'
     : null;
-  const formInvalid = !!emailError || !!passwordError || (mode === 'register' && !!usernameError);
+  const formInvalid = !!emailErrorActive || !!passwordError || !!confirmError || (mode === 'register' && !!usernameError);
 
   const handleSubmit = useCallback(async () => {
-    if (emailError || passwordError || (mode === 'register' && usernameError)) {
+    if (emailErrorActive || passwordError || confirmError || (mode === 'register' && usernameError)) {
       warnHaptic();
-      setError(emailError || usernameError || passwordError);
+      setError(emailErrorActive || usernameError || passwordError || confirmError);
       return;
     }
     setLoading(true);
     setError(null);
     softClickSound();
     try {
+      //: Ask for a reset link. The endpoint always reports success so it
+      //: cannot be used to enumerate accounts — so this screen must not
+      //: claim the address was found either.
+      if (mode === 'forgot') {
+        const res = await fetch('/api/auth/password-reset/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || 'Could not send the reset link.');
+        successHaptic();
+        setForgotSent(true);
+        return;
+      }
+      //: Set the new password against the emailed token, then sign in with
+      //: the JWT it returns — no second trip through the login form.
+      if (mode === 'reset') {
+        const res = await fetch('/api/auth/password-reset/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken, new_password: password }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || 'That reset link is invalid or has expired.');
+        saveAuth(data.token, data.user);
+        successHaptic();
+        onLogin(data.user);
+        return;
+      }
       let user;
       if (mode === 'login') {
         user = await login(email.trim(), password);
@@ -240,7 +296,8 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
     } finally {
       setLoading(false);
     }
-  }, [mode, email, username, password, onLogin, emailError, passwordError, usernameError, trimmedEmail, trimmedUsername]);
+  }, [mode, email, username, password, confirmPassword, resetToken, onLogin,
+      emailErrorActive, passwordError, confirmError, usernameError, trimmedEmail, trimmedUsername]);
 
   const switchMode = useCallback(() => {
     navSlideSound();
@@ -250,8 +307,22 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
   }, []);
 
   const handleForgotPassword = useCallback(() => {
+    navSlideSound();
     tapHaptic();
-    // TODO: route to password reset flow when backend endpoint exists.
+    setMode('forgot');
+    setError(null);
+    setForgotSent(false);
+  }, []);
+
+  //: Any exit from forgot/reset returns to a clean login form.
+  const backToLogin = useCallback(() => {
+    navSlideSound();
+    tapHaptic();
+    setMode('login');
+    setError(null);
+    setForgotSent(false);
+    setPassword('');
+    setConfirmPassword('');
   }, []);
 
   const handleAppleSignIn = useCallback(() => {
@@ -339,13 +410,19 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             fontWeight: 800, fontSize: 26, lineHeight: '32px',
             color: C.textPrimary, letterSpacing: '-0.3px',
             ...FONT_SMOOTH,
-          }}>{mode === 'login' ? 'Sign In' : 'Create Account'}</p>
+          }}>{mode === 'forgot' ? 'Reset Password'
+             : mode === 'reset' ? 'Set a New Password'
+             : mode === 'login' ? 'Sign In' : 'Create Account'}</p>
           <p style={{
             margin: '0 0 28px',
             fontSize: 13, fontWeight: 400, color: C.textSub, lineHeight: 1.5,
             ...FONT_SMOOTH,
           }}>
-            {mode === 'login'
+            {mode === 'forgot'
+              ? 'Enter the email on the account and we will send a reset link.'
+              : mode === 'reset'
+              ? 'Choose a new password. You will be signed in straight after.'
+              : mode === 'login'
               ? 'Pick up where the last shoot left off.'
               : 'Your reference library starts here.'}
           </p>
@@ -358,12 +435,14 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             padding: '20px 20px 4px',
             position: 'relative', marginBottom: 14,
           }}>
-            <InsetField
-              label="EMAIL" value={email} onChange={setEmail}
-              placeholder="you@example.com" type="email" disabled={loading}
-              onSubmit={handleSubmit} autoFocus
-              fieldError={emailError}
-            />
+            {mode !== 'reset' && (
+              <InsetField
+                label="EMAIL" value={email} onChange={setEmail}
+                placeholder="you@example.com" type="email" disabled={loading}
+                onSubmit={handleSubmit} autoFocus
+                fieldError={emailErrorActive}
+              />
+            )}
             {/* Animated username slot — appears in register mode without snap */}
             <div style={{
               maxHeight: mode === 'register' ? 110 : 0,
@@ -380,14 +459,15 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
                 hint={mode === 'register' ? '3+ chars, letters/numbers/._-' : null}
               />
             </div>
+            {mode !== 'forgot' && (
             <InsetField
-              label="PASSWORD" value={password} onChange={setPassword}
+              label={mode === 'reset' ? 'NEW PASSWORD' : 'PASSWORD'} value={password} onChange={setPassword}
               placeholder="••••••••"
               type={showPassword ? 'text' : 'password'}
               disabled={loading}
               onSubmit={handleSubmit}
               fieldError={passwordError}
-              hint={mode === 'register' && !passwordError ? `At least ${MIN_PASSWORD_LEN} characters` : null}
+              hint={(mode === 'register' || mode === 'reset') && !passwordError ? `At least ${MIN_PASSWORD_LEN} characters` : null}
               onCapsLockChange={setCapsLockOn}
               rightAction={
                 <button
@@ -404,6 +484,19 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
                 </button>
               }
             />
+            )}
+            {/* Confirm — reset mode only. The mismatch is caught before the
+                request goes out, so a typo never costs a round trip. */}
+            {mode === 'reset' && (
+              <InsetField
+                label="CONFIRM PASSWORD" value={confirmPassword} onChange={setConfirmPassword}
+                placeholder="••••••••"
+                type={showPassword ? 'text' : 'password'}
+                disabled={loading}
+                onSubmit={handleSubmit}
+                fieldError={confirmError}
+              />
+            )}
             {/* Caps Lock notice — surfaces only while the user is actively
                 typing into the password field with caps lock on */}
             {capsLockOn && (
@@ -425,7 +518,7 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
           </div>
 
           {/* Forgot password — login mode only */}
-          {mode === 'login' && (
+          {mode === 'login' && !forgotSent && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
               <button
                 onClick={handleForgotPassword}
@@ -451,7 +544,28 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             }}>{error}</p>
           )}
 
-          {/* CTA */}
+          {/* Reset link sent. The endpoint always reports success so it cannot
+              be used to enumerate accounts; this copy keeps that promise
+              instead of confirming the address was found. */}
+          {forgotSent && (
+            <div style={{
+              borderRadius: 14, backgroundColor: C.panelBg,
+              boxShadow: `${PANEL_SHADOW}, ${PANEL_BEVEL}`,
+              padding: '18px 20px', marginBottom: 14,
+            }}>
+              <p style={{
+                margin: '0 0 6px', fontSize: 14, fontWeight: 600,
+                color: C.textPrimary, ...FONT_SMOOTH,
+              }}>Check your email</p>
+              <p style={{
+                margin: 0, fontSize: 13, fontWeight: 400,
+                color: C.textSub, lineHeight: 1.5, ...FONT_SMOOTH,
+              }}>If <span style={{ color: C.textMeta }}>{email.trim()}</span> has an account, a reset link is on its way. The link expires, so use it soon.</p>
+            </div>
+          )}
+
+          {/* CTA — hidden once the link is away; there is nothing left to submit */}
+          {!forgotSent && (
           <button
             onClick={handleSubmit}
             onPointerDown={() => { if (!loading) { setCtaPressed(true); tapHaptic(); } }}
@@ -479,11 +593,33 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
               pointerEvents: 'none',
               ...FONT_SMOOTH,
             }}>
-              {loading ? (mode === 'login' ? 'Signing In…' : 'Creating Account…') : (mode === 'login' ? 'Sign In' : 'Create Account')}
+              {loading
+                ? (mode === 'forgot' ? 'Sending…' : mode === 'reset' ? 'Saving…'
+                   : mode === 'login' ? 'Signing In…' : 'Creating Account…')
+                : (mode === 'forgot' ? 'Send Reset Link' : mode === 'reset' ? 'Set Password'
+                   : mode === 'login' ? 'Sign In' : 'Create Account')}
             </span>
           </button>
 
+          )}
+
+          {/* Back out of the reset flow. Without this the only exit from
+              forgot/reset is a page reload. */}
+          {(mode === 'forgot' || mode === 'reset') && (
+            <button
+              onClick={backToLogin}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 14, fontWeight: 500, color: C.textMeta,
+                padding: '4px 0', display: 'block', width: '100%', textAlign: 'center',
+                WebkitTapHighlightColor: 'transparent',
+                ...FONT_SMOOTH,
+              }}
+            >Back to sign in</button>
+          )}
+
           {/* OR divider + Apple Sign In (placeholder — wiring deferred) */}
+          {(mode === 'login' || mode === 'register') && (<>
           <div style={{
             display: 'flex', alignItems: 'center',
             margin: '6px 0 12px',
@@ -549,7 +685,10 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
             }}>Continue with Google</span>
           </button>
 
+          </>)}
+
           {/* Mode toggle */}
+          {(mode === 'login' || mode === 'register') && (
           <button
             onClick={switchMode}
             style={{
@@ -562,6 +701,7 @@ export default function StudioLoginScreen({ onLogin, onAccuracy }) {
           >
             {mode === 'login' ? "Don't have an account? Create one" : 'Already have an account? Sign in'}
           </button>
+          )}
 
           {/* Proof before signup — Gate Zero G0.3. Every scored reference
               read against verified truth, misses included, no account. */}
