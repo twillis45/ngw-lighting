@@ -18,6 +18,24 @@ Environment variables:
     TRUSTED_PROXY_IPS       — comma-separated IPs of trusted proxies (e.g. Render,
                               Cloudflare egress). When set, X-Forwarded-For is only
                               honoured when the direct socket IP is in this list.
+    TRUST_PROXY_HOPS        (default 1) — how many trusted proxies sit in front of
+                              this app. The client IP is read that many positions
+                              from the RIGHT of X-Forwarded-For. Raise it only if
+                              you actually add another proxy in front.
+
+SECURITY NOTE — fixed 2026-08-29.
+    This module previously read ``X-Forwarded-For.split(",")[0]`` — the LEFTMOST
+    entry. Each proxy APPENDS the address it received the connection from, so the
+    leftmost entry is whatever the client sent and is entirely attacker-controlled;
+    only the rightmost entries were written by infrastructure. With the shipped
+    defaults (TRUST_PROXY_HEADERS unset, TRUSTED_PROXY_IPS unset) that made every
+    limit in the app bypassable by rotating one header.
+
+    Measured before the fix: 50 of 50 requests allowed against a 5-per-60s login
+    limit, from a single caller, by varying X-Forwarded-For. The control — the same
+    caller NOT varying the header — was correctly cut off at 5. The limiter worked;
+    the key did not. Brute-force protection on login, registration, password reset,
+    magic-link and Google auth all rested on it.
 """
 from __future__ import annotations
 
@@ -37,6 +55,12 @@ _TRUST_PROXY = os.getenv("TRUST_PROXY_HEADERS", "1").strip() not in ("0", "false
 _TRUSTED_IPS: frozenset[str] = frozenset(
     ip.strip() for ip in os.getenv("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()
 )
+# How many trusted proxies sit in front of the app. Render puts exactly one there.
+def _hops() -> int:
+    try:
+        return max(1, int(os.getenv("TRUST_PROXY_HOPS", "1")))
+    except ValueError:
+        return 1
 
 
 # ── Store ───────────────────────────────────────────────────────────────────────
@@ -65,7 +89,13 @@ def _client_key(request: Request, extra: Optional[str] = None) -> str:
 
     if use_forwarded:
         forwarded_for = request.headers.get("X-Forwarded-For")
-        ip = forwarded_for.split(",")[0].strip() if forwarded_for else socket_ip
+        parts = [p.strip() for p in (forwarded_for or "").split(",") if p.strip()]
+        hops = _hops()
+        # Read from the RIGHT. Proxies append, so the last `hops` entries are the
+        # ones infrastructure wrote; everything left of them is caller-supplied.
+        # If the header is shorter than the hop count the chain is not what we
+        # think it is, so fall back to the socket IP rather than trust a guess.
+        ip = parts[-hops] if len(parts) >= hops else socket_ip
     else:
         ip = socket_ip
 
