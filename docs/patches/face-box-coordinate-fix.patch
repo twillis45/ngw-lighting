@@ -1,0 +1,17 @@
+diff --git a/engine/vision_pipeline.py b/engine/vision_pipeline.py
+index c80e7c3..15cb27f 100644
+--- a/engine/vision_pipeline.py
++++ b/engine/vision_pipeline.py
+@@ -1325,6 +1325,12 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
+         if "image_size" in _fg:
+             _fg["image_size"] = (round(_fg["image_size"][0] / _scale), round(_fg["image_size"][1] / _scale))
+ 
++    # face_box comes back in the UPSCALED space like everything else above, and
++    # was the one coordinate never mapped down. Downstream passes receive the
++    # ORIGINAL image, so the unscaled box can exceed the source bounds.
++    if _scale != 1.0 and face_box is not None:
++        face_box = tuple(int(round(v / _scale)) for v in face_box)
++
+     # Skin tone guess from skin pixels luma (Y from YCrCb)
+     skin_tone = {"ok": False, "reason": "no_skin_pixels"}
+     if skin_px.shape[0] >= SKIN.MIN_PIXELS_TONE:
