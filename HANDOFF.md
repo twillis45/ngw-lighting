@@ -65,6 +65,31 @@ quoted outward clears `claim-verification` first.
 
 Every one of these cost a wrong turn this session.
 
+- **`.venv` is broken — the API cannot be started locally.** `.venv/bin/uvicorn`
+  carries a shebang pointing at `/Users/toddwillis/Code/ngw-core/.venv/bin/python3`,
+  a path that no longer exists, so any attempt to run the server dies with
+  `bad interpreter`. Rebuild the venv before trying to drive real endpoints.
+  Frontend work can be verified without it: build, serve the repo over
+  `python3 -m http.server`, load `/static/ui/index.html`, and intercept
+  `/api/**` in puppeteer.
+- **`input[0]` is not the first visible field on the login screen.** The username
+  input lives in an animated slot that is present-and-`disabled` in every mode
+  except register, rather than unmounted. A test that grabs `querySelectorAll(
+  'input')[0]` types into a disabled field and reports a false failure. Filter on
+  `:not([disabled])`, or select by type.
+- **A green build is not evidence here.** The password-reset wiring was
+  red-proofed by restoring the original `TODO` handler: the flow became
+  unreachable and `npm run build` still reported **zero errors**. Only driving the
+  screen caught it.
+- **The Browser preview tool cannot see this project.** Its cwd is
+  `/Users/toddwillis`, so it reads `~/.claude/launch.json`, not this repo's.
+  `preview_start` with the project's server names fails. Drive puppeteer directly
+  — which `measure-dont-look` prefers anyway.
+- **`docs/artifact/reverse-the-light.html` is a TEMPLATE, not a page.** It carries
+  `__STATE__` and `__TPL__` placeholders and renders blank if published as-is.
+  Hydrate first (state JSON + base64 of itself), then publish passing the
+  artifact URL as `url`.
+
 - **Studio vs legacy is invisible in the DOM.** `sessionStorage.ngw_studio_active`
   decides which shell mounts; both serve from `/ui`. Check it *before* comparing
   anything. Four screenshots were published as a "legacy vs Studio comparison"
