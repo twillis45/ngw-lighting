@@ -636,8 +636,12 @@ export default function Day1SettingsScreen({ user, onBack, onLogout, onLab }) {
         <SectionLabel label="SUPPORT" />
         <Panel>
           <NavRow label="Contact support" onClick={() => window.open(`mailto:${SUPPORT_EMAIL}?subject=NGW%20Support`, '_blank')} />
-          <Divider />
-          <NavRow label="Rate NGW" onClick={() => {}} />
+          {/* "Rate NGW" removed 2026-08-29. Its handler was `() => {}` and there
+              is no store listing to rate — the app is not on the App Store and
+              the Apple Developer Program is unenrolled. Same ruling as the Apple
+              sign-in button on the same day: a control that advertises a
+              capability the product does not have is removed, not disabled.
+              Restore it as one NavRow opening the listing URL once one exists. */}
         </Panel>
 
         {/* ── LEGAL ── */}
