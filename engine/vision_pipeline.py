@@ -1135,6 +1135,24 @@ def _detect_catchlights(img_bgr: np.ndarray, face_box: Optional[Tuple[int, int, 
     }
 
 
+def _image_detail(img_bgr) -> float:
+    """Variance of the Laplacian — how much structure the image actually has.
+
+    Size-normalised: without it a large photograph scores higher than a small
+    one purely for being large, which is not what the number is meant to mean.
+    Returns 0.0 rather than raising on anything unexpected; a metric that can
+    fail the whole pipeline is worse than one that abstains.
+    """
+    try:
+        g = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY) if img_bgr.ndim == 3 else img_bgr
+        if max(g.shape) > 1024:
+            _s = 1024.0 / max(g.shape)
+            g = cv2.resize(g, (int(g.shape[1] * _s), int(g.shape[0] * _s)))
+        return float(cv2.Laplacian(g, cv2.CV_64F).var())
+    except Exception:
+        return 0.0
+
+
 def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dict[str, Any]:
     if cv2 is None or mp is None:
         return {"ok": False, "error": "opencv-python and mediapipe are required"}
@@ -1153,6 +1171,11 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
     # Too small (<1024px): eye regions too tiny for catchlight detection,
     #   face landmarks imprecise. Upscale with INTER_CUBIC.
     _scale = 1.0
+    # b8: measure structure on the ORIGINAL image. Computing it after the
+    # MediaPipe upscale collapses it ~70x — INTER_CUBIC interpolates detail
+    # away, so clamshell_clean reads 242 before and 3.55 after. The first
+    # version of this floor did exactly that and declined two real reads.
+    _detail_orig = _image_detail(img)
     if _MP_MAX_DIM > 0 and max(h, w) > _MP_MAX_DIM:
         _scale = _MP_MAX_DIM / max(h, w)
         _new_w, _new_h = int(w * _scale), int(h * _scale)
@@ -1368,6 +1391,17 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
 
     result = {
         "ok": True,
+        # ── b8: is there enough image structure for a lighting read to be
+        # POSSIBLE at all? Variance of the Laplacian, size-normalised so a big
+        # image is not automatically "detailed". Reported here; the decline is
+        # decided at the orchestrator exit alongside the b5 floor.
+        #
+        # Measured 2026-08-29 — real photographs 54.4 to 2885 (n=34); a plain
+        # gradient 0.57, a portrait blurred past recognition 1.36, flat grey /
+        # white / black 0.00. A 40x gap. Pure NOISE scores 48756 and is not
+        # caught here at all — it is caught by the b5 confidence floor, so the
+        # two mechanisms are complementary rather than redundant.
+        "image_detail": _detail_orig,
         "region_attribution": {
             "enabled": True,
             "masks": {

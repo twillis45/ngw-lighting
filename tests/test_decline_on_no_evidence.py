@@ -75,15 +75,50 @@ def test_the_floor_is_structural_not_fitted():
     )
 
 
-@pytest.mark.xfail(strict=False, reason=(
-    "KNOWN GAP, recorded rather than hidden. A vertical gradient returns 'loop' "
-    "at 0.70 and a blurred-out portrait returns 'rembrandt' at 0.43. Both carry "
-    "real confidence, so the 0.0 floor cannot reach them. Catching these needs a "
-    "subject-presence check -- is there a face or a lit object at all -- which is "
-    "separate work, not a lower threshold."))
-def test_confident_nonsense_is_still_named(tmp_path):
-    H, W = 900, 600
+def _gradient(H=900, W=600):
     g = np.tile(np.linspace(0, 255, H, dtype=np.uint8)[:, None], (1, W))
-    r = analyze_image(_write(tmp_path, "gradient", np.dstack([g, g, g])), run_vlm=False)
+    return np.dstack([g, g, g])
+
+
+def test_confident_nonsense_is_declined(tmp_path):
+    """b8, closed 2026-08-29. This was an xfail: the gradient came back as
+    'loop' at 0.70, in the same confidence band as genuine reads, so no
+    confidence floor could reach it without discarding real work at 0.28.
+
+    The discriminator is structure, not confidence."""
+    r = analyze_image(_write(tmp_path, "gradient", _gradient()), run_vlm=False)
     assert r.authoritative_pattern in DECLINE, (
-        f"a plain gradient was read as {r.authoritative_pattern!r}")
+        f"a plain gradient was read as {r.authoritative_pattern!r} at "
+        f"{getattr(r, 'pattern_confidence', None)!r}")
+
+
+def test_a_blurred_out_portrait_is_declined(tmp_path):
+    """Real photographic content, destroyed. Previously 'rembrandt' at 0.43."""
+    import glob
+    srcs = sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
+    if not srcs:
+        pytest.skip("reference corpus not present")
+    big = cv2.resize(cv2.imread(srcs[0]), (600, 900))
+    blurred = cv2.GaussianBlur(big, (199, 199), 0)
+    r = analyze_image(_write(tmp_path, "blurred", blurred), run_vlm=False)
+    assert r.authoritative_pattern in DECLINE, (
+        f"a portrait blurred past recognition was read as "
+        f"{r.authoritative_pattern!r}")
+
+
+def test_the_structure_floor_has_real_headroom():
+    """The floor is a CHOSEN number, unlike the 0.0 confidence floor -- so the
+    thing that makes it defensible is the margin, and the margin is what this
+    asserts. Every real photograph must sit far above it; if one ever does not,
+    the floor is no longer safe and this is where that surfaces."""
+    import glob
+    from engine.orchestrator import _MIN_IMAGE_DETAIL
+    from engine.vision_pipeline import _image_detail
+    srcs = sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
+    if not srcs:
+        pytest.skip("reference corpus not present")
+    vals = [(p, _image_detail(cv2.imread(p))) for p in srcs]
+    worst = min(vals, key=lambda v: v[1])
+    assert worst[1] > _MIN_IMAGE_DETAIL * 3, (
+        f"least detailed real photograph {worst[0]} scores {worst[1]:.1f}, "
+        f"leaving under 3x headroom above the floor of {_MIN_IMAGE_DETAIL}")

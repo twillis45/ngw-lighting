@@ -81,6 +81,7 @@ Usage::
 from __future__ import annotations
 
 import logging
+import os
 import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -97,6 +98,10 @@ from engine.vlm_contract import (
 )
 
 logger = logging.getLogger(__name__)
+
+# b8 decline floor — see the decline block at the end of analyze_image for the
+# measurement this comes from and the honest limits on it.
+_MIN_IMAGE_DETAIL = float(os.environ.get("NGW_MIN_IMAGE_DETAIL", "10.0"))
 
 # Phase 1 — increment when stage logic, resolver order, or cue weights change.
 PIPELINE_VERSION = "1.0.0"
@@ -6255,6 +6260,44 @@ def analyze_image(
         )
         result.authoritative_pattern = "unknown"
         result.authoritative_pattern_source = "decline:no_evidence"
+
+    # ── b8: decline when the image has no structure to read ──────────────
+    # The b5 floor catches inputs that produce no evidence. It cannot catch
+    # CONFIDENT nonsense: a plain vertical gradient came back as "loop" at 0.70
+    # and a portrait blurred past recognition as "rembrandt" at 0.43, both in
+    # the same confidence band as genuine reads. No confidence floor reaches
+    # those without discarding real work at 0.28.
+    #
+    # The discriminator is not confidence, it is whether there is any
+    # photographic structure present at all. Measured 2026-08-29, variance of
+    # the Laplacian, size-normalised:
+    #
+    #     real photographs (n=34)   54.4 .. 2885
+    #     blurred-out portrait             1.36
+    #     vertical gradient                0.57
+    #     flat grey / white / black        0.00
+    #
+    # A 40x gap. Unlike the b5 floor this IS a chosen number and saying so
+    # matters — but it is not FITTED: every value between roughly 3 and 50
+    # produces identical results on everything measured, so it was not tuned to
+    # make particular cases pass. 10.0 sits near the geometric middle of the
+    # gap, 5.4x below the least detailed real photograph and 7.4x above the most
+    # detailed unreadable one.
+    #
+    # The honest limit: n=34, and all but one are small images. A genuinely
+    # soft, foggy or heavily diffused photograph is the case that would sit
+    # lowest, and the corpus may not contain a real example. The headroom is
+    # the safeguard, and this comment is where to look if a real photograph is
+    # ever wrongly declined.
+    _detail = (result.vision_data or {}).get("image_detail")
+    if (isinstance(_detail, (int, float)) and _detail < _MIN_IMAGE_DETAIL
+            and result.authoritative_pattern not in (None, "", "unknown")):
+        logger.info(
+            "[decline] no image structure (detail=%.2f < %.1f) — withholding pattern %r",
+            _detail, _MIN_IMAGE_DETAIL, result.authoritative_pattern,
+        )
+        result.authoritative_pattern = "unknown"
+        result.authoritative_pattern_source = "decline:no_structure"
 
     if _txn:
         try:
