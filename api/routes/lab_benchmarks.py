@@ -46,6 +46,8 @@ from db.benchmark import (
     get_pattern_metrics, get_last_n_run_scores,
 )
 
+from engine.constants import ENGINE_VERSION
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/benchmarks", tags=["lab-benchmarks"])
@@ -364,17 +366,36 @@ async def update_baseline(
             ),
         )
 
+    # This call was wrong in five ways and had NEVER succeeded — it is the only
+    # save_baseline call site in the codebase, so no baseline could ever be
+    # written, and compare_to_baseline returns "safe_to_merge" unconditionally
+    # when no baseline exists. The regression gate was a permanent green light:
+    # a run scoring 0.01 overall with 0.99 confidence error was reported safe.
+    #
+    # It passed total_cases and notes (no such parameters, and no columns for
+    # them), per_pattern instead of pattern_scores, set_by instead of
+    # created_by, and omitted the REQUIRED version_id. Every request 500'd with
+    # TypeError. Fixed 2026-08-30 and covered by a test that calls it for real
+    # rather than mocking it.
+    per_pattern = {
+        m["pattern_id"]: m.get("benchmark_score", 0.0)
+        for m in (get_pattern_metrics() or [])
+        if m.get("pattern_id")
+    }
     baseline = save_baseline(
+        version_id      = f"{ENGINE_VERSION}+{latest['id'][:8]}",
         run_id          = latest["id"],
-        overall_score   = latest.get("overall_score", 0.0),
-        pattern_accuracy= latest.get("pattern_accuracy", 0.0),
-        blueprint_score = latest.get("avg_blueprint_score", 0.0),
-        confidence_error= latest.get("confidence_error", 0.0),
-        total_cases     = latest.get("total_cases", 0),
-        per_pattern     = {},   # populated from pattern_metrics if present
-        set_by          = user.get("email") or user.get("id", "ci"),
-        notes           = body.notes,
+        overall_score   = latest.get("overall_score") or 0.0,
+        pattern_scores  = per_pattern,
+        blueprint_score = latest.get("avg_blueprint_score") or 0.0,
+        confidence_error= latest.get("confidence_error") or 0.0,
+        pattern_accuracy= latest.get("pattern_accuracy") or 0.0,
+        created_by      = user.get("email") or user.get("id", "ci"),
     )
+    if body.notes:
+        # The baseline table has no notes column. Logged rather than silently
+        # dropped, so the caller's note is not simply lost.
+        logger.info("[baseline] promoted run %s — note: %s", latest["id"], body.notes)
     return {"status": "ok", "baseline": baseline}
 
 

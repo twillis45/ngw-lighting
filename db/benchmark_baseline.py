@@ -149,12 +149,24 @@ def compare_to_baseline(
     if baseline is None:
         baseline = get_latest_baseline()
 
-    # No baseline yet — first run establishes it
+    # No baseline yet — NOTHING WAS COMPARED, and this must not read as a pass.
+    #
+    # Until 2026-08-30 this returned status="pass" and
+    # recommendation="safe_to_merge", which is a verdict about a comparison
+    # that did not happen. It was not a harmless default either: the only
+    # save_baseline call site in the codebase raised TypeError on every
+    # request, so no baseline could ever exist and this branch was the ONLY
+    # branch. The regression gate green-lit everything — a run scoring 0.01
+    # overall with 0.99 confidence error came back "safe_to_merge".
+    #
+    # The writer is fixed, so this branch is now genuinely the first-run case.
+    # It still refuses to call itself a pass: "no_baseline" cannot be mistaken
+    # for one by a human or by a script checking == "pass".
     if baseline is None:
         return {
             "has_baseline":   False,
-            "status":         "pass",
-            "recommendation": "safe_to_merge",
+            "status":         "no_baseline",
+            "recommendation": "no_baseline",
             "overall_score":  run_result.get("overall_score", 0.0),
             "delta":          0.0,
             "baseline_score": None,
@@ -165,7 +177,8 @@ def compare_to_baseline(
             "regressions":    [],
             "improvements":   [],
             "fail_reasons":   [],
-            "message":        "No baseline exists. This run will establish the first baseline.",
+            "message":        ("No baseline exists, so nothing was compared. "
+                               "Promote this run to establish the first baseline."),
         }
 
     cur_overall    = run_result.get("overall_score", 0.0)
