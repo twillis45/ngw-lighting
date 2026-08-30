@@ -115,6 +115,26 @@ from PIL import Image
 # reflector_fill is the entry that appears on the PUBLIC accuracy page as a
 # miss. The unified space corrects it.
 #
+# THE TWO REGRESSIONS WERE INVESTIGATED, 2026-08-29 late. They are REAL, not
+# labelling artefacts, so the tradeoff stands rather than dissolving:
+#
+#   overfill_flat     -> ring_light at 0.71, source "specialty:reference_read".
+#                        A specialty upgrade fires on the corrected geometry.
+#                        Ground truth accepts flat / high_key / clamshell, and
+#                        ring_light is a distinct source, not a tonal variant.
+#                        A genuine miss.
+#   window_soft_side  -> short at 0.94, source "reference_read". Ground truth
+#                        accepts window_portrait / loop / rembrandt /
+#                        window_negative_fill -- so the corpus DOES accept
+#                        face-geometry answers here, and "short" is simply not
+#                        among them. A genuine miss, though a near cousin of
+#                        two patterns that are accepted.
+#
+# reflector_fill goes the other way at 0.95, and it is correct.
+#
+# So the net is -1, confirmed rather than assumed, and it is a real decision
+# rather than a bug waiting to be found.
+#
 # NOT SHIPPED, and not out of timidity. The gate asserts exact >= 18 and
 # acceptable >= 30; this is 17 and 29, so it fails. Lowering a baseline to make
 # a change pass is the one move that would make every future number

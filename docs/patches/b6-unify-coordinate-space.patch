@@ -1,32 +1,32 @@
 diff --git a/engine/vision_pipeline.py b/engine/vision_pipeline.py
-index c80e7c3..9139933 100644
+index 353b2d0..7a8f2dc 100644
 --- a/engine/vision_pipeline.py
 +++ b/engine/vision_pipeline.py
-@@ -1153,6 +1153,7 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
-     # Too small (<1024px): eye regions too tiny for catchlight detection,
-     #   face landmarks imprecise. Upscale with INTER_CUBIC.
-     _scale = 1.0
+@@ -1176,6 +1176,7 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
+     # away, so clamshell_clean reads 242 before and 3.55 after. The first
+     # version of this floor did exactly that and declined two real reads.
+     _detail_orig = _image_detail(img)
 +    _orig_h, _orig_w = h, w   # b6: captured before h, w are reassigned below
      if _MP_MAX_DIM > 0 and max(h, w) > _MP_MAX_DIM:
          _scale = _MP_MAX_DIM / max(h, w)
          _new_w, _new_h = int(w * _scale), int(h * _scale)
-@@ -1325,6 +1326,15 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
+@@ -1348,6 +1349,15 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
          if "image_size" in _fg:
              _fg["image_size"] = (round(_fg["image_size"][0] / _scale), round(_fg["image_size"][1] / _scale))
  
-+    # ── b6 EXPERIMENT: normalise the WHOLE payload to original space ────────
-+    # The returned dict has carried two coordinate groups: a raster group
++    # ── b6: normalise the WHOLE payload to original space ───────────────────
++    # The returned dict carries two coordinate groups: a raster group
 +    # (_img_bgr, the masks, face_box) in UPSCALED space and a geometry group
-+    # (catchlights, face_geometry) in ORIGINAL space. Moving face_box alone
++    # (catchlights, face_geometry) in ORIGINAL space. Moving face_box ALONE
 +    # costs 10 points of exact accuracy because it leaves the group it agrees
-+    # with. This moves the whole raster group with it.
++    # with; this moves the whole raster group with it.
 +    if _scale != 1.0 and face_box is not None:
 +        face_box = tuple(int(round(v / _scale)) for v in face_box)
 +
      # Skin tone guess from skin pixels luma (Y from YCrCb)
      skin_tone = {"ok": False, "reason": "no_skin_pixels"}
      if skin_px.shape[0] >= SKIN.MIN_PIXELS_TONE:
-@@ -1408,13 +1418,24 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
+@@ -1442,13 +1452,24 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
      # These are prefixed with underscore to signal internal use — they
      # should be stripped before serializing to API responses.
      if return_masks:
