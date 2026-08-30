@@ -61,6 +61,43 @@ from PIL import Image
 # face_box lying OUTSIDE the source image. clamshell_clean is 171x256 and
 # reports [11, 410, 1339, 1738].
 #
+# THE AUDIT, measured 2026-08-29 on a 400x590 image (scale 3.47), by testing
+# each returned value against BOTH bounds rather than by reading the code:
+#
+#     _img_bgr                              UPSCALED   (2048, 1388)
+#     _masks.person / skin / clothing / bg  UPSCALED   (2048, 1388)
+#     region_attribution.face_box           UPSCALED   [0, 92, 1388, 1671]
+#     catchlights[].abs_cx / abs_cy         ORIGINAL
+#     catchlights.face_geometry.*           ORIGINAL   image_size (400, 590)
+#
+# So the payload is not one space with one stray field. It is TWO COHERENT
+# GROUPS:
+#
+#     raster group   (upscaled): _img_bgr, every mask, face_box
+#     geometry group (original): catchlights, face_geometry
+#
+# face_box belongs to the raster group and AGREES with it. Any consumer pairing
+# face_box with a mask or with _img_bgr is correct today -- and is exactly what
+# the naive patch breaks, which is why the patch is worse than either
+# self-consistent configuration. Any consumer pairing face_box with a
+# catchlight is wrong today.
+#
+# WHAT THE REAL FIX IS. Not this patch, and not a retune. There are two
+# defensible designs and the cheap one is clearly better:
+#
+#   (a) map the raster group DOWN -- resize four masks and the image per call.
+#       Expensive, and it discards the resolution MediaPipe was upscaled to get.
+#   (b) map the geometry group UP, so the internal contract becomes "everything
+#       is in _img_bgr's space", then convert ONCE at the API boundary where the
+#       response already promises original-space coordinates. Cheap: it is a
+#       multiply on a handful of points instead of four array resizes.
+#
+# (b) is the recommendation. Either way it lands as ONE change with its own
+# before/after corpus gate, because consumers today straddle both groups and
+# some of them are correct only because of the current mixture.
+#
+#
+# (superseded note follows)
 # WHAT THE REAL FIX IS. Not this patch, and not a retune. The whole returned
 # payload has to be ONE space, which means auditing every pixel-valued output of
 # analyze_image_regions and mapping them together -- or keeping `h, w` as the
