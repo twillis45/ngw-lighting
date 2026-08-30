@@ -82,35 +82,55 @@ from PIL import Image
 # self-consistent configuration. Any consumer pairing face_box with a
 # catchlight is wrong today.
 #
-# WHAT THE REAL FIX IS. Not this patch, and not a retune. There are two
-# defensible designs and the cheap one is clearly better:
+# THE FIX WAS BUILT AND MEASURED, 2026-08-29 evening.
+# docs/patches/b6-unify-coordinate-space.patch -- apply with `git apply`.
 #
-#   (a) map the raster group DOWN -- resize four masks and the image per call.
-#       Expensive, and it discards the resolution MediaPipe was upscaled to get.
-#   (b) map the geometry group UP, so the internal contract becomes "everything
-#       is in _img_bgr's space", then convert ONCE at the API boundary where the
-#       response already promises original-space coordinates. Cheap: it is a
-#       multiply on a handful of points instead of four array resizes.
+# It does what the audit prescribed: face_box mapped down, AND the rest of the
+# raster group moved with it -- the four masks via uint8/INTER_NEAREST because
+# cv2.resize refuses bool, and _img_bgr via INTER_AREA, with the original
+# dimensions captured before h, w are reassigned. Analysis still runs at the
+# upscaled resolution; only the boundary is normalised.
 #
-# (b) is the recommendation. Either way it lands as ONE change with its own
-# before/after corpus gate, because consumers today straddle both groups and
-# some of them are correct only because of the current mixture.
+# RESULT -- the audit was right about the mechanism:
 #
+#     baseline (two spaces)               18/33 exact, 30/33 acceptable
+#     face_box moved ALONE (naive patch)   8/33 exact, 17/33 acceptable
+#     WHOLE raster group moved            17/33 exact, 29/33 acceptable
 #
-# (superseded note follows)
-# WHAT THE REAL FIX IS. Not this patch, and not a retune. The whole returned
-# payload has to be ONE space, which means auditing every pixel-valued output of
-# analyze_image_regions and mapping them together -- or keeping `h, w` as the
-# original dimensions and converting at the MediaPipe boundary only. Either way
-# it lands as one change with its own before/after corpus gate.
+# Moving the group together costs 1 and 1, not 10 and 13. The loss was never
+# about the coordinate being wrong; it was about face_box leaving the group it
+# agrees with.
+#
+# Every assertion in THIS file passes under the patch: `pytest --runxfail`
+# gives 10 passed, 2 skipped (the two with no face). face_box lies inside the
+# source image on every input, and the API contract that coordinates match
+# image_dimensions becomes true for the first time.
+#
+# EXACTLY THREE READS CHANGE:
+#
+#     overfill_flat     flat            -> ring_light   (lost;  want flat)
+#     reflector_fill    butterfly       -> loop         (FIXED; want loop)
+#     window_soft_side  window_portrait -> short        (lost;  want window_portrait)
+#
+# reflector_fill is the entry that appears on the PUBLIC accuracy page as a
+# miss. The unified space corrects it.
+#
+# NOT SHIPPED, and not out of timidity. The gate asserts exact >= 18 and
+# acceptable >= 30; this is 17 and 29, so it fails. Lowering a baseline to make
+# a change pass is the one move that would make every future number
+# meaningless, so the baseline stays and the patch waits. It needs either the
+# two regressions understood, or an explicit owner ruling that correctness is
+# worth one point -- a real decision, recorded, not a quiet edit.
+#
+# A first attempt returned 1/33 because cv2.resize rejects boolean masks and
+# the pipeline threw on every image. Caught by measuring, not by reviewing.
 #
 # WORTH KNOWING SEPARATELY, and it is not a bug: a real user uploads a LARGE
-# photo, which is never upscaled, so none of this fires for them. Their path is
-# the middle row above. Scored on the same corpus content pre-upscaled to 2200px,
-# the engine gets 16/34 exact and 26/34 acceptable -- BELOW the 18/34 and 30/34
-# the public accuracy page publishes, because 33 of the 34 scored images are
-# small ones. The published numbers are not wrong about the corpus; they may be
-# optimistic about a customer's file. That is its own item, not this one.
+# photo, which is never upscaled, so none of this fires for them. Scored on the
+# same corpus content pre-upscaled to 2200px the engine gets 16/34 and 26/34 --
+# below the 18/34 and 30/34 the public accuracy page publishes, because 33 of
+# the 34 scored images are small. The published numbers are not wrong about the
+# corpus; they may be optimistic about a customer's file. Its own item.
 #
 pytestmark = pytest.mark.xfail(
     reason="face_box coordinate bug is load-bearing; fix requires retuning "
