@@ -18,10 +18,9 @@ Environment variables:
     TRUSTED_PROXY_IPS       — comma-separated IPs of trusted proxies (e.g. Render,
                               Cloudflare egress). When set, X-Forwarded-For is only
                               honoured when the direct socket IP is in this list.
-    TRUST_PROXY_HOPS        (default 1) — how many trusted proxies sit in front of
-                              this app. The client IP is read that many positions
-                              from the RIGHT of X-Forwarded-For. Raise it only if
-                              you actually add another proxy in front.
+    TRUST_PROXY_INDEX       (default 0) — which X-Forwarded-For entry to treat as
+                              the client, counted from the LEFT. 0 is the address
+                              the edge recorded.
 
 SECURITY NOTE — fixed 2026-08-29.
     This module previously read ``X-Forwarded-For.split(",")[0]`` — the LEFTMOST
@@ -31,11 +30,31 @@ SECURITY NOTE — fixed 2026-08-29.
     defaults (TRUST_PROXY_HEADERS unset, TRUSTED_PROXY_IPS unset) that made every
     limit in the app bypassable by rotating one header.
 
-    Measured before the fix: 50 of 50 requests allowed against a 5-per-60s login
+    Measured before that fix: 50 of 50 requests allowed against a 5-per-60s login
     limit, from a single caller, by varying X-Forwarded-For. The control — the same
-    caller NOT varying the header — was correctly cut off at 5. The limiter worked;
-    the key did not. Brute-force protection on login, registration, password reset,
-    magic-link and Google auth all rested on it.
+    caller NOT varying the header — was correctly cut off at 5.
+
+CORRECTION — 2026-08-30, measured against PRODUCTION rather than a simulation.
+    Reading from the RIGHT was wrong, and shipping it BROKE rate limiting entirely.
+    Render appends an internal hop that VARIES per request, so the rightmost entry
+    is a different value every time and every request got its own bucket. Verified
+    live: 10 password-reset requests and 8 failed logins, no header spoofing at
+    all, zero 429s. Locally reproduced by simulating "client, 10.0.0.N" — 8 of 8
+    allowed — while a single-entry header correctly cut off at 5.
+
+    The original code read the LEFTMOST entry. That is caller-controlled, so a
+    determined attacker could rotate past it — but it was STABLE for an honest
+    client, so ordinary limits worked. The "fix" traded a bypass an attacker had
+    to reach for, for no limit at all for anybody. Reverted to the left.
+
+    The lesson is the one this repo keeps relearning: the fix was verified against
+    a hand-built fake Request, never against the real proxy. A simulation agreed
+    with the code because both came from the same wrong model.
+
+    What actually bounds abuse now is the second change: any limit carrying an
+    `extra` discriminator keys on THAT ALONE, so per-account brute force and email
+    enumeration are bounded regardless of address. Pure per-IP limits behind this
+    proxy remain best-effort and are documented as such rather than trusted.
 """
 from __future__ import annotations
 
@@ -55,12 +74,14 @@ _TRUST_PROXY = os.getenv("TRUST_PROXY_HEADERS", "1").strip() not in ("0", "false
 _TRUSTED_IPS: frozenset[str] = frozenset(
     ip.strip() for ip in os.getenv("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()
 )
-# How many trusted proxies sit in front of the app. Render puts exactly one there.
-def _hops() -> int:
+# Index into X-Forwarded-For, counted from the LEFT. 0 is the client address as
+# the edge recorded it. Configurable so a deployment behind a different proxy
+# chain can move it without a code change.
+def _hop_index() -> int:
     try:
-        return max(1, int(os.getenv("TRUST_PROXY_HOPS", "1")))
+        return max(0, int(os.getenv("TRUST_PROXY_INDEX", "0")))
     except ValueError:
-        return 1
+        return 0
 
 
 # ── Store ───────────────────────────────────────────────────────────────────────
@@ -90,16 +111,26 @@ def _client_key(request: Request, extra: Optional[str] = None) -> str:
     if use_forwarded:
         forwarded_for = request.headers.get("X-Forwarded-For")
         parts = [p.strip() for p in (forwarded_for or "").split(",") if p.strip()]
-        hops = _hops()
-        # Read from the RIGHT. Proxies append, so the last `hops` entries are the
-        # ones infrastructure wrote; everything left of them is caller-supplied.
-        # If the header is shorter than the hop count the chain is not what we
-        # think it is, so fall back to the socket IP rather than trust a guess.
-        ip = parts[-hops] if len(parts) >= hops else socket_ip
+        # Position counted from the LEFT. See the CORRECTION note in the module
+        # docstring: reading from the right was measured broken in production.
+        idx = _hop_index()
+        ip = parts[idx] if len(parts) > idx else socket_ip
     else:
         ip = socket_ip
 
-    return f"{ip}:{extra}" if extra else ip
+    # When a caller-independent discriminator is supplied -- an email address,
+    # an account id -- key on it ALONE, not on ip:extra.
+    #
+    # Measured 2026-08-30: behind Render the IP component is not stable, so
+    # ip:email gave a fresh bucket per request and the per-account limits did
+    # nothing. Keying on `extra` alone makes per-account brute force and email
+    # enumeration bounded no matter how the caller manipulates its address,
+    # which is the threat those particular limits exist for. The cost is that
+    # one abuser can exhaust a victim account's reset budget -- a real tradeoff,
+    # accepted deliberately, because the alternative measured as no limit at all.
+    if extra:
+        return f"extra:{extra}"
+    return ip
 
 
 def check_rate_limit(

@@ -29,13 +29,13 @@ services:
       # Create at console.cloud.google.com -> APIs & Services -> Credentials
       # -> OAuth client ID -> Web application. Authorized JavaScript origin
       # must be the app origin exactly, scheme included.
-      # Rate-limit client-IP derivation. Render puts exactly ONE proxy in front
-      # of the app, so the client IP is the LAST X-Forwarded-For entry. Raise
-      # this only if another proxy is added in front of Render. Reading the
-      # leftmost entry instead made every rate limit bypassable — see
-      # tests/test_rate_limit_key.py.
-      - key: TRUST_PROXY_HOPS
-        value: "1"
+      # Rate-limit client-IP derivation. MEASURED 2026-08-30 against production,
+      # not assumed: Render appends an internal hop that VARIES per request, so
+      # the client is the LEFTMOST X-Forwarded-For entry (index 0). Reading from
+      # the right gave every request its own bucket and disabled rate limiting
+      # entirely. See tests/test_rate_limit_key.py.
+      - key: TRUST_PROXY_INDEX
+        value: "0"
 
       - key: GOOGLE_CLIENT_ID
         sync: false
