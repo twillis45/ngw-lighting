@@ -123,25 +123,63 @@ console.log('\nWhole surface — no control wired to a no-op handler');
   const files = walk(join(here, '..', 'ui/src'));
   check('enumerated the source tree', files.length > 50, files.length);
 
-  // An empty arrow body, or one holding only feedback (a haptic or a sound) and
-  // nothing else. The second form is the worse one: it returns POSITIVE feedback
-  // for an action that never happened, which is what the login screen did.
-  // ACTION handlers only. onChange is excluded deliberately and NOT on trust:
-  // a no-op onChange on a controlled input is React plumbing (it silences the
-  // controlled-without-onChange warning) while the real work sits on a wrapper's
-  // onClick. That exclusion is verified below rather than assumed — an exemption
-  // nobody checks is how the route sweep passed over a live debug route.
-  const EMPTY = /on(?:Click|Press|Submit)=\{\(\)\s*=>\s*\{\s*\}\}/g;
+  // REWRITTEN 2026-08-30. The first version was regexes over raw source and was
+  // FALSE-GREEN by construction, which an adversarial audit proved by planting
+  // three live dead buttons in a clean tree and watching the script print PASS.
+  // Four holes, and the first is the one that matters:
+  //
+  //   1. Any comment in the handler body broke the character class — and a
+  //      `// TODO: wire this up` comment is EXACTLY what the three dead login
+  //      buttons had. The check could not see the only form it had ever needed
+  //      to catch.
+  //   2. An empty useCallback body was skipped by an `if (body.trim())` guard.
+  //   3. Plain (non-useCallback) arrow handlers were invisible to both regexes.
+  //   4. The inline `onClick={() => {}}` idiom it did match occurs ZERO times
+  //      in this codebase, while `onClick={handleX}` occurs 159 times.
+  //
+  // So it is a scanner now, not a regex. Comments are stripped first, then
+  // handler bodies are found by walking braces, which is the only way to read a
+  // body reliably.
+
+  /** Remove comments and string bodies so neither can hide or fake a match. */
+  const strip = (src) => src
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''")
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""');
+
+  /** From the index of a '{', return the body up to its matching '}'. */
+  const body = (src, open) => {
+    let depth = 0;
+    for (let i = open; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}' && --depth === 0) return src.slice(open + 1, i);
+    }
+    return null;
+  };
+
+  // A body is INERT if nothing survives removing feedback-only calls. Feedback
+  // is the poison here, not the absence of code: a handler that fires a POSITIVE
+  // haptic and then returns tells the user their tap worked when it did not.
+  const FEEDBACK = /\b\w*(?:[Hh]aptic|[Ss]ound|[Vv]ibrate)\s*\([^)]*\)\s*;?/g;
+  const isInert = (b) => b.replace(FEEDBACK, ' ').replace(/[\s;]/g, '') === '';
+
+  // Both declaration forms, useCallback or plain arrow, named or inline.
+  const DECL = /(?:const\s+(\w+)\s*=\s*(?:useCallback\s*\(\s*)?|on(?:Click|Press|Submit)\s*=\s*\{\s*)\([^)]*\)\s*=>\s*\{/g;
+
   const EMPTY_ONCHANGE = /onChange=\{\(\)\s*=>\s*\{\s*\}\}/g;
-  const FEEDBACK_ONLY = /const\s+(\w+)\s*=\s*useCallback\(\(\)\s*=>\s*\{\s*((?:\w*[Hh]aptic\(\);|\w*[Ss]ound\(\);|\s)*)\}/g;
 
   const offenders = [];
   for (const f of files) {
-    const src = readFileSync(f, 'utf8');
+    const src = strip(readFileSync(f, 'utf8'));
     const rel = f.slice(f.indexOf('ui/src'));
-    for (const m of src.matchAll(EMPTY)) offenders.push(`${rel}: empty handler ${m[0].slice(0, 40)}`);
-    for (const m of src.matchAll(FEEDBACK_ONLY)) {
-      if (m[2].trim()) offenders.push(`${rel}: ${m[1]}() fires feedback and does nothing else`);
+    for (const m of src.matchAll(DECL)) {
+      const b = body(src, m.index + m[0].length - 1);
+      if (b === null || !isInert(b)) continue;
+      const name = m[1] || '(inline handler)';
+      // A named declaration only matters if something actually wires it up.
+      if (m[1] && !new RegExp(`on(?:Click|Press|Submit)\\s*=\\s*\\{\\s*${m[1]}\\b`).test(src)) continue;
+      offenders.push(`${rel}: ${name} does nothing${/[Hh]aptic|[Ss]ound/.test(b) ? ' but fire feedback' : ''}`);
     }
   }
   check('no no-op controls anywhere in ui/src',
