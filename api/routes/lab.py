@@ -1305,11 +1305,15 @@ def get_analysis_replay_image(
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
 
-        # Dev email check (same as get_dev_user)
-        from auth.dev_guard import _get_dev_emails
-        allowed = _get_dev_emails()
-        if allowed and (user.get("email", "").lower() not in allowed):
-            raise HTTPException(status_code=403, detail="Lab access denied")
+        # Authorization. This route hand-rolls token extraction because an
+        # <img src> cannot send an Authorization header — but the AUTHORIZATION
+        # RULE is shared, not copied. Its previous copy read
+        # `if allowed and (email not in allowed)`, which with NGW_DEV_EMAILS
+        # unset evaluates False and granted access to any registered account,
+        # while every sibling Lab route returned 403 on the same token. The
+        # comment above it said "same as get_dev_user"; it was the opposite.
+        from auth.dev_guard import assert_lab_access
+        assert_lab_access(user)
     with get_db() as conn:
         row = conn.execute(
             "SELECT image_path FROM analysis_results WHERE analysis_id = ?",
