@@ -29,7 +29,11 @@ jobs:
 
     env:
       CI_BENCHMARK_SECRET: ${{ secrets.CI_BENCHMARK_SECRET }}
-      NGW_BASE_URL: ${{ secrets.NGW_BASE_URL || 'http://localhost:8000' }}
+      # The deployed URL is not a secret and the app IS deployed — the old
+      # localhost fallback was written before that was true and became a
+      # permanent skip condition nobody revisited. Override with the
+      # NGW_BASE_URL secret for a staging run.
+      NGW_BASE_URL: ${{ secrets.NGW_BASE_URL || 'https://app.noguessworksystems.com' }}
 
     steps:
       - name: Checkout
@@ -47,12 +51,32 @@ jobs:
       - name: Run benchmark via CI endpoint
         id: benchmark
         run: |
+          # A GREEN CHECK MUST NOT MEAN "nothing ran". Until 2026-08-30 this
+          # step printed a warning into the log and exited 0, so Benchmark CI
+          # was green on 46 consecutive runs having executed zero benchmarks —
+          # every one of them 29–54 seconds of checkout and pip install. The
+          # skip was a deliberate decision pending a deployed URL; the URL
+          # exists now and nobody revisited it.
+          #
+          # The skip is still allowed, because blocking every PR on a missing
+          # secret helps nobody. What changed is that it is now IMPOSSIBLE to
+          # mistake for a run: an annotation on the run page, a step summary,
+          # and a hard failure on main so the signal is loud where it counts.
           if [[ -z "${CI_BENCHMARK_SECRET}" ]]; then
-            echo "⚠️  CI_BENCHMARK_SECRET not set — skipping benchmark (add secret once app is deployed)."
-            exit 0
-          fi
-          if [[ "${NGW_BASE_URL}" == "http://localhost:8000" ]]; then
-            echo "⚠️  NGW_BASE_URL not configured — skipping benchmark (set secret to deployed URL)."
+            {
+              echo "## ⚠️ NO BENCHMARK RAN"
+              echo
+              echo "\`CI_BENCHMARK_SECRET\` is not set, so nothing was measured."
+              echo "**A green check on this job does not mean the engine passed.**"
+              echo
+              echo "Fix: add the repository secret \`CI_BENCHMARK_SECRET\`."
+              echo "Target: \`${NGW_BASE_URL}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=No benchmark ran::CI_BENCHMARK_SECRET is not set — nothing was measured."
+            if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
+              echo "::error title=Benchmark gate unconfigured::Failing on main so an unconfigured gate is visible rather than silently green."
+              exit 1
+            fi
             exit 0
           fi
           bash scripts/ci_benchmark.sh
@@ -78,8 +102,8 @@ jobs:
           # was skipped (no secret or localhost fallback), it still exits 0,
           # so this step would otherwise try to curl http://localhost:8000
           # from the GH runner and fail with exit 7 (connection refused).
-          if [[ -z "${CI_BENCHMARK_SECRET}" ]] || [[ "${NGW_BASE_URL}" == "http://localhost:8000" ]]; then
-            echo "⚠️  Skipping baseline promotion — CI_BENCHMARK_SECRET or NGW_BASE_URL not configured."
+          if [[ -z "${CI_BENCHMARK_SECRET}" ]]; then
+            echo "::warning title=Baseline not promoted::CI_BENCHMARK_SECRET is not set."
             exit 0
           fi
           curl -sS --fail -X POST "${NGW_BASE_URL}/api/lab/benchmarks/update-baseline" \

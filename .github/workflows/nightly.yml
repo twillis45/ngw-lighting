@@ -19,7 +19,8 @@ jobs:
 
     env:
       CI_BENCHMARK_SECRET: ${{ secrets.CI_BENCHMARK_SECRET }}
-      NGW_BASE_URL: ${{ secrets.NGW_BASE_URL || 'http://localhost:8000' }}
+      # The app is deployed; the localhost fallback was a permanent skip.
+      NGW_BASE_URL: ${{ secrets.NGW_BASE_URL || 'https://app.noguessworksystems.com' }}
 
     steps:
       - name: Checkout
@@ -37,8 +38,17 @@ jobs:
       - name: Run nightly drift check
         id: nightly
         run: |
-          if [[ -z "${CI_BENCHMARK_SECRET}" ]] || [[ "${NGW_BASE_URL}" == "http://localhost:8000" ]]; then
-            echo "⚠️  NGW_BASE_URL or CI_BENCHMARK_SECRET not configured — skipping nightly drift check."
+          if [[ -z "${CI_BENCHMARK_SECRET}" ]]; then
+            # Warn rather than fail: a scheduled job that fails every night
+            # trains people to ignore it, which is the same disease in a new
+            # costume. The step summary is what carries the signal.
+            {
+              echo "## ⚠️ NO DRIFT CHECK RAN"
+              echo
+              echo "\`CI_BENCHMARK_SECRET\` is not set, so nothing was measured."
+              echo "Add the repository secret to make this job do its job."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=No drift check ran::CI_BENCHMARK_SECRET is not set — nothing was measured."
             exit 0
           fi
           NOTES="${{ github.event.inputs.notes || 'Scheduled nightly drift check' }}"
