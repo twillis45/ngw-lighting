@@ -65,6 +65,20 @@ quoted outward clears `claim-verification` first.
 
 Every one of these cost a wrong turn this session.
 
+- **The vision payload carries TWO coordinate spaces, and that is load-bearing.**
+  Measured 2026-08-29: `_img_bgr`, all four masks and `region_attribution.face_box`
+  are in UPSCALED space; `catchlights` and `face_geometry` are in ORIGINAL space.
+  A consumer pairing `face_box` with a mask is correct today; one pairing it with
+  a catchlight is not. **Do not "fix" `face_box` on its own** — the patch at
+  `docs/patches/face-box-coordinate-fix.patch` does exactly that and costs 10
+  points of exact accuracy, because it moves one field out of the group it
+  agrees with. See `tests/test_face_box_coordinate_space.py` for the audit.
+- **`analyze_image` reassigns `h, w` after the resize** (`vision_pipeline.py:1161`,
+  `:1167`), which is why everything computed afterwards is in upscaled space.
+  That line is the origin of the whole two-space situation.
+- **Corpus runs take ~90s** for 33 images and the full gate ~3 minutes. Background
+  them with a log file and poll; a foreground pytest run will hit the tool timeout.
+
 - **`.venv` console scripts had stale shebangs — FIXED 2026-08-29.** I first
   recorded this as "the venv is broken." That was too broad and cost time. The
   *interpreter* was always fine: `.venv/bin/python3` resolves to a working
