@@ -44,14 +44,46 @@ VALID_SHOOT_TYPES = {
 }
 
 
+class WaitlistUnreadable(RuntimeError):
+    """The waitlist file exists but cannot be read as a list of entries."""
+
+
 def _load() -> list[dict]:
-    """Load all waitlist entries from disk."""
+    """Load all waitlist entries from disk.
+
+    Raises WaitlistUnreadable when the file is PRESENT but unusable. That
+    distinction is the whole point of this function.
+
+    Until 2026-08-30 this swallowed every exception and returned [], so an
+    unreadable file read as "nobody has signed up" and the very next _save
+    wrote only the new entry — silently destroying every prior signup and
+    returning HTTP 200. Reproduced three ways: a truncated file, a file with
+    permissions removed, and a zero-byte file left by a crash between rename
+    and fsync. On Render this lives on a mounted persistent disk, so the loss
+    is everything ever collected, not merely since the last deploy.
+
+    An empty file is a real state and stays empty. A missing file is a real
+    state and stays []. Anything else is a fault, and a fault must not be
+    indistinguishable from "no data".
+    """
     if not WAITLIST_PATH.exists():
         return []
     try:
-        return json.loads(WAITLIST_PATH.read_text(encoding="utf-8"))
-    except Exception:
-        return []
+        raw = WAITLIST_PATH.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise WaitlistUnreadable(f"cannot read waitlist file: {exc}") from exc
+    if not raw.strip():
+        # A zero-byte file is ambiguous: it is what a crash between rename and
+        # fsync leaves behind, and also what an empty list would never produce
+        # (json.dumps([]) is "[]"). Treat it as a fault, not as empty.
+        raise WaitlistUnreadable("waitlist file is empty — treating as corrupt, not as zero signups")
+    try:
+        data = json.loads(raw)
+    except ValueError as exc:
+        raise WaitlistUnreadable(f"waitlist file is not valid JSON: {exc}") from exc
+    if not isinstance(data, list):
+        raise WaitlistUnreadable(f"waitlist file holds {type(data).__name__}, expected list")
+    return data
 
 
 def _save(entries: list[dict]) -> None:
@@ -204,7 +236,16 @@ async def join_waitlist(payload: WaitlistRequest):
     Join the early access waitlist.
     Idempotent — duplicate emails return 200 without re-sending the email.
     """
-    entries = _load()
+    try:
+        entries = _load()
+    except WaitlistUnreadable as exc:
+        # Refuse rather than overwrite. Losing one signup to a 503 the caller
+        # can retry is recoverable; silently replacing the whole list is not.
+        logger.error("waitlist: REFUSING to write — %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="The waitlist is temporarily unavailable. Please try again shortly.",
+        )
 
     if _email_exists(entries, payload.email):
         return {"status": "ok", "already_registered": True}
@@ -259,7 +300,13 @@ async def list_waitlist(request: Request):
     if not admin_secret or provided != admin_secret:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    entries = _load()
+    try:
+        entries = _load()
+    except WaitlistUnreadable as exc:
+        # An admin reading "0 entries" off a corrupt file is the worst possible
+        # answer here: it looks like nobody signed up rather than like a fault.
+        logger.error("waitlist: admin list failed — %s", exc)
+        raise HTTPException(status_code=503, detail=f"Waitlist file unreadable: {exc}")
     return {"count": len(entries), "entries": entries}
 
 

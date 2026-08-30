@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import concurrent.futures
 import json
+import logging
 import os
 import shutil
 import threading
@@ -28,6 +29,12 @@ import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse, Response as FastAPIResponse
 from pydantic import BaseModel, Field
+
+# Module logger. Added 2026-08-30 — `logger` was referenced at two pre-existing
+# call sites (the delete_after cleanup path) with no module-level binding, so
+# those lines would have raised NameError the first time they ran. They sit on
+# failure paths, which is why nobody had hit them.
+logger = logging.getLogger(__name__)
 
 from auth.dev_guard import get_dev_user
 from auth.security import get_optional_user
@@ -2240,18 +2247,61 @@ _REFERENCE_LIBRARY_PATH = Path(__file__).resolve().parent.parent.parent / "data"
 
 
 def _load_reference_library() -> List[Dict[str, Any]]:
-    """Load reference library from disk."""
+    """Load reference library from disk.
+
+    Raises HTTP 503 when the file is PRESENT but unusable, rather than
+    returning []. Every caller is a route handler, so raising here guards all
+    six call sites without changing any of their signatures.
+
+    Until 2026-08-30 this swallowed everything and returned []. A create then
+    read "no entries", appended one, and wrote the file back — destroying all
+    16 gold-tier reference entries and returning HTTP 200. Refusing costs one
+    failed request that the caller can retry; the previous behaviour cost the
+    library.
+
+    A missing file is a real state and still yields []. Anything else is a
+    fault, and a fault must not look like "no data".
+    """
+    if not os.path.exists(_REFERENCE_LIBRARY_PATH):
+        return []
     try:
         with open(_REFERENCE_LIBRARY_PATH, "r") as f:
-            return json.load(f)
-    except Exception:
-        return []
+            raw = f.read()
+    except OSError as exc:
+        logger.error("reference library unreadable: %s", exc)
+        raise HTTPException(status_code=503, detail="Reference library is temporarily unavailable.")
+    if not raw.strip():
+        # json.dump of an empty list writes "[]", never "", so a zero-byte file
+        # is a crash artefact rather than an empty library.
+        logger.error("reference library is zero bytes — treating as corrupt")
+        raise HTTPException(status_code=503, detail="Reference library is temporarily unavailable.")
+    try:
+        data = json.loads(raw)
+    except ValueError as exc:
+        logger.error("reference library is not valid JSON: %s", exc)
+        raise HTTPException(status_code=503, detail="Reference library is temporarily unavailable.")
+    if not isinstance(data, list):
+        logger.error("reference library holds %s, expected list", type(data).__name__)
+        raise HTTPException(status_code=503, detail="Reference library is temporarily unavailable.")
+    return data
 
 
 def _save_reference_library(entries: List[Dict[str, Any]]) -> None:
-    """Save reference library to disk."""
-    with open(_REFERENCE_LIBRARY_PATH, "w") as f:
+    """Save reference library to disk, atomically.
+
+    Was a direct open("w") + dump, so a crash mid-write truncated the live
+    file and produced exactly the corrupt state the loader above now refuses.
+    Write to a temp file in the same directory, then rename — rename is atomic
+    within a filesystem, so a reader never sees a half-written library.
+    """
+    d = os.path.dirname(_REFERENCE_LIBRARY_PATH) or "."
+    os.makedirs(d, exist_ok=True)
+    tmp = f"{_REFERENCE_LIBRARY_PATH}.tmp"
+    with open(tmp, "w") as f:
         json.dump(entries, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, _REFERENCE_LIBRARY_PATH)
 
 
 class ReferenceEntryCreate(BaseModel):
