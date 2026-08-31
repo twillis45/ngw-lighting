@@ -277,11 +277,31 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSON
 # ── CORS ─────────────────────────────────────────────────────────────────────
 # Set ALLOWED_ORIGINS env var to a comma-separated list of origins.
 # Example: https://ngw.vercel.app,https://www.noguesswork.com
-# Defaults to localhost only for safe local development.
-_raw_origins = os.environ.get(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:3000,http://localhost:8000"
-)
+# The default now includes the app's OWN production hosts, not localhost alone.
+#
+# ALLOWED_ORIGINS was declared sync:false and never set, so production ran on
+# the localhost-only default: a CORS preflight from the app's own domain
+# returned 400. Verified 2026-08-31 — OPTIONS /api/analyze with
+# Origin: https://app.noguessworksystems.com was rejected, and the production
+# logs show repeated "OPTIONS /api/analyze 405".
+#
+# It has not broken anything because the frontend uses RELATIVE URLs, so every
+# real request is same-origin and never preflights. But this service answers on
+# TWO hosts — lighting.noguessworksystems.com (Render's primary) and
+# app.noguessworksystems.com — and the moment anything calls across them, or a
+# native/desktop client calls the API directly, it fails.
+#
+# Listing first-party hosts is not a widening: they already serve this exact
+# service. The apex noguessworksystems.com is deliberately NOT here — that is
+# the separate marketing site.
+_DEFAULT_ORIGINS = ",".join([
+    "https://lighting.noguessworksystems.com",   # Render primary
+    "https://app.noguessworksystems.com",        # APP_URL, used in reset links
+    "http://localhost:5173",                     # vite dev
+    "http://localhost:3000",
+    "http://localhost:8000",
+])
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", _DEFAULT_ORIGINS)
 _allowed_origins: List[str] = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(

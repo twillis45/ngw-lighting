@@ -8,8 +8,12 @@ services:
     envVars:
       - key: NGW_JWT_SECRET
         generateValue: true   # Render auto-generates a secure secret
+      # Not a secret, so it carries a value rather than sync:false — it was
+      # declared sync:false, never set, and production therefore ran on the
+      # localhost-only default with CORS preflight failing from its own domain.
+      # Both hosts below serve this service; the apex is the marketing site.
       - key: ALLOWED_ORIGINS
-        sync: false           # Set in Render dashboard: https://your-app.onrender.com
+        value: "https://lighting.noguessworksystems.com,https://app.noguessworksystems.com"
       - key: OPENAI_API_KEY
         sync: false           # Optional — only needed for VLM features
       - key: PORT
