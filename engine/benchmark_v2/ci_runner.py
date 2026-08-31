@@ -27,6 +27,8 @@ def run_ci_benchmark(
     pr_number: Optional[str] = None,
     branch: Optional[str] = None,
     repo: Optional[str] = None,
+    case_limit: Optional[int] = None,
+    notes: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Execute the benchmark suite and compare to baseline.
@@ -45,14 +47,23 @@ def run_ci_benchmark(
 
     # ── Run benchmark ──────────────────────────────────────────────────────────
     try:
+        # case_limit and notes were accepted by the ROUTE and dropped here:
+        # api/routes/lab_benchmarks.py passed both, this signature took
+        # neither, and every call raised TypeError. It went unnoticed for
+        # months because the route short-circuits on "no benchmark cases"
+        # BEFORE reaching this line, and production had none — so the first
+        # case ever seeded, on 2026-08-31, was also the first request to get
+        # this far. run_benchmark below has always accepted case_limit.
+        _ci_note = (
+            f"CI run — sha={commit_sha or 'unknown'} "
+            f"pr={pr_number or 'none'} branch={branch or 'unknown'}"
+        )
         run_result = run_benchmark(
             run_type     = "ci",
             trigger      = "ci",
             triggered_by = triggered_by,
-            notes        = (
-                f"CI run — sha={commit_sha or 'unknown'} "
-                f"pr={pr_number or 'none'} branch={branch or 'unknown'}"
-            ),
+            case_limit   = case_limit,
+            notes        = f"{_ci_note} — {notes}" if notes else _ci_note,
         )
     except Exception as exc:
         logger.exception("CI benchmark run failed with exception")
