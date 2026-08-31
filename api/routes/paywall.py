@@ -80,9 +80,14 @@ async def paywall_event(
     CONVERSION_GROUPS = {"pricing", "paywall_timing", "cta_messaging", "paywall_value"}
 
     try:
-        from db.flags import get_flags_for_session
+        from api.routes.flags import get_flags_for_session
         flags = get_flags_for_session(body.session_id)
-    except Exception:
+    except Exception as exc:
+        # Was a bare `except Exception: flags = {}`, which swallowed an
+        # ImportError for a module that never existed — so every experiment
+        # recorded zero events and nothing said so. Kept non-fatal (a flag
+        # lookup must not break checkout) but no longer silent.
+        logger.warning("flag lookup failed, treating as no flags: %s", exc)
         flags = {}
 
     for flag_name, flag_def in flags.items():
@@ -117,9 +122,14 @@ async def upgrade_intent(
 ):
     """Log an upgrade funnel entry (user reached pricing screen and selected a plan)."""
     try:
-        from db.flags import get_flags_for_session
+        from api.routes.flags import get_flags_for_session
         flags = get_flags_for_session(body.session_id)
-    except Exception:
+    except Exception as exc:
+        # Was a bare `except Exception: flags = {}`, which swallowed an
+        # ImportError for a module that never existed — so every experiment
+        # recorded zero events and nothing said so. Kept non-fatal (a flag
+        # lookup must not break checkout) but no longer silent.
+        logger.warning("flag lookup failed, treating as no flags: %s", exc)
         flags = {}
 
     for flag_name, flag_def in flags.items():
@@ -149,7 +159,7 @@ async def usage_increment(
     Returns current count and whether the session is at the paywall threshold.
     """
     try:
-        from db.flags import get_flags_for_session
+        from api.routes.flags import get_flags_for_session
         flags = get_flags_for_session(body.session_id)
         paywall_flag = next(
             (f for f in flags.values() if f.get("group") == "paywall_timing" and f.get("enabled")),

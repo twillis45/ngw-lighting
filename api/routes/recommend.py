@@ -131,7 +131,7 @@ def recommend(body: Dict[str, Any], user=Depends(get_optional_user)) -> Dict[str
             count = get_analysis_count(session_id, user_id=user_id)
             threshold = _DEFAULT_PAYWALL_THRESHOLD
             try:
-                from db.flags import get_flags_for_session
+                from api.routes.flags import get_flags_for_session
                 flags = get_flags_for_session(session_id)
                 paywall_flag = next(
                     (f for f in flags.values()

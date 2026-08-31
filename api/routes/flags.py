@@ -36,6 +36,36 @@ def load_flags() -> Dict[str, Any]:
     return _flags_cache
 
 
+def get_flags_for_session(session_id: str) -> Dict[str, Any]:
+    """Evaluated flag state for one session.
+
+    Extracted 2026-08-30. This logic existed only INSIDE the get_flags route
+    handler, while api/routes/paywall.py (three call sites) and
+    api/routes/recommend.py imported `get_flags_for_session` from `db.flags`
+    — a module that does not exist and never has.
+
+    Every one of those imports sits inside `try: ... except Exception: flags = {}`,
+    so the ImportError was swallowed and each call silently returned no flags.
+    The consequence is not a crash: it is that NO experiment event was ever
+    recorded for any pricing, paywall_timing, cta_messaging or paywall_value
+    flag. The experiments ran and produced zero data, and nothing said so.
+
+    Returns {flag_name: {enabled, variant, group, config}} — the exact shape
+    those callers already expect, which is why the fix is an extraction rather
+    than a rewrite.
+    """
+    out: Dict[str, Any] = {}
+    for flag_name, flag_def in load_flags().items():
+        variant = assign_flag(session_id, flag_name, flag_def)
+        out[flag_name] = {
+            "enabled": flag_def.get("enabled", False),
+            "variant": variant,
+            "group": flag_def.get("group", ""),
+            "config": flag_def.get("config", {}) if variant == "treatment" else {},
+        }
+    return out
+
+
 def reload_flags() -> Dict[str, Any]:
     global _flags_cache
     _flags_cache = None
@@ -51,20 +81,9 @@ async def get_flags(
     Return evaluated flag state for this session.
     Each flag: { enabled, variant, group, config (treatment only) }.
     """
-    flags = load_flags()
     effective_session = session_id or (user["id"] if user else "anonymous")
-
-    result = {}
-    for flag_name, flag_def in flags.items():
-        variant = assign_flag(effective_session, flag_name, flag_def)
-        result[flag_name] = {
-            "enabled": flag_def.get("enabled", False),
-            "variant": variant,
-            "group": flag_def.get("group", ""),
-            "config": flag_def.get("config", {}) if variant == "treatment" else {},
-        }
-
-    return {"session_id": effective_session, "flags": result}
+    return {"session_id": effective_session,
+            "flags": get_flags_for_session(effective_session)}
 
 
 @router.get("/flags/all")
