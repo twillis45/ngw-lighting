@@ -79,7 +79,24 @@ jobs:
             fi
             exit 0
           fi
-          bash scripts/ci_benchmark.sh
+          bash scripts/ci_benchmark.sh | tee /tmp/bench_out.txt
+          # The endpoint returns exit_code 0 for "no_cases", so a run that
+          # measured nothing would otherwise pass the job. Surface it.
+          if grep -q "MEASURED NOTHING" /tmp/bench_out.txt; then
+            {
+              echo "## ⚠️ BENCHMARK MEASURED NOTHING"
+              echo
+              echo "The run reached the API and authenticated, but there were no"
+              echo "benchmark cases to evaluate. A green check here would be false."
+              echo
+              echo "Fix: seed benchmark cases in production."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Benchmark measured nothing::No benchmark cases exist in production."
+            if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" ]]; then
+              echo "::error title=No benchmark cases::Failing on main rather than reporting a pass for zero cases."
+              exit 1
+            fi
+          fi
         env:
           CI_COMMIT_SHA: ${{ github.sha }}
           CI_PR_NUMBER:  ${{ github.event.pull_request.number }}
