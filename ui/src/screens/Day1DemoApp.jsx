@@ -1135,7 +1135,14 @@ export default function Day1DemoApp() {
                 setLastPreview(dataUrl);
               };
               reader.readAsDataURL(blob);
-            }).catch(() => {});
+            }).catch(err => {
+              // Was .catch(() => {}), which is how a CSP block on this exact
+              // fetch went unnoticed: connect-src lacked blob:, the request was
+              // rejected, and the recalled LAST RESULT opened with no photo
+              // while nothing anywhere said why. Non-fatal — a missing preview
+              // must not break the flow — but no longer silent.
+              console.warn('[recall] could not persist preview:', err);
+            });
           } else if (imagePreview) {
             sessionStorage.setItem('ngw_last_preview', imagePreview);
           }

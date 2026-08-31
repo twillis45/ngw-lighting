@@ -389,7 +389,18 @@ async def security_and_cache_headers(request: Request, call_next):
             # segment (o…​.ingest.US.sentry.io). An invalid source makes the
             # browser drop it, so Sentry was blocked outright — the tool that
             # reports errors could not report.
-            "connect-src 'self' https://api.stripe.com https://js.stripe.com "
+            # blob: is required here, not just in img-src. Day1DemoApp.jsx:1130
+            # does fetch(imagePreview) on a blob: URL to convert the just-analysed
+            # photo into a data URL for sessionStorage, so the recalled LAST
+            # RESULT can show it. connect-src governs fetch(), 'self' does not
+            # cover the blob: scheme, and the call site swallowed the rejection
+            # with .catch(() => {}) — so the preview was never written and the
+            # recalled result opened with no photo, silently.
+            # Measured 2026-08-31 in headless Chrome against both header values:
+            # without blob: "BLOCKED — Failed to fetch"; with it the fetch
+            # succeeds. Adding a scheme source does not widen network access —
+            # blob: URLs are same-origin objects this page already created.
+            "connect-src 'self' blob: https://api.stripe.com https://js.stripe.com "
             "https://*.ingest.sentry.io https://*.ingest.us.sentry.io; "
             "frame-src https://js.stripe.com https://hooks.stripe.com; "
             "font-src 'self' data: https://fonts.gstatic.com; "

@@ -65,6 +65,22 @@ quoted outward clears `claim-verification` first.
 
 Every one of these cost a wrong turn this session.
 
+- **PARKED 2026-08-31 — rename the Render service.** Three names exist for one
+  thing: repo `ngw-lighting`, `render.yaml` declares `ngw-api`, and the live
+  service is **`ngw-core`** (a fossil from before the repo was renamed). Nobody
+  can find it by name, which cost five rounds. **Renaming would take the site
+  down**: `app.noguessworksystems.com` is a CNAME straight to
+  `ngw-core.onrender.com`, so the rename must be followed immediately by a
+  Cloudflare CNAME update. And do NOT lead with `render.yaml` — changing `name:`
+  on a connected Blueprint can make Render create a NEW service and orphan the
+  old one. Order: rename in the dashboard, verify, update the CNAME, then update
+  `render.yaml`. **Find the service by its connected repo, never by name.**
+- **`cd` persists between Bash calls, and it has bitten three times.** A `cd ui`
+  left a later `python3 -m http.server` serving the wrong root, which read as a
+  total render failure; a `cd ui/src` later made absolute-looking edits fail with
+  FileNotFoundError. Prefix with `cd /Users/toddwillis/Code/ngw-lighting &&` or
+  use absolute paths.
+
 - **The vision payload carries TWO coordinate spaces, and that is load-bearing.**
   Measured 2026-08-29: `_img_bgr`, all four masks and `region_attribution.face_box`
   are in UPSCALED space; `catchlights` and `face_geometry` are in ORIGINAL space.
