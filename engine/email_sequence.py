@@ -41,7 +41,22 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-WAITLIST_PATH = Path("data/waitlist.json")
+# Was Path("data/waitlist.json") — relative, so it resolved against WORKDIR
+# into /app/data, which is IMAGE storage rebuilt on every deploy. This file
+# holds the sequence's own sent-state, so every deploy reset that state to the
+# git-tracked copy and the whole sequence re-sent from day 2.
+#
+# Measured from production logs 2026-08-31: a single startup sent EIGHT emails
+# — day2/day5/day10/day14 to each of two entries — and that repeated on every
+# deploy. The two recipients are smoketest@test.com and
+# wltest+1776725917@ngw.test: undeliverable domains, so each send is a hard
+# bounce against a Resend sender with no reputation to spend.
+#
+# This is the second copy of the same bug; api/routes/waitlist.py had the
+# identical line and was fixed earlier today. One was fixed, the other was not
+# looked for.
+from db.database import DATA_DIR as _DATA_DIR
+WAITLIST_PATH = _DATA_DIR / "waitlist.json"
 SEQUENCE_CHECK_INTERVAL_HOURS = int(os.getenv("SEQUENCE_CHECK_INTERVAL_HOURS", "4"))
 
 # ── Sequence definition ───────────────────────────────────────────────────────
@@ -375,6 +390,23 @@ def _save(entries: List[Dict]) -> None:
 
 # ── Core check-and-send ───────────────────────────────────────────────────────
 
+# RFC 2606 / RFC 6761 reserved names plus this project's own test domain.
+# These can never receive mail, so sending to them only generates bounces.
+_UNDELIVERABLE_DOMAINS = frozenset({
+    "test.com", "example.com", "example.org", "example.net",
+    "test", "example", "invalid", "localhost", "ngw.test",
+})
+
+
+def _is_undeliverable(email: str) -> bool:
+    """True when the address cannot receive mail by definition."""
+    domain = email.rsplit("@", 1)[-1].strip().lower()
+    if domain in _UNDELIVERABLE_DOMAINS:
+        return True
+    # Any .test / .invalid / .example / .localhost TLD — reserved by RFC 6761.
+    return domain.rsplit(".", 1)[-1] in {"test", "invalid", "example", "localhost"}
+
+
 def check_and_send_follow_ups() -> Dict[str, Any]:
     """
     Iterate all waitlist entries and send any due follow-up emails.
@@ -396,6 +428,17 @@ def check_and_send_follow_ups() -> Dict[str, Any]:
         joined_raw = entry.get("joined_at", "")
 
         if not email or not joined_raw:
+            skipped += 1
+            continue
+
+        # Never mail an undeliverable address. Added 2026-08-31 after every
+        # deploy re-sent the full sequence to smoketest@test.com and
+        # wltest+...@ngw.test — reserved and internal domains, so each send is
+        # a hard bounce charged against a Resend sender with no reputation to
+        # spend. Defence in depth: the state-persistence fix above stops the
+        # re-sending, this stops the mail regardless of state.
+        if _is_undeliverable(email):
+            logger.info("email_sequence: skipping undeliverable address %s", email)
             skipped += 1
             continue
 
