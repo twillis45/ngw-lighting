@@ -29,10 +29,26 @@ def build() -> None:
             skipped.append({"path": str(meta_path), "reason": str(e)})
             continue
 
+        # A gold set is human-verified ground truth by definition, so a human
+        # verdict of "rejected" must exclude the entry. This was never checked.
+        # Found 2026-08-31: images__5_ carries approval_status "rejected" with
+        # rejection_reason "gold issue not a clear loop or butterfly pattern",
+        # and it was in the manifest labelled "loop" — a human saying "there is
+        # no clear pattern here" turned into a label.
+        approval = d.get("approval_status")
+        if approval and approval != "approved":
+            skipped.append({"path": str(meta_path), "reason": f"approval_status={approval}"})
+            continue
+
         gt = d.get("ground_truth", {})
-        expected_pattern = gt.get("expected_pattern") or d.get("pattern_id")
+        # NO FALLBACK to pattern_id. That fallback is HOW the rejected entry got
+        # its label: images__5_ has no ground_truth block at all, so
+        # `gt.get(...) or d.get("pattern_id")` handed it the directory-derived
+        # "loop". pattern_id is a filing convention; ground_truth is a claim
+        # someone checked. A gold set may only contain the second.
+        expected_pattern = gt.get("expected_pattern")
         if not expected_pattern or expected_pattern == "unknown":
-            skipped.append({"path": str(meta_path), "reason": "no expected_pattern"})
+            skipped.append({"path": str(meta_path), "reason": "no ground_truth.expected_pattern"})
             continue
 
         img_path = meta_path.parent / "image.jpg"
