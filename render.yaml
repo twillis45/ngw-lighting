@@ -42,6 +42,11 @@ services:
       # compares it to this variable. Missing here, the API answers 503
       # 'CI secret not configured on server'. Missing in GitHub, the workflow
       # skips and now fails loudly on main rather than reporting green.
+      # Points every WRITABLE path at the mounted disk. Without it DATA_DIR falls
+      # back to <repo>/data = /app/data, which is image storage and is destroyed
+      # on every deploy. Must match the disk mountPath below.
+      - key: NGW_DATA_DIR
+        value: "/data"
       - key: CI_BENCHMARK_SECRET
         sync: false
       - key: TRUST_PROXY_INDEX
@@ -68,5 +73,21 @@ services:
         sync: false           # Studio yearly
     disk:
       name: ngw-data
-      mountPath: /app/data   # SQLite DB persists here across deploys
+      # CORRECTED 2026-08-31. This said /app/data, which the live service does
+      # NOT use — its disk is mounted at /data. Worse, /app/data is where the
+      # app was actually writing, and that is image storage: WORKDIR is /app,
+      # so the repo's data/ directory sits there and is rebuilt on every
+      # deploy. Every write — the SQLite DB, waitlist signups, lab uploads —
+      # was destroyed by the next deploy, which is why production had zero
+      # benchmark cases and zero baselines no matter what.
+      #
+      # Proven rather than assumed: a thumbnail committed on 2026-08-30 was
+      # served by production immediately, which a mounted disk at /app/data
+      # would have shadowed. The disk usage graph read ~0 GB — nothing had
+      # ever been written to it.
+      #
+      # Mounting at /app/data would ALSO hide data/reference_dataset and break
+      # the gallery. So the disk stays at /data and NGW_DATA_DIR points the
+      # writable paths at it, which is exactly what that variable exists for.
+      mountPath: /data
       sizeGB: 1

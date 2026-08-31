@@ -31,7 +31,13 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/waitlist", tags=["waitlist"])
 
 # ── Storage ──────────────────────────────────────────────────────────────────
-WAITLIST_PATH = Path("data/waitlist.json")
+# Writable state belongs on the persistent disk, not in image storage.
+# Was Path("data/waitlist.json") — relative, so it resolved to /app/data in
+# the container, which is image content rebuilt on every deploy. Every signup
+# was therefore destroyed by the next deploy, independently of the corruption
+# bug fixed earlier today. DATA_DIR follows NGW_DATA_DIR to the mounted disk.
+from db.database import DATA_DIR as _DATA_DIR
+WAITLIST_PATH = _DATA_DIR / "waitlist.json"
 
 VALID_SHOOT_TYPES = {
     "portraits_headshots",

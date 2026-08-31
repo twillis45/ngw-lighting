@@ -1242,12 +1242,26 @@ _REPLAY_IMAGE_MEDIA_TYPES = {
 
 # Safe base directories for replay image serving.
 # Only images inside these directories may be served.
+# The REPO's data dir, which is not the same thing as DATA_DIR once
+# NGW_DATA_DIR is set. Read-only shipped content — the reference dataset and
+# library — lives here, baked into the image. Writable state (the SQLite DB,
+# uploads) lives under DATA_DIR, which points at the persistent disk.
+#
+# Added 2026-08-31, when the two were found to be different in production and
+# nobody had noticed: the disk is mounted at /data while the app wrote to
+# /app/data, so every write went to image storage and was destroyed on the
+# next deploy. Setting NGW_DATA_DIR=/data fixes that, but it also moves these
+# READ paths away from the shipped files, so they are pinned explicitly.
+_REPO_DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
+
 _SAFE_IMAGE_BASES = [
-    UPLOAD_DIR.resolve(),                                          # data/uploads/lab/
-    (DATA_DIR / "uploads" / "reference_dataset").resolve(),        # reference dataset images
-    (DATA_DIR / "uploads" / "reference_ingest").resolve(),         # reference ingest staging
-    (DATA_DIR / "reference_dataset").resolve(),                    # reference dataset entries
-    (DATA_DIR / "reference_library").resolve(),                    # reference library entries
+    UPLOAD_DIR.resolve(),                                          # writable: lab uploads
+    (DATA_DIR / "uploads" / "reference_dataset").resolve(),        # writable: dataset images
+    (DATA_DIR / "uploads" / "reference_ingest").resolve(),         # writable: ingest staging
+    (DATA_DIR / "reference_dataset").resolve(),                    # writable copy, if any
+    (DATA_DIR / "reference_library").resolve(),                    # writable copy, if any
+    (_REPO_DATA_DIR / "reference_dataset").resolve(),              # shipped, read-only
+    (_REPO_DATA_DIR / "reference_library").resolve(),              # shipped, read-only
 ]
 
 
