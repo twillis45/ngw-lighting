@@ -264,5 +264,40 @@ console.log('\nWhole surface — no control wired to a no-op handler');
   check('provider state fails closed', /\.catch\(\(\) => \{ \/\* no provider button \*\//.test(login));
 }
 
+// ── Contact addresses must be on a domain we actually own and read ─────────
+// SUPPORT_EMAIL was hello@noguesswork.com — the WRONG DOMAIN — in TWO settings
+// screens. It survived a check on 2026-08-29 because noguesswork.com has live
+// Outlook MX, so "does mail resolve" answered yes. The right question was
+// "is this the company's domain", which nobody asked.
+console.log('\nContact addresses — right domain, and a mailbox someone reads');
+{
+  const walkSrc = (d, out = []) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const f = join(d, e.name);
+      if (e.isDirectory()) { if (e.name !== 'node_modules') walkSrc(f, out); }
+      else if (/\.(jsx?|mjs)$/.test(e.name)) out.push(f);
+    }
+    return out;
+  };
+  const bad = [];
+  const sendOnly = [];
+  for (const f of walkSrc(join(here, '..', 'ui/src'))) {
+    const rel = f.slice(f.indexOf('ui/src'));
+    const code = readFileSync(f, 'utf8')
+      .split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
+    for (const m of code.matchAll(/['"`]([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})['"`]/g)) {
+      const addr = m[1].toLowerCase();
+      if (/example\.(com|invalid)|@localhost|you@/.test(addr)) continue;
+      // noguesswork.com is NOT the company domain. noguessworksystems.com is.
+      if (/@noguesswork\.com$/.test(addr)) bad.push(`${rel}: ${addr}`);
+      // hello@ is the Resend SENDING identity, not a monitored mailbox — a
+      // support link pointing there means replies land nowhere.
+      else if (addr === 'hello@noguessworksystems.com') sendOnly.push(`${rel}: ${addr}`);
+    }
+  }
+  check('no address on the wrong domain (noguesswork.com)', bad.length === 0, bad);
+  check('no support link points at the send-only FROM_EMAIL', sendOnly.length === 0, sendOnly);
+}
+
 console.log(failures === 0 ? '\nPASS' : `\n${failures} FAILED`);
 process.exit(failures === 0 ? 0 : 1);

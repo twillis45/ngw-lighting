@@ -18,7 +18,17 @@ import MatteBackground from '../_shared/MatteBackground';
 import usePlan from '../../../hooks/usePlan';
 import { PLAN_LABELS } from '../../../data/planStore';
 
-const SUPPORT_EMAIL = 'hello@noguesswork.com';
+// Support address. Was hello@noguesswork.com — the WRONG DOMAIN, and it had
+// survived because noguesswork.com has live Outlook MX, so a mail-exchange
+// check said "plausible" and I left it on 2026-08-29. Todd confirmed it is
+// wrong on 2026-08-31.
+//
+// info@ chosen over hello@noguessworksystems.com deliberately: hello@ is the
+// FROM_EMAIL the app SENDS from (Resend) and is not a synced mailbox, so
+// replies to it would go nowhere. info@ is a monitored mailbox (361 messages)
+// AND the address the public contact page publishes. A support link must
+// arrive somewhere a person reads.
+const SUPPORT_EMAIL = 'info@noguessworksystems.com';
 const PRIVACY_URL   = 'https://noguessworksystems.com/privacy-policy';
 const TERMS_URL     = 'https://noguessworksystems.com/terms-of-service';
 const APP_VERSION   = 'v1.4.0';

@@ -29,7 +29,17 @@ import { logout as apiLogout } from '../data/authApi';
 import Toast from '../components/Toast';
 import ConfirmActionModal from '../components/settings/ConfirmActionModal';
 
-const SUPPORT_EMAIL  = 'hello@noguesswork.com';
+// Support address. Was hello@noguesswork.com — the WRONG DOMAIN, and it had
+// survived because noguesswork.com has live Outlook MX, so a mail-exchange
+// check said "plausible" and I left it on 2026-08-29. Todd confirmed it is
+// wrong on 2026-08-31.
+//
+// info@ chosen over hello@noguessworksystems.com deliberately: hello@ is the
+// FROM_EMAIL the app SENDS from (Resend) and is not a synced mailbox, so
+// replies to it would go nowhere. info@ is a monitored mailbox (361 messages)
+// AND the address the public contact page publishes. A support link must
+// arrive somewhere a person reads.
+const SUPPORT_EMAIL  = 'info@noguessworksystems.com';
 // Fixed 2026-08-31. All three 404'd. The same three were fixed in the Studio
 // settings screen on 2026-08-29 and this LEGACY screen was missed — and the
 // gate written that day only read the Studio file, so it passed while these
