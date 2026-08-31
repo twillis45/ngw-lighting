@@ -30,9 +30,13 @@ import Toast from '../components/Toast';
 import ConfirmActionModal from '../components/settings/ConfirmActionModal';
 
 const SUPPORT_EMAIL  = 'hello@noguesswork.com';
-const HELP_URL       = 'https://noguessworksystems.com/help';
-const PRIVACY_URL    = 'https://noguessworksystems.com/privacy';
-const TERMS_URL      = 'https://noguessworksystems.com/terms';
+// Fixed 2026-08-31. All three 404'd. The same three were fixed in the Studio
+// settings screen on 2026-08-29 and this LEGACY screen was missed — and the
+// gate written that day only read the Studio file, so it passed while these
+// shipped. /help does not exist at all, so that row is removed rather than
+// repointed; a label promising documentation must not open something else.
+const PRIVACY_URL    = 'https://noguessworksystems.com/privacy-policy';
+const TERMS_URL      = 'https://noguessworksystems.com/terms-of-service';
 
 const DEV_TAP_COUNT  = 5;
 const DEV_TAP_WINDOW = 3000;
@@ -794,7 +798,6 @@ export default function SettingsScreen() {
       {/* SUPPORT */}
       <SectionHdr label="SUPPORT" />
       <ListCard>
-        <NavRow label="Help & FAQ" onClick={() => window.open(HELP_URL, '_blank')} />
         <NavRow label="Contact support" onClick={() => window.open(`mailto:${SUPPORT_EMAIL}?subject=NGW%20Support`, '_blank')} />
         <NavRow label="Rate NGW" onClick={() => showToast('Rating coming soon — thanks for your support!')} />
       </ListCard>

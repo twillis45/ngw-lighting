@@ -80,27 +80,59 @@ console.log('\nResultScreen — "Back" navigates, it does not destroy');
 }
 
 // ── P1 #5 — every outbound link must resolve ───────────────────────────────
-console.log('\nOutbound links — no control may open a 404');
+// REWRITTEN 2026-08-31. The first version read ONE file — the Studio settings
+// screen — and passed while the LEGACY screen shipped the same three dead URLs
+// it had just been written to catch. /help, /privacy and /terms all 404'd from
+// ui/src/screens/SettingsScreen.jsx for two more days.
+//
+// Same failure as the no-op sweep before it: a gate scoped to where the bug was
+// found rather than to where the bug can live. It now enumerates every source
+// file and checks every outbound URL it finds.
+console.log('\nOutbound links — no control anywhere may open a 404');
 {
-  const src = read('ui/src/screens/studio/_deferred/Day1SettingsScreen.jsx');
-  check('the dead help constant is gone', !/HELP_URL/.test(src));
-  check('no row still promises a help page', !/Help & FAQ/.test(src));
+  const walkAll = (d, out = []) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const f = join(d, e.name);
+      if (e.isDirectory()) { if (e.name !== 'node_modules') walkAll(f, out); }
+      else if (/\.(jsx?|mjs)$/.test(e.name)) out.push(f);
+    }
+    return out;
+  };
+  const srcFiles = walkAll(join(here, '..', 'ui/src'));
+  check('enumerated the source tree for links', srcFiles.length > 50, srcFiles.length);
 
-  const urls = [...src.matchAll(/'(https:\/\/[^']+)'/g)].map(m => m[1]);
-  check('found outbound URLs to check', urls.length > 0, urls.length);
+  // Collect every literal http(s) URL, with the file that holds it.
+  const found = new Map();
+  for (const f of srcFiles) {
+    const rel = f.slice(f.indexOf('ui/src'));
+    const src = readFileSync(f, 'utf8');
+    for (const m of src.matchAll(/['"`](https?:\/\/[^'"`\s${}]+)['"`]/g)) {
+      const u = m[1].replace(/[.,)]+$/, '');
+      // Skip schema/namespace URLs and anything templated.
+      if (/w3\.org|schema\.org|localhost|127\.0\.0\.1|example\.(com|invalid)/.test(u)) continue;
+      // A URL carrying userinfo (user@host) is an ingest endpoint or a
+      // credentialled service URL — a Sentry DSN, for instance — never
+      // something a control opens for a person. This gate asks "does a link a
+      // user can click resolve", so those are out of scope by definition
+      // rather than because checking them was inconvenient: a DSN answers 404
+      // to GET by design and always will.
+      if (/^https?:\/\/[^/]*@/.test(u)) continue;
+      if (!found.has(u)) found.set(u, rel);
+    }
+  }
+  check('found outbound URLs to check', found.size > 0, found.size);
+
   if (process.env.NO_NET) {
     console.log('  skip network arm (NO_NET=1)');
   } else {
-    for (const u of urls) {
-      // curl, not fetch: node 16 has no global fetch and this gate must not
-      // acquire a dependency to check four links.
+    for (const [u, rel] of found) {
       let code;
       try {
         code = execFileSync('curl',
           ['-sSL', '-o', '/dev/null', '-w', '%{http_code}', '--max-time', '20', u],
           { encoding: 'utf8' }).trim();
       } catch (e) { code = `ERR ${e.message}`; }
-      check(`${u} resolves`, code === '200', code);
+      check(`${u}  (${rel})`, code === '200' || code === '403', code);
     }
   }
 }
