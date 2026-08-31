@@ -22,7 +22,7 @@ import RoomPlannerWrapper from './studio/_core/RoomPlannerWrapper';
 import OnboardingScreen from './studio/_adjacent/OnboardingScreen';
 import ShotMatchAdapter from './studio/_adjacent/ShotMatchAdapter';
 import { analyzeImage, shootMatch } from '../data/labApi';
-import { getUser, clearAuth, loadPreferences } from '../data/authApi';
+import { getUser, logout as apiLogout, loadPreferences } from '../data/authApi';
 import usePlan from '../hooks/usePlan';
 import { PLAN_LABELS } from '../data/planStore';
 import { steel, C, FONT_SMOOTH as FS, VIEWFINDER_INNER_SHADOW, GLASS_REFLECTION, LENS_VIGNETTE, SCREEN_BG } from '../theme/studioMatte';
@@ -1594,7 +1594,7 @@ export default function Day1DemoApp() {
           hasLastResult={!!lastResult}
           onViewLastResult={handleViewLastResult}
           user={user}
-          onLogout={() => { clearAuth(); setUser(null); }}
+          onLogout={() => { apiLogout().finally(() => setUser(null)); }}
           onSettings={handleSettings}
           onRecipes={handleRecipes}
           onSavedSetups={handleSavedSetups}
@@ -1798,7 +1798,7 @@ export default function Day1DemoApp() {
         <Day1SettingsScreen
           user={user}
           onBack={() => goBack()}
-          onLogout={() => { clearAuth(); setUser(null); setScreen('home'); }}
+          onLogout={() => { apiLogout().finally(() => { setUser(null); setScreen('home'); }); }}
           onLab={() => setScreen('lab')}
         />
       );
@@ -1826,7 +1826,7 @@ export default function Day1DemoApp() {
       const defMobile = !isDesktopUp;
       const defEl = (
         <HomeScreen onAnalyze={handleAnalyze} hasLastResult={!!lastResult} onViewLastResult={handleViewLastResult}
-          user={user} onLogout={() => { clearAuth(); setUser(null); }} onSettings={handleSettings}
+          user={user} onLogout={() => { apiLogout().finally(() => setUser(null)); }} onSettings={handleSettings}
           onRecipes={handleRecipes} onSavedSetups={handleSavedSetups} onBuildWizard={handleBuildWizard}
           onMyKit={handleMyKit} onSessionLog={handleSessionLog} onLookLibrary={handleLookLibrary} onAccuracy={handleAccuracy} onClientBrief={handleClientBrief} onVideoCapture={handleVideoCapture} lastAnalysisTime={lastAnalysisTime} />
       );

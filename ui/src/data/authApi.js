@@ -89,7 +89,23 @@ export async function fetchMe() {
   return apiFetch('/auth/me');
 }
 
-export function logout() {
+export async function logout() {
+  // Was `clearAuth()` alone — client-side only. The browser forgot the token
+  // and the SERVER never heard about it, so a copied JWT stayed valid for its
+  // full 7 days. /api/auth/logout exists and works: it adds the jti to a
+  // blocklist. Nothing had ever called it.
+  //
+  // Found 2026-08-31 the hard way — Todd logged out of two sessions whose
+  // tokens had been pasted into a transcript, and both still returned 200.
+  //
+  // The API call comes FIRST and its failure never blocks the local clear:
+  // a user who cannot reach the network must still be able to sign out of
+  // this device.
+  try {
+    await apiFetch('/auth/logout', { method: 'POST' });
+  } catch (err) {
+    console.warn('[logout] server-side revocation failed:', err);
+  }
   clearAuth();
 }
 
