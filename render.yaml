@@ -34,6 +34,16 @@ services:
       # the client is the LEFTMOST X-Forwarded-For entry (index 0). Reading from
       # the right gave every request its own bucket and disabled rate limiting
       # entirely. See tests/test_rate_limit_key.py.
+      # Shared secret for the GitHub Actions benchmark runner. The SAME value
+      # must exist in TWO places or the gate silently does nothing:
+      #   1. here, as a Render env var (this declaration, set in the dashboard)
+      #   2. as a GitHub repo secret of the same name
+      # The runner sends it as the X-CI-Secret header and auth/ci_guard.py
+      # compares it to this variable. Missing here, the API answers 503
+      # 'CI secret not configured on server'. Missing in GitHub, the workflow
+      # skips and now fails loudly on main rather than reporting green.
+      - key: CI_BENCHMARK_SECRET
+        sync: false
       - key: TRUST_PROXY_INDEX
         value: "0"
 

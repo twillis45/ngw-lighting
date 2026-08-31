@@ -11,6 +11,7 @@ while still being protected from public access.
 from __future__ import annotations
 
 import os
+import secrets
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, Header, HTTPException, status
@@ -50,7 +51,9 @@ async def get_ci_or_dev_user(
                     f"Set the {_CI_SECRET_ENV} environment variable."
                 ),
             )
-        if x_ci_secret != expected:
+        # Constant-time. A plain != leaks the length of the shared prefix
+        # through timing, and this endpoint can be called without an account.
+        if not secrets.compare_digest(x_ci_secret, expected):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid CI secret.",
