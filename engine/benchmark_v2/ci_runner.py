@@ -145,7 +145,26 @@ def _format_pr_comment(
     lines: List[str] = []
 
     # ── Header ─────────────────────────────────────────────────────────────────
-    if status == "fail":
+    # A run that evaluated NOTHING is not a pass, and this comment is what a
+    # human actually reads on a PR. Fixed 2026-08-31: with the case_limit bug
+    # resolved, a real run came back HTTP 200, status "pass", "Cases: 0/0
+    # passed" and this comment saying "✅ Benchmark Passed / Safe to merge ✓".
+    #
+    # The machine-readable status had already been fixed in compare_to_baseline
+    # that morning. This markdown builds its own strings and was missed — the
+    # same fix has to be made everywhere the verdict is PHRASED, not just where
+    # it is computed.
+    _total_cases = run.get("total_cases") or 0
+    if _total_cases == 0:
+        lines += [
+            "## ⚠️ Benchmark Measured Nothing",
+            "",
+            "**Not a pass.** Zero cases were evaluated, so this run says nothing "
+            "about whether the engine regressed.",
+            "",
+            "Seed benchmark cases before treating this check as evidence.",
+        ]
+    elif status == "fail":
         lines += [
             "## ❌ Benchmark Regression Detected",
             "",
@@ -159,7 +178,8 @@ def _format_pr_comment(
             lines.append(
                 f"**{len(improvements)} improvement(s) detected.**"
             )
-        lines.append("**Safe to merge ✓**")
+        if _total_cases:
+            lines.append("**Safe to merge ✓**")
 
     lines += ["", "---", ""]
 

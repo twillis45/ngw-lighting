@@ -44,25 +44,18 @@ export async function uploadReferenceImage(file) {
   return resp.json();
 }
 
-/** POST /api/merge-analyses — consensus analysis from multiple uploaded images. */
+/* REMOVED 2026-08-31 — mergeAnalyses() called POST /api/merge-analyses, a route
+   that does not exist and never has. It was dead three ways at once, which is
+   why it survived: the route 404s, both call sites swallowed the failure with
+   .catch(() => {}), and the result was stored in a `consensus` state variable
+   that nothing ever read — so even a SUCCESSFUL response would have gone
+   nowhere. Every multi-image upload in ReferenceEvalScreen fired a doomed
+   request whose result would have been discarded.
 
-export async function mergeAnalyses(imagePaths) {
-  const resp = await apiFetch('/api/merge-analyses', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify({ imagePaths }),
-  });
-
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-    const msg = typeof err.detail === 'string'
-      ? err.detail
-      : JSON.stringify(err.detail || err, null, 2);
-    throw new Error(msg || 'Failed to merge analyses');
-  }
-
-  return resp.json();
-}
+   Not reimplemented, because nothing consumed it. If multi-image consensus is
+   wanted, it needs a server route AND something that renders the answer.
+   tests/test_ui_calls_real_routes.py now compares every /api/ path the UI calls
+   against the server's route table, so a phantom cannot come back silently. */
 
 /** POST /api/shoot-match and return UI-ready card data. */
 

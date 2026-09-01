@@ -78,8 +78,18 @@ ec     = r.get("exit_code", 0)
 # with no baseline — a verdict about work that never happened.
 MEASURED_NOTHING = {"no_cases", "no_baseline", "skipped", "unknown"}
 
-if status in MEASURED_NOTHING:
-    print(f"⚠️   Benchmark MEASURED NOTHING  |  status={status}")
+# Key on the COUNT, not only the status string. Measured 2026-08-31: with the
+# case_limit bug fixed the endpoint returned HTTP 200, status "pass", and
+#   "Cases: 0/0 passed" ... "## ✅ Benchmark Passed / Safe to merge ✓"
+# A pass, for zero cases evaluated. The first version of this guard listed
+# status strings and this one is not among them — which is the same mistake in
+# a new costume: enumerating the known bad values instead of asserting the
+# thing that actually matters. Nothing was measured, whatever it calls itself.
+_cases = r.get("total_cases")
+measured_nothing = status in MEASURED_NOTHING or _cases == 0
+
+if measured_nothing:
+    print(f"⚠️   Benchmark MEASURED NOTHING  |  status={status}  |  cases={_cases}")
     print(f"    {r.get('message', '')}")
     print("    This is NOT a pass. Nothing was evaluated.")
 elif ec == 0:

@@ -63,3 +63,25 @@ def test_route_to_save_baseline():
     assert not missing, f"save_baseline does not accept: {missing}"
     unmet = _required(save_baseline) - passed
     assert not unmet, f"the route omits required arguments: {unmet}"
+
+
+def test_a_run_with_zero_cases_is_not_phrased_as_a_pass():
+    """The verdict has to be honest everywhere it is PHRASED, not only where it
+    is computed. compare_to_baseline was fixed on 2026-08-30; the PR-comment
+    builder in ci_runner writes its own markdown and still said
+    "✅ Benchmark Passed / Safe to merge ✓" for a run with Cases: 0/0."""
+    # Raw source, NOT comment-stripped. The first version of this test split
+    # each line on "#" to drop comments — which also destroyed the markdown
+    # headers it was searching for, since they begin "## ". It raised
+    # ValueError instead of asserting anything. A check that cannot run is not
+    # a check, and this file exists because of that exact class of defect.
+    src = inspect.getsource(__import__(
+        "engine.benchmark_v2.ci_runner", fromlist=["x"]))
+    assert "_total_cases" in src, (
+        "the PR comment does not consider how many cases ran, so it can call a "
+        "zero-case run a pass")
+    pass_at = src.index('"## \u2705 Benchmark Passed"')
+    zero_at = src.index("_total_cases == 0")
+    assert zero_at < pass_at, (
+        "the zero-case branch must be evaluated BEFORE the pass branch, or a "
+        "run that measured nothing still renders as passed")

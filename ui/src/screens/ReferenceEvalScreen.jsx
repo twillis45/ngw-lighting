@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAppState, useDispatch } from '../context/AppContext';
-import { uploadReferenceImage, mergeAnalyses } from '../api';
+import { uploadReferenceImage } from '../api';
 import { RECIPES } from '../data/recipes';
 import DiagramCard from '../cards/DiagramCard';
 import CollapsibleCard from '../cards/CollapsibleCard';
@@ -887,7 +887,6 @@ export default function ReferenceEvalScreen() {
   const [loading, setLoading]           = useState(true);
   const [analysis, setAnalysis]         = useState(null);
   const [perImageAnalysis, setPerImageAnalysis] = useState({}); // { index: analysis }
-  const [consensus, setConsensus]       = useState(null);       // merged multi-image consensus
   const [selectedMood, setSelectedMood] = useState(null);
   const [error, setError]               = useState(null);  // { code, message, hint }
   function makeError(err) {
@@ -973,13 +972,9 @@ export default function ReferenceEvalScreen() {
         setError(makeError(firstErr || 'Could not analyze image'));
       }
 
-      // Multi-image: request consensus merge from backend
-      const serverPaths = updated.filter(img => img.serverPath).map(img => img.serverPath);
-      if (serverPaths.length >= 2) {
-        mergeAnalyses(serverPaths)
-          .then(merged => { if (!cancelled) setConsensus(merged.consensus); })
-          .catch(() => { /* consensus is optional — individual analyses still work */ });
-      }
+      // Multi-image consensus removed 2026-08-31 — it called a route that does
+      // not exist, swallowed the 404, and stored the result somewhere nothing
+      // read. See ui/src/api.js.
     }).finally(() => {
       if (!cancelled) setLoading(false);
     });
@@ -1060,13 +1055,6 @@ export default function ReferenceEvalScreen() {
         setError(makeError(firstErr || 'Could not analyze image'));
       }
 
-      // Re-run multi-image merge with all images
-      const allPaths = merged.filter(img => img.serverPath).map(img => img.serverPath);
-      if (allPaths.length >= 2) {
-        mergeAnalyses(allPaths)
-          .then(result => setConsensus(result.consensus))
-          .catch(() => { /* optional */ });
-      }
     } catch (err) {
       setError(makeError(err));
     } finally {
