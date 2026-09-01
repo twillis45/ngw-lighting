@@ -91,7 +91,12 @@ class TestAPIRoundTrip:
                     "features": {"dimmable": True},
                 }
                 for i in range(5)
-            ]
+            ],
+            # session_id has been REQUIRED since 2026-03-25 (SESSION_ID_REQUIRED,
+            # commit d9afd90). This test was last touched 2026-03-13, twelve days
+            # earlier, and has returned 400 ever since — five months of a red
+            # test nobody saw, because the suite was never run clean.
+            "metadata": {"session_id": "pytest-benchmark-session"},
         }
         iterations = 20
 
