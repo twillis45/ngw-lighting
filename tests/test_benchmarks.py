@@ -96,16 +96,27 @@ class TestAPIRoundTrip:
             # commit d9afd90). This test was last touched 2026-03-13, twelve days
             # earlier, and has returned 400 ever since — five months of a red
             # test nobody saw, because the suite was never run clean.
-            "metadata": {"session_id": "pytest-benchmark-session"},
+            "metadata": {"session_id": "pytest-benchmark-session"},  # replaced per call below
         }
         iterations = 20
 
+        # A FRESH session_id per call. This measures round-trip latency, not
+        # the free-tier quota — and since 2026-09-02 /recommend counts
+        # server-side, so 21 calls on one session legitimately hit the paywall
+        # at the 4th. Rotating the id keeps the test measuring what it is for.
+        import uuid as _uuid
+
+        def _fresh():
+            p = dict(payload)
+            p["metadata"] = {"session_id": f"bench-{_uuid.uuid4().hex}"}
+            return p
+
         # Warmup
-        client.post("/recommend", json=payload)
+        client.post("/recommend", json=_fresh())
 
         t0 = time.perf_counter()
         for _ in range(iterations):
-            resp = client.post("/recommend", json=payload)
+            resp = client.post("/recommend", json=_fresh())
             assert resp.status_code == 200
         elapsed = time.perf_counter() - t0
 

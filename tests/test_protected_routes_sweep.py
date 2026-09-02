@@ -55,9 +55,17 @@ PUBLIC_ROUTES: dict[str, str] = {
     "/docs": "OpenAPI docs UI.",
     "/docs/": "OpenAPI docs UI.",
     "/docs/{page}": "Docs page renderer — static content.",
-    "/docs/oauth2-redirect": "OAuth2 redirect helper for the docs UI.",
-    "/redoc": "OpenAPI docs UI.",
-    "/openapi.json": "OpenAPI schema.",
+    # /docs/oauth2-redirect, /redoc and /openapi.json were REMOVED from this
+    # allowlist on 2026-09-02 because the routes no longer exist: FastAPI's
+    # built-in docs are disabled outside development, after production was
+    # found publishing 243 routes — 118 of them admin, lab or debug — with full
+    # schemas. When enabled locally they mount at /api-docs and /api-redoc,
+    # which are not public and so do not belong here.
+    #
+    # This sweep caught the stale entries itself, which is the point of it
+    # asserting in BOTH directions: it fails on a public route that is not
+    # listed, and on a listed route that no longer exists. The second half is
+    # what stops an allowlist quietly outliving what it describes.
 
     # ── Health ──
     "/health": "Liveness probe — Render healthCheckPath.",

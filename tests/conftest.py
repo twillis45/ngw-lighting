@@ -27,6 +27,31 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
+def _reset_analysis_counts():
+    """Give every test a clean free-tier quota.
+
+    Added 2026-09-02 with the paywall fix. /recommend now increments the
+    analysis count server-side — it has to, because the count previously only
+    rose when the browser volunteered it, which made the free tier opt-in. But
+    the counts live in a shared table, so without this a test's result depends
+    on how many /recommend calls ran before it: TestRecommendErrors started
+    seeing 402 instead of 422 purely because earlier tests had used the quota.
+
+    Same disease as the rate-limit buckets below, and the same fix.
+    """
+    def _clear():
+        try:
+            from db.database import get_db
+            with get_db() as conn:
+                conn.execute("DELETE FROM session_analysis_counts")
+        except Exception:
+            pass  # table may not exist yet on a fresh DB
+    _clear()
+    yield
+    _clear()
+
+
+@pytest.fixture(autouse=True)
 def _reset_rate_limit_buckets():
     """Give every test a clean limiter, so ordering cannot decide the result."""
     try:

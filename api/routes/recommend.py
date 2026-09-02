@@ -117,6 +117,7 @@ def recommend(body: Dict[str, Any], user=Depends(get_optional_user)) -> Dict[str
     else:
         logger.info("[recommend] paywall check: anonymous user (no JWT)")
 
+    _count_key = None
     if not is_paid:
         session_id: str = (body.get("metadata") or {}).get("session_id", "")
         if not session_id:
@@ -168,11 +169,13 @@ def recommend(body: Dict[str, Any], user=Depends(get_optional_user)) -> Dict[str
             # not deny a paid-for one, so it is logged and allowed through —
             # the honest trade for a counter, unlike the waitlist where a
             # failed read destroyed data and refusing was correct.
-            try:
-                increment_analysis_count(session_id, user_id=user_id)
-            except Exception as exc:
-                logger.error("[recommend] analysis count NOT recorded for %s: %s",
-                             session_id, exc)
+            # Recorded AFTER validation, not here — see below. The GATE
+            # belongs early (no point doing work for someone over the limit)
+            # but the COUNT must not tick for a request that never becomes an
+            # analysis: validation runs further down, so counting here charged
+            # a free analysis for a malformed body and returned 402 instead of
+            # 422 for anyone near their limit. Caught by the suite, not by me.
+            _count_key = (session_id, user_id)
     # ─────────────────────────────────────────────────────────────────────────
 
     # Set request context for log tracing
@@ -186,6 +189,18 @@ def recommend(body: Dict[str, Any], user=Depends(get_optional_user)) -> Dict[str
         req = RecommendRequest.model_validate(body)
     except ValidationError as e:
         raise HTTPException(status_code=422, detail=_json_safe_errors(e.errors()))
+
+    # The request is real and will be served — count it now. Free-tier
+    # enforcement must not depend on the client reporting its own usage (that
+    # was the defect), but it must also not charge for a request the server
+    # rejected. Failure to record is logged and allowed through: not recording
+    # must not grant a free analysis, but must not deny a paid-for one either.
+    if _count_key is not None:
+        _sid, _uid = _count_key
+        try:
+            increment_analysis_count(_sid, user_id=_uid)
+        except Exception as exc:
+            logger.error("[recommend] analysis count NOT recorded for %s: %s", _sid, exc)
 
     try:
         result = build_recommend_result(
