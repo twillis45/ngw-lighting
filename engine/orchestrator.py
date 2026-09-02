@@ -6299,6 +6299,37 @@ def analyze_image(
         result.authoritative_pattern = "unknown"
         result.authoritative_pattern_source = "decline:no_structure"
 
+    # ── Decline floor 3 — zero signals extracted ─────────────────────────
+    # b5 catches "no evidence" via confidence 0.0. b8 catches "no structure to
+    # read" via image detail. Neither reaches THIS: a cue-extraction crash.
+    #
+    # Measured 2026-08-31 by monkeypatching extract_visual_cues to raise:
+    #
+    #   healthy image           clamshell  24/24 signals  conf 0.93  strong
+    #   SAME image, crash       clamshell   0/24 signals  conf 0.70  partial
+    #   genuinely blank inputs   unknown    13/24 signals            DECLINED
+    #
+    # The crash path is the ONLY one that names a pattern on literally zero
+    # signals. A genuinely evidence-free photograph declines correctly; a
+    # broken extractor produces a confident-looking answer from nothing,
+    # because a downstream resolver falls back to priors when its inputs are
+    # simply absent.
+    #
+    # Not a tuned threshold: ZERO extracted signals means no evidence was
+    # gathered at all, whatever a later stage concluded. analysis_mode already
+    # flips to "insufficient" and every cue lands in missing_signals — the
+    # information was there, nothing acted on it.
+    _sr = getattr(result, "signal_reliability", None)
+    if (_sr is not None and getattr(_sr, "signals_available", None) == 0
+            and result.authoritative_pattern not in (None, "", "unknown")):
+        logger.warning(
+            "[decline] zero signals extracted (0/%s) — withholding pattern %r. "
+            "This is a cue-extraction failure, not a difficult photograph.",
+            getattr(_sr, "signals_total", "?"), result.authoritative_pattern,
+        )
+        result.authoritative_pattern = "unknown"
+        result.authoritative_pattern_source = "decline:no_signals"
+
     if _txn:
         try:
             _txn.set_tag("pattern", result.authoritative_pattern or "unknown")

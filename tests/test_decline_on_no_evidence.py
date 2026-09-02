@@ -122,3 +122,60 @@ def test_the_structure_floor_has_real_headroom():
     assert worst[1] > _MIN_IMAGE_DETAIL * 3, (
         f"least detailed real photograph {worst[0]} scores {worst[1]:.1f}, "
         f"leaving under 3x headroom above the floor of {_MIN_IMAGE_DETAIL}")
+
+
+def test_a_cue_extraction_crash_declines_instead_of_guessing(tmp_path, monkeypatch):
+    """Decline floor 3, added 2026-08-31.
+
+    b5 catches "no evidence" via confidence 0.0; b8 catches "no structure" via
+    image detail. Neither reaches a cue-extraction CRASH, because the image is
+    fine and a downstream resolver falls back to priors when its inputs are
+    simply absent.
+
+    Measured by monkeypatching extract_visual_cues to raise:
+
+        healthy image        clamshell  24/24 signals  conf 0.93
+        SAME image, crash    clamshell   0/24 signals  conf 0.70
+        genuinely blank      unknown    13/24 signals  DECLINED
+
+    The crash path was the ONLY one naming a pattern on literally zero signals.
+    A hard photograph declines correctly; a broken extractor did not.
+    """
+    # THIS IMAGE SPECIFICALLY. The first version of this test used the first
+    # corpus image alphabetically, where a crash happens to yield confidence
+    # 0.0 — so the b5 floor declined it and this floor never ran. The test
+    # passed with the floor DELETED. A vacuous green.
+    #
+    # On 1024.webp the crash yields 'clamshell' at 0.70, which no confidence
+    # floor can reach. That is the case this floor exists for, so that is the
+    # case the test must use.
+    import os
+    img = "tests/reference images/1024.webp"
+    if not os.path.exists(img):
+        pytest.skip(f"{img} not present — this test needs the image whose "
+                    "crash produces a CONFIDENT wrong answer, not any image")
+
+    import engine.cue_extraction as ce
+
+    def _boom(*a, **k):
+        raise RuntimeError("simulated cue-extraction failure")
+
+    monkeypatch.setattr(ce, "extract_visual_cues", _boom)
+    r = analyze_image(img, run_vlm=False)
+
+    sr = getattr(r, "signal_reliability", None)
+    assert sr is not None and getattr(sr, "signals_available", None) == 0, (
+        "the crash did not produce zero signals — the monkeypatch target has "
+        "moved, so this test would assert nothing. Fix the target, do not skip.")
+
+    # Guard the guard: if confidence is 0.0 the b5 floor handles it and this
+    # test proves nothing about THIS floor.
+    conf = getattr(r, "pattern_confidence", None)
+    assert conf, (
+        f"confidence is {conf!r}, so the b5 zero-evidence floor would catch "
+        "this regardless — pick an image whose crash yields real confidence")
+
+    assert r.authoritative_pattern in DECLINE, (
+        f"cue extraction crashed and produced ZERO signals, yet the engine "
+        f"named {r.authoritative_pattern!r} at "
+        f"{getattr(r, 'pattern_confidence', None)!r}")
