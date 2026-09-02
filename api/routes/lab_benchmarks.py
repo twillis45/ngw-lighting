@@ -48,6 +48,8 @@ from db.benchmark import (
 
 from engine.constants import ENGINE_VERSION
 
+from starlette.concurrency import run_in_threadpool
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/benchmarks", tags=["lab-benchmarks"])
@@ -268,7 +270,12 @@ async def trigger_run(body: RunBenchmarkRequest, user: Dict = Depends(get_dev_us
         }
 
     try:
-        return run_benchmark(
+        # Third blocking route, and the one I missed by eye — found only
+        # because the gate enumerates every async route rather than checking
+        # the two I already knew about. Same defect as ci_run and drift-check:
+        # a full benchmark on the event loop freezes every other request.
+        return await run_in_threadpool(
+            run_benchmark,
             run_type    = body.run_type,
             trigger     = body.trigger,
             triggered_by= user.get("email"),
@@ -303,7 +310,14 @@ async def ci_run(body: CIRunRequest, user: Dict = Depends(get_ci_or_dev_user)):
         }
 
     try:
-        return run_ci_benchmark(
+        # run_in_threadpool, NOT a direct call. This route is `async def`, so a
+        # blocking call runs ON the event loop and freezes EVERY other request
+        # for its whole duration. Measured 2026-08-31: 40.7s for a run with
+        # ZERO cases — the fixed cost of engine startup alone. With the 30
+        # gold-set cases it is minutes, during which health checks, logins and
+        # analyses all queue behind it.
+        return await run_in_threadpool(
+            run_ci_benchmark,
             triggered_by = user.get("email") or user.get("id", "ci"),
             commit_sha   = body.commit_sha,
             pr_number    = body.pr_number,
@@ -492,7 +506,12 @@ async def trigger_drift_check(user: Dict = Depends(get_dev_user)):
     """
     from engine.benchmark_v2.nightly import run_nightly_check
     try:
-        return run_nightly_check(triggered_by=user.get("email", "lab:manual"))
+        # Same reason as ci_run above: a full benchmark on the event loop
+        # blocks the entire API. This one is worse in practice — it is
+        # triggered from the Lab UI, so the person who froze the service is
+        # sitting there watching it fail to respond.
+        return await run_in_threadpool(
+            run_nightly_check, triggered_by=user.get("email", "lab:manual"))
     except Exception as exc:
         logger.exception("Lab drift check failed")
         raise HTTPException(status_code=500, detail=f"Drift check failed: {exc}")
