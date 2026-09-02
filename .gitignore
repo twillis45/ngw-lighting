@@ -29,6 +29,11 @@ benchmarks/results/
 # Runtime / local artifacts
 .env
 .env.*
+# ...but the UI's production build config is not a secret and MUST be tracked:
+# it carries only VITE_NGW_ADMIN_EMAILS, a list that already ships inside the
+# bundle by design. Untracked, it was never set, and every build silently
+# produced a bundle where the real admin account was not admin in the UI.
+!ui/.env.production
 !.env.example
 static/uploads/
 *.log
