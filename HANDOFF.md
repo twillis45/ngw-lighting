@@ -65,6 +65,23 @@ quoted outward clears `claim-verification` first.
 
 Every one of these cost a wrong turn this session.
 
+- **OPEN QUESTION — did the seeded benchmark case survive a deploy?** One case
+  was created in production on 2026-08-31 (`POST /api/lab/benchmarks/cases` →
+  **201**, confirmed present by a follow-up GET). A later successful `ci-run`
+  reported **`total_cases: 0`**. Two explanations remain and they are NOT
+  equivalent:
+  1. The case persisted and something else returns zero — `get_benchmark_cases`
+     applies no status filter and `init_benchmark_tables` contains no `DROP`,
+     so this would be a third cause not yet found.
+  2. `/data` is not actually persisting, so the case died with the container.
+     The startup log prints `Database path: /data/ngw_users.db`, but that is the
+     configured path — **not proof the disk is mounted there.**
+  **The decisive test needs an admin token:** create a case, note the count,
+  trigger a deploy, check the count again. Do not seed the remaining 29 until
+  this is answered — seeding into ephemeral storage looks identical to success.
+  Note the disk usage graph reading ~0 GB is NOT evidence either way; a
+  few-megabyte SQLite file renders as ~0 on a 1 GB axis.
+
 - **PARKED 2026-08-31 — rename the Render service.** Three names exist for one
   thing: repo `ngw-lighting`, `render.yaml` declares `ngw-api`, and the live
   service is **`ngw-core`** (a fossil from before the repo was renamed). Nobody
