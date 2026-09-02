@@ -34,7 +34,12 @@ Everything Else (routes, UI, generated data, runtime artifacts)
 **File**: `engine/enums.py`
 
 All categorical values across the engine, dataset, LAB, API, and benchmark system
-flow through this module. Contains 42 enum classes covering:
+flow through this module. Contains **6 enum classes**, `LightingPattern` among
+them with **34 values** — both counted from the module on 2026-08-31. This line
+said 42 enum classes; nothing in the module has ever matched that, and this file
+is the document CLAUDE.md names as the enum authority. Re-count with
+`python3 -c "import engine.taxonomy as t, enum; print(sum(isinstance(getattr(t,n),type) and issubclass(getattr(t,n),enum.Enum) for n in dir(t)))"`
+rather than trusting this sentence. Covering:
 
 | Category | Enum Class | Example Values |
 |----------|-----------|----------------|

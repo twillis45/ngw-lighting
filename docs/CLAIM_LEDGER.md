@@ -17,7 +17,7 @@ copied from an earlier doc.
 | Suite | Command | Executed result |
 |---|---|---|
 | Unit + integration | `pytest tests/ -q` | 2,580 passed · 51 skipped · 1 xfailed · **0 failed** |
-| Corpus accuracy (full sweep) | `pytest tests/test_corpus_accuracy_gate.py -m benchmark` | 1 passed (baselines 18/34 exact, 30/34 acceptable) |
+| Corpus accuracy (full sweep) | `pytest tests/test_corpus_accuracy_gate.py -m benchmark` | 1 passed — **18/33 exact, 30/33 acceptable**. The denominator was 34 until 2026-08-31, when `images__5_` was excluded: it has no recorded `expected_pattern`, so it scored as a permanent miss against a truth that does not exist. Numerators unchanged, which is what proves it contributed nothing but a denominator. |
 | Accuracy-screen geometry | `pytest tests/e2e -m benchmark` | 4 passed |
 | Evidence builder | `node scripts/check-lighting-evidence.mjs` | 17 checks PASS |
 | Live gallery payload | `list_gallery()` | exact **15** / acceptable **27** / scored **29** |
@@ -44,8 +44,16 @@ The most valuable section, and the one that took discipline to write.
 - **No working photographer has ever assessed whether a returned setup is
   shootable.** Zero sessions run.
 - **Skin-tone performance is unmeasured and unmeasurable with current tooling.**
-  23 of 34 references are monochrome or near-monochrome, and the engine's
-  skin-tone estimator is luma-based, so it reads underexposure as pigmentation.
+  **14 of 34** references are monochrome by the engine's OWN detector
+  (`engine/image_analysis.py:_is_grayscale_like`, mean channel-pair difference
+  < 18.0), re-measured 2026-08-31. The figure here said **23** and no record
+  survives of which definition produced it — a plain chroma-spread threshold
+  gives 11 strictly monochrome and 16 including near-monochrome, so 23 matches
+  nothing anyone can reproduce. The detector the PRODUCT uses is the one that
+  counts, and it is now named alongside the number so the next person can
+  re-run it. The conclusion is unchanged: the skin-tone estimator is
+  luma-based, so it reads underexposure as pigmentation, and 14 monochrome
+  references cannot measure skin-tone performance.
 - **Nothing verifies rendering in a viewer's own browser or email client.** The
   geometry gate covers Chromium at two viewports; Safari/iOS was checked by hand
   once, not by a standing check.
@@ -60,7 +68,7 @@ The most valuable section, and the one that took discipline to write.
 | 2 | "**27 of 29** fell within the accepted range" | same | Same, against `acceptable_patterns` minus `unknown` | same; `unknown` is excluded so declining cannot score as a hit | **PROVEN** |
 | 3 | "Misses are shown. A proof page that hides its failures is not proof." | Accuracy screen | Failing entries render, labelled, alongside passing ones | Rendered and read back signed-out: `gobo`, `flat`, `short` appeared as `MISSED · READ …`. No standing assertion. | **PARTIAL** |
 | 4 | "Against photographs whose lighting was **verified by hand**" | Accuracy screen | A human established each entry's expected pattern, on the record | **None.** `photographer` is the literal string `benchmark_verified` on 32 of 34; `source_type` is `found_online` | **UNPROVEN** |
-| 5 | "Reverse-engineer any portrait. Nail the shot, **every time**." | Login — the first sentence a visitor reads | The engine returns a correct, actionable read on essentially all portraits | Corpus: **18/34 exact (53%)**, 30/34 acceptable (88%). "Every time" is contradicted by our own gate | **FALSE** |
+| 5 | "Reverse-engineer any portrait. Nail the shot, **every time**." | Login — the first sentence a visitor reads | The engine returns a correct, actionable read on essentially all portraits | Corpus: **18/33 exact (55%)**, 30/33 acceptable (91%). "Every time" is contradicted by our own gate | **FALSE** |
 | 6 | "Reverse-engineer **any** portrait" | Login; Studio home | Works across subjects, tones, and conditions generally | 34 in-house images, 23 monochrome, no external set | **UNPROVEN** |
 | 7 | "See how it was lit." | Studio home headline | A promise of what the product does, not a performance claim | n/a — states the job | **PROVEN** |
 | 8 | "Catchlight 10 o'clock, left eye" and the rest of the evidence readout | Result screen | Values come from the engine's own measurements for this image | `check-lighting-evidence.mjs`, 17 checks against a real captured `/api/analyze` payload | **PROVEN** |
