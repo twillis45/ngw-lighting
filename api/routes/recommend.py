@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from auth.security import get_optional_user
-from db.database import get_analysis_count, get_active_subscription
+from db.database import get_analysis_count, increment_analysis_count, get_active_subscription
 from db.provenance import get_internal_emails
 from engine.services.recommend_service import (
     build_recommend_result,
@@ -152,6 +152,27 @@ def recommend(body: Dict[str, Any], user=Depends(get_optional_user)) -> Dict[str
                         "threshold": threshold,
                     },
                 )
+
+            # COUNT HERE, server-side. Until 2026-09-02 the count only ever rose
+            # because the browser voluntarily POSTed /api/usage/increment — the
+            # sole call site in the repo — so the free tier was enforced only
+            # against a cooperating client. Measured:
+            #
+            #   honest client, increments each time : 3 free, then 402
+            #   never call increment                : 8 of 8 succeeded
+            #
+            # Deleting one fetch bought unlimited free analyses. The gate above
+            # was real; the number it read was supplied by the caller.
+            #
+            # Failure to record must not grant a free analysis, but must also
+            # not deny a paid-for one, so it is logged and allowed through —
+            # the honest trade for a counter, unlike the waitlist where a
+            # failed read destroyed data and refusing was correct.
+            try:
+                increment_analysis_count(session_id, user_id=user_id)
+            except Exception as exc:
+                logger.error("[recommend] analysis count NOT recorded for %s: %s",
+                             session_id, exc)
     # ─────────────────────────────────────────────────────────────────────────
 
     # Set request context for log tracing

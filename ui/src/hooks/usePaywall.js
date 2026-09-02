@@ -181,16 +181,15 @@ export default function usePaywall(userEmail) {
       writeCount(next);
       trackEvent('ANALYSIS_COUNT_HIT', { count: next, threshold });
 
-      // HIGH-1 fix: also sync count to the server so /recommend paywall gate
-      // fires correctly. Fire-and-forget — never blocks the UI.
-      const sessionId = getSessionId();
-      if (sessionId) {
-        fetch('/api/usage/increment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ session_id: sessionId, event: 'analysis_complete' }),
-        }).catch(() => { /* network error — sessionStorage count is the fallback */ });
-      }
+      // The server counts this now — /recommend increments after its own gate
+      // passes (api/routes/recommend.py). This POST was REMOVED 2026-09-02
+      // because it was the only thing that ever advanced the count, which made
+      // the free tier enforceable only against a cooperating client: deleting
+      // this one fetch bought unlimited free analyses, measured at 8 of 8.
+      //
+      // Leaving it in as well would double-count and cut free users off after
+      // 2 analyses instead of 3. The count below stays as the local display
+      // value; the server holds the number that gates anything.
 
       return next;
     });

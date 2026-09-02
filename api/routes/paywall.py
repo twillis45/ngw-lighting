@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from auth.security import get_optional_user
 from db.experiments import record_experiment_event
-from db.database import get_db, increment_analysis_count
+from db.database import get_db, get_analysis_count
 
 # ── Part 16: adaptive paywall ─────────────────────────────────────────────────
 try:
@@ -175,11 +175,22 @@ async def usage_increment(
     if user:
         user_id = user.get("id") or user.get("sub") or None
 
+    # NO LONGER INCREMENTS, as of 2026-09-02. /recommend counts server-side
+    # after its own gate passes, so incrementing here as well double-counts and
+    # cuts free users off after 2 analyses instead of 3 — measured exactly that.
+    #
+    # The shipped client no longer calls this, but a CACHED bundle still will,
+    # and a user on a stale tab must not silently lose a third of their free
+    # tier. So this reports the count and does not change it.
+    #
+    # Kept rather than deleted: it is a real endpoint that existing clients
+    # call, and a 404 mid-session is worse than a truthful read. It is also no
+    # longer load-bearing — when the browser drove the count, declining to call
+    # this bought unlimited free analyses.
     try:
-        result = increment_analysis_count(body.session_id, user_id=user_id)
-        count = result["count"]
+        count = get_analysis_count(body.session_id, user_id=user_id)
     except Exception as exc:
-        logger.warning("Failed to increment analysis count for session=%s: %s", body.session_id, exc)
+        logger.warning("Failed to read analysis count for session=%s: %s", body.session_id, exc)
         count = 0
 
     is_at_limit = count >= threshold
