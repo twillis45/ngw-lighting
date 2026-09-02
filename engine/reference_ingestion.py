@@ -44,10 +44,38 @@ _PATTERN_IDS_CACHE: Optional[List[str]] = None
 
 
 def _load_valid_pattern_ids() -> List[str]:
-    """Load valid pattern IDs from the pattern catalog."""
+    """Valid pattern IDs, from the TAXONOMY — the declared enum authority.
+
+    Was read from data/patterns/pattern_catalog.json, a second source of truth
+    that had drifted 9 patterns behind: axial, flat, gobo_projection, hybrid,
+    projected, rim, silhouette_key, triangle and unknown were all valid in
+    engine/taxonomy.py and rejected by this validator.
+
+    Found 2026-08-31: four dataset entries already on disk could not pass the
+    gate meant to protect them — including the two remapped to "projected"
+    earlier the same session, since the remap updated ground_truth and this
+    file had never heard of the new name. A gate that rejects the corpus it
+    guards proves nothing about that corpus.
+
+    CLAUDE.md names docs/TAXONOMY_TRUTH.md and the taxonomy enum as authority
+    for canonical pattern names. The JSON catalog duplicated that list for one
+    purpose — this check — while its other fields (name, category, description,
+    canonical_setup) are read by nothing in the codebase. Reading the enum
+    directly removes the drift permanently rather than resyncing two files that
+    will drift again.
+
+    The JSON remains as the fallback so a broken import degrades rather than
+    rejecting everything.
+    """
     global _PATTERN_IDS_CACHE
     if _PATTERN_IDS_CACHE is not None:
         return _PATTERN_IDS_CACHE
+    try:
+        from engine.taxonomy import LightingPattern
+        _PATTERN_IDS_CACHE = [p.value for p in LightingPattern]
+        return _PATTERN_IDS_CACHE
+    except Exception as exc:
+        logger.warning("Taxonomy unavailable, falling back to the JSON catalog: %s", exc)
     try:
         with open(PATTERN_CATALOG_PATH, "r") as f:
             catalog = json.load(f)

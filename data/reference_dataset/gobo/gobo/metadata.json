@@ -1,6 +1,6 @@
 {
   "reference_id": "gobo",
-  "pattern_id": "gobo",
+  "pattern_id": "projected",
   "photographer": "benchmark_verified",
   "dataset_tier": "community",
   "entry_trust_score": 0.7,
