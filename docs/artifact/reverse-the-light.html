@@ -178,7 +178,7 @@ a{color:var(--key)}
   <div class="nowbox">
     <p class="t">Current state · recorded 2026-08-28</p>
     <p><strong>Shipping and deployed. Back to one blocker, and it is the pricing decision.</strong></p>
-    <p>The engine resolves <strong>18 of 34 exactly and 30 of 34 within the accepted range</strong> on the reference corpus, and the public proof page reports its own misses. Production is current and verified.</p>
+    <p>The engine resolves <strong>18 of 33 exactly and 30 of 33 within the accepted range</strong> on the reference corpus, and the public proof page reports its own misses. Production is current and verified.</p>
     <p><strong>The blocker:</strong> the app displays an adaptive price (<span class="mono">[39, 49, 59, 79]</span>, varied by inferred user state) while checkout charges a single fixed price ID. Nobody has been charged because Stripe was not wired — <em>setting the secret key activates the mismatch</em>. Display and charge must agree before a payment is taken, and whether behavioural pricing ships at all is an owner ruling that has not been made.</p>
     <p><strong>The second blocker closed 2026-08-29.</strong> The stage-4 heuristics pass — the third instrument, run after the visual and geometry passes had both come back clean — found three inert controls on the signed-out front door. All three are resolved: password reset was wired (it had never actually been blocked; the claim that its backend was missing was false), Apple was removed with its deferral recorded, and Google now renders only when the server confirms a credential exists. An enumerating gate found a further two dead controls and now fails on the whole class. <em>Deploy is no longer gated on stage 4.</em></p>
     <p class="mono">Stripe live under the LLC · one settled transaction still owed · three checks await people, not code.</p>
@@ -254,7 +254,7 @@ a{color:var(--key)}
     <div class="frame"><span class="no">D4</span>
       <h3>Free is the product, not the trial.</h3>
       <p>The full CV read costs nothing to serve. Gating it behind a counter hides the one thing a buyer needs to audit before paying — whether it is actually right.</p>
-      <div class="ev">CV-only: <b>7.7s</b>, no API spend, and <b>the same accuracy</b> as the paid path. Whatever the paid tier sells, it is not a better answer.</div>
+      <div class="ev">CV-only: <b>1.4–9.4s, median 4.6s</b> (n=5, warm, re-measured 2026-09-02 — this page said 7.7s and HANDOFF said 0.7s, two numbers for one measurement with no record of how either was taken). No API spend, and <b>the same accuracy</b> as the paid path. Whatever the paid tier sells, it is not a better answer.</div>
     </div>
     <div class="frame"><span class="no">D5</span>
       <h3>Geometry first, semantics last.</h3>
@@ -374,7 +374,7 @@ var ITEMS=[
 
  {k:"b7",tr:"b",s:3,t:"Analysis reachable without an account",n:"OPEN, and NOT the one-line change this item first claimed. The proof surface reads precomputed data; analysis is compute. The handler's own docstring gives the reason: the free-tier allowance is metered on a user id and an anonymous caller cannot be metered. Opening it is a product and security decision — IP rate limiting exists (auth/rate_limit.py) and the CV path costs ~$0 to serve, so it is defensible, but it is a decision, not a fix."},
 
- {k:"v1",tr:"b",s:4,rec:"passed",t:"Scored corpus accuracy gate in the suite, red-proofed",n:"8 fast per-image checks by default plus a full sweep under the benchmark marker. Baselines 17/34 exact and 29/34 acceptable are measured. 7 of 8 fail when the regression is reintroduced."},
+ {k:"v1",tr:"b",s:4,rec:"passed",t:"Scored corpus accuracy gate in the suite, red-proofed",n:"8 fast per-image checks by default plus a full sweep under the benchmark marker. Baselines are 18 exact and 30 acceptable over the 33 SCOREABLE entries, read from BASELINE_EXACT and BASELINE_ACCEPTABLE in the gate itself. This card said 17/34 and 29/34 — numbers the gate code has never used, over a denominator that changed when the entry with no recorded ground truth was excluded. Corrected 2026-09-02. 7 of 8 fail when the regression is reintroduced."},
  {k:"v2",tr:"b",s:4,t:"Confidence calibration guard",n:"UNTICKED 2026-08-27. The guard exists and passes, but I never watched it fail. By the standing rule — a green gate never shown to fail is not evidence — it is UNPROVEN, not passing. Red-proof it by raising the non-canonical label count above its pin and confirming it goes red."},
  {k:"v3",tr:"b",s:4,rec:"passed",t:"Verified on a real device, not just in tests",n:"iPhone 17 Pro Max. Caught three checks marked passing that were not — the whole app sat behind a login wall — plus a back button rendering under the status bar."},
  {k:"v4",tr:"b",s:4,t:"Ground-truth labels all canonical",n:"2 of 34 remain: golden_hour and hurley_triangle, both needing a human call. gobo is settled — enums.py records gobo_projection -> projected, so the stale label was producing a false MISS on the public proof page. Gallery moved 14 -> 15 exact, 26 -> 27 acceptable."},

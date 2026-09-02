@@ -1167,9 +1167,18 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
     h, w = img.shape[:2]
 
     # ── Resize images to optimal range for MediaPipe ───────────────────
-    # Too large (>1920px): wastes CPU, no benefit. Downscale with INTER_AREA.
-    # Too small (<1024px): eye regions too tiny for catchlight detection,
-    #   face landmarks imprecise. Upscale with INTER_CUBIC.
+    # Too large (>_MP_MAX_DIM): wastes CPU, no benefit. Downscale, INTER_AREA.
+    # Too small (<_MP_MIN_DIM): eye regions too tiny for catchlight detection,
+    #   face landmarks imprecise. Upscale, INTER_CUBIC.
+    #
+    # BOTH constants are 2048 (NGW_MP_MAX_DIM / NGW_MP_MIN_DIM), so there is no
+    # leave-alone band: every image that is not exactly 2048 on its long edge
+    # gets resized. This comment said 1920 and 1024, describing a band that has
+    # not existed for some time — corrected 2026-09-02. It matters because that
+    # phantom band is what makes the coordinate-space bug in b6 look like an
+    # edge case: 33 of the 34 corpus images are upscaled, not a handful.
+    # The names are used here rather than repeated numbers so the comment
+    # cannot drift from the constants again.
     _scale = 1.0
     # b8: measure structure on the ORIGINAL image. Computing it after the
     # MediaPipe upscale collapses it ~70x — INTER_CUBIC interpolates detail

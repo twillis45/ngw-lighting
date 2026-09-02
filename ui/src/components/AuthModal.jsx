@@ -16,7 +16,17 @@ import { useDispatch } from '../context/AppContext';
 import { register, login, saveAuth } from '../data/authApi';
 import { probeAndEnableLab } from '../data/labApi';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+// Was `import.meta.env.VITE_GOOGLE_CLIENT_ID`, read at BUILD time and never
+// set — so this resolved to '' in every shipped bundle and the guard at the
+// top of GoogleButton returned immediately. The Google button in the UPGRADE
+// flow has therefore never rendered, silently, with no error anywhere.
+//
+// The login screen had the same defect and was fixed on 2026-08-29 by asking
+// the SERVER (/api/auth/providers) instead. Doing the same here: one source of
+// truth, no build-time coupling, and the button cannot silently vanish because
+// someone rebuilt without an env var. If the server says Google is not
+// configured, the button is absent rather than inert — which is the rule this
+// project keeps relearning: a control that cannot work should not render.
 
 // ── Google One Tap ────────────────────────────────────────────────────────────
 
@@ -33,15 +43,31 @@ function loadGsiScript(callback) {
   document.head.appendChild(s);
 }
 
-function GoogleButton({ onCredential, disabled }) {
+function GoogleButton({ onCredential, disabled, renderDivider }) {
   const ref = useRef(null);
+  const [clientId, setClientId] = useState(null);
+
+  // Ask the server which providers are actually usable. Absent, misconfigured
+  // and unreachable all resolve the same way — no button. Failing closed is
+  // the only safe default for a control whose defect was rendering with
+  // nothing behind it.
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/auth/providers')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (alive && d && d.google && d.google_client_id) setClientId(d.google_client_id);
+      })
+      .catch(() => { /* no button */ });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !ref.current) return;
+    if (!clientId || !ref.current) return;
     loadGsiScript(() => {
       if (!window.google?.accounts?.id) return;
       window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: ({ credential }) => onCredential(credential),
         auto_select: false,
         cancel_on_tap_outside: true,
@@ -56,15 +82,21 @@ function GoogleButton({ onCredential, disabled }) {
         logo_alignment: 'left',
       });
     });
-  }, [onCredential]);
+  }, [onCredential, clientId]);
 
-  if (!GOOGLE_CLIENT_ID) return null;
+  // Nothing until the server confirms Google is configured.
+  if (!clientId) return null;
   return (
-    <div
-      ref={ref}
-      className="auth-modal__google-btn"
-      style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}
-    />
+    <>
+      <div
+        ref={ref}
+        className="auth-modal__google-btn"
+        style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}
+      />
+      {renderDivider && (
+        <div className="auth-modal__divider"><span>or</span></div>
+      )}
+    </>
   );
 }
 
@@ -230,13 +262,15 @@ export default function AuthModal({ onSuccess, onClose, billingPeriod }) {
           <MagicLinkForm onClose={onClose} />
         ) : (
           <>
-            {/* Google button */}
-            {GOOGLE_CLIENT_ID && (
-              <>
-                <GoogleButton onCredential={handleGoogleCredential} disabled={loading} />
-                <div className="auth-modal__divider"><span>or</span></div>
-              </>
-            )}
+            {/* Google button. The parent no longer decides whether to show
+                it — GoogleButton asks the server and returns null when Google
+                is not configured, and the divider follows it, so an absent
+                provider leaves no orphaned "or" rule floating above nothing. */}
+            <GoogleButton
+              onCredential={handleGoogleCredential}
+              disabled={loading}
+              renderDivider
+            />
 
             {error && <div className="auth-card__error">{error}</div>}
 

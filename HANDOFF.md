@@ -178,7 +178,14 @@ Every one of these cost a wrong turn this session.
   response) with a **100s** default origin timeout. `NGW_ANALYSIS_TIMEOUT` is 90s so the
   server fails first with its own 504. Raising it past ~95s brings back opaque 524s.
 - **The VLM is ~97% of analysis wall time**, not just cost. Measured on an M3 Max:
-  CV-only **0.7s**, full pipeline **28.1s**. A CV-only tier is fast as well as free.
+  CV-only **1.4–9.4s, median 4.6s** (n=5, warm, 2026-09-02). This said **0.7s**
+  and the artifact said **7.7s** — two numbers for one measurement, neither
+  reproducible, and nothing recorded how either was taken. Re-measure with
+  `analyze_image(path, run_vlm=False)` over several images after a warm-up
+  call, since the first invocation carries model load and is not
+  representative. The spread is wide because image size drives it, so a
+  single figure was always going to be wrong. The point it supports still
+  holds: no API spend, same accuracy as the paid path.
 - **A test double that drifts from its real signature fails for the wrong reason.**
   `_fake_describe` lacked a new kwarg and six tests failed on the signature, not behavior.
 - **One `/lab` route is public by design** — `face-preflight`. Do not copy the
