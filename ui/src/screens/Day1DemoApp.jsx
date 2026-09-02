@@ -1810,7 +1810,13 @@ export default function Day1DemoApp() {
       );
     }
     case 'lab':
-      return <StudioLabWrapper onBack={() => goBack('settings')} onSessionLog={() => setScreen('sessionLog')} onLookLibrary={() => setScreen('lookLibrary')} />;
+      // Was setScreen('sessionLog') / setScreen('lookLibrary') — camelCase keys
+      // with no matching case in the switch below, where the cases are
+      // 'journal' and 'looklibrary'. An unknown key falls to default: and
+      // renders HomeScreen, so both Lab support buttons silently bounced the
+      // user to Home. handleSessionLog and handleLookLibrary already existed
+      // with the right keys; this line simply bypassed them.
+      return <StudioLabWrapper onBack={() => goBack('settings')} onSessionLog={handleSessionLog} onLookLibrary={handleLookLibrary} />;
     case 'error':
       return (
         <FallbackReveal

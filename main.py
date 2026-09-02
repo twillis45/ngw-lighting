@@ -258,7 +258,33 @@ async def lifespan(app):
     stop_sequence()
 
 
-app = FastAPI(title="NGW Core v1", version=ENGINE_VERSION, lifespan=lifespan)
+# ── Interactive API docs: OFF in production ──────────────────────────────────
+# Found 2026-08-31: /docs, /redoc and /openapi.json all returned 200 in
+# production, publishing 243 routes — 118 of them admin, lab or debug — with
+# full request and response schemas. That is a free map of the private surface
+# for anyone who asks, and it makes probing for an unguarded route trivial.
+#
+# It also silently broke the HANDWRITTEN docs. main.py registers its own
+# @app.get("/docs") redirect further down, and FastAPI's built-in Swagger is
+# mounted at app construction, so the built-in always won and the redirect was
+# unreachable code. Disabling the built-ins fixes the exposure AND makes the
+# project's own docs route work for the first time.
+#
+# Enabled locally, where reading the schema is the point:
+#   NGW_ENABLE_API_DOCS=1  or  NGW_DEV_MODE=1
+_docs_on = (
+    os.environ.get("NGW_ENABLE_API_DOCS", "").strip() in ("1", "true", "yes")
+    or os.environ.get("NGW_DEV_MODE", "").strip() == "1"
+)
+
+app = FastAPI(
+    title="NGW Core v1",
+    version=ENGINE_VERSION,
+    lifespan=lifespan,
+    docs_url="/api-docs" if _docs_on else None,
+    redoc_url="/api-redoc" if _docs_on else None,
+    openapi_url="/openapi.json" if _docs_on else None,
+)
 
 
 # ── Global exception handler ──────────────────────────────────────────────────
