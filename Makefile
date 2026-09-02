@@ -31,10 +31,10 @@ run-prod: ## Start production server (no reload)
 	$(UVICORN) main:app --host $(HOST) --port $(PORT) --workers 2
 
 test: ## Run full test suite
-	$(PYTHON) -m pytest tests/ -v --tb=short $(PYARGS)
+	$(PYTHON) -m pytest -v --tb=short $(PYARGS)
 
 test-fast: ## Run tests without verbose output
-	$(PYTHON) -m pytest tests/ -q $(PYARGS)
+	$(PYTHON) -m pytest -q $(PYARGS)
 
 format: ## Format code with ruff
 	$(PYTHON) -m ruff format .
