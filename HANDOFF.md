@@ -3,7 +3,7 @@
 **Read this first, before `docs/` or the long-form log.**
 Measured reality, not intentions. Updated every session.
 
-Last updated: **August 26, 2026** · deploy verified 12:10 EDT
+Last updated: **September 2, 2026** · deploy verified, `origin/main` == `HEAD`
 
 ---
 
@@ -12,10 +12,10 @@ Last updated: **August 26, 2026** · deploy verified 12:10 EDT
 | | |
 |---|---|
 | Branch | `main` |
-| HEAD | `7000e2d` — Fail before Cloudflare does |
-| Unpushed | **0** — `main` deployed and verified 12:10 EDT |
-| Test suite | **2,609 passed · 4 failed · 48 skipped** (233s) |
-| The 4 failures | Pre-existing engine tests, unrelated to recent work — `test_advanced_passes`, `test_complexity_profile`, `test_perception_layer`, `test_vlw_reconciliation`. Verified identical before and after every change this session by stashing and re-running at HEAD. |
+| HEAD | `77e61e4` — the upgrade flow's Google button never rendered |
+| Unpushed | **0** — verify with `git rev-list --count origin/main..HEAD` BEFORE writing "shipped" anywhere. On 2026-08-29 that count was 24 while the artifact said SHIPPED, a live rate-limit bypass stayed exploitable and the accuracy page kept hiding a real miss, for a day. |
+| Test suite | ~2,830 tests across 89 files. **It could not pass in one run until 2026-08-31** — two tests had been red for five months (`/recommend` required `session_id` from 2026-03-25; the tests were last touched twelve days earlier), and one passed alone but failed in the suite because the rate limiter's buckets are process-global and were never reset between tests, so the result depended on ORDERING. Both fixed; `conftest.py` now clears the buckets around every test. |
+| Running it | It takes several minutes. Run it DETACHED — a foreground call that hits a tool timeout kills the run and leaves no summary, which looks exactly like a hang. That happened twice on 2026-09-02 before it was recognised. `setsid` does not exist on macOS; use the harness's own background mechanism. |
 | Production | `https://app.noguessworksystems.com` — `/health` **200** |
 | Deploy target | **Render**, Docker runtime, `render.yaml`. Never Vercel/Netlify. |
 | CI | `.github/workflows/` — `benchmark.yml`, `nightly.yml`, `static-assets.yml` |
