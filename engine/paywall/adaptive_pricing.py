@@ -18,10 +18,52 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
+import os
+
 from engine.paywall.messaging import get_messaging
 
 # ── Valid price points (snap to nearest) ─────────────────────────────────────
 PRICE_LADDER = [39, 49, 59, 79]
+
+
+# ── A price may only be SHOWN if it can actually be CHARGED ──────────────────
+# Added 2026-09-03. Until now this ladder and Stripe checkout were entirely
+# independent. The ladder computed 39/49/59/79 from behaviour, the UI displayed
+# it, db/paywall_analytics recorded it as price_shown -- and
+# api/routes/stripe_checkout.py built its line_items from ONE fixed
+# STRIPE_PRICE_ID_MONTHLY, ignoring the price point completely.
+#
+# Verified against production on 2026-09-03: POST /api/paywall/adaptive-pricing
+# with a high-intent profile returned price_point 59 and the CTA
+# "Unlock Pro -- $59/mo", while checkout would have charged whatever the single
+# monthly Price ID contains. Nobody has been mischarged only because Stripe is
+# still in test mode. Flipping to live with this in place bills people an
+# amount they were never shown.
+#
+# The fix is structural rather than a warning: a point is offerable only when a
+# Stripe Price ID exists for it. Configure STRIPE_PRICE_ID_MONTHLY_49 and
+# friends to open a rung. With none set, everyone sees the base price, which is
+# what the single fixed ID charges -- display and charge agree by construction.
+def sellable_points() -> list[int]:
+    """Price points backed by a real Stripe Price ID, ascending.
+
+    Always includes the ladder's base: STRIPE_PRICE_ID_MONTHLY is the one that
+    has always existed, and it is what an unconfigured rung falls back to.
+    """
+    base = PRICE_LADDER[0]
+    points = {base} if os.getenv("STRIPE_PRICE_ID_MONTHLY") else {base}
+    for pt in PRICE_LADDER:
+        if os.getenv(f"STRIPE_PRICE_ID_MONTHLY_{pt}"):
+            points.add(pt)
+    return sorted(points)
+
+
+def _clamp_to_sellable(price: int) -> int:
+    """Snap DOWN to the highest sellable point <= price. Never up: charging
+    more than the behaviour model asked for is the worse failure."""
+    allowed = sellable_points()
+    eligible = [p for p in allowed if p <= price]
+    return max(eligible) if eligible else allowed[0]
 
 # ── State → base price ────────────────────────────────────────────────────────
 _STATE_BASE_PRICE: Dict[str, int] = {
@@ -85,6 +127,9 @@ def get_adaptive_pricing(
     if base_price < session_max_price:
         base_price = session_max_price
         guardrail_applied = True
+
+    # Last word, after every adjustment above: never surface an unchargeable price.
+    base_price = _clamp_to_sellable(base_price)
 
     messaging = get_messaging(state, price=base_price)
 

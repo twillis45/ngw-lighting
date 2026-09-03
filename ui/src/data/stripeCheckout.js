@@ -20,9 +20,12 @@ const API_BASE = '/api';
  * @param {object} opts
  * @param {'monthly'|'yearly'} opts.billingPeriod
  * @param {'pro'|'studio'}     opts.plan
+ * @param {number}            [opts.pricePoint]  the price the user was SHOWN.
+ *   Sent so the server can refuse to charge a different amount. Before
+ *   2026-09-03 the displayed price and the charged price were unrelated.
  * @returns {Promise<void>}  Redirects on success; throws on error.
  */
-export async function startStripeCheckout({ billingPeriod = 'monthly', plan = 'pro' } = {}) {
+export async function startStripeCheckout({ billingPeriod = 'monthly', plan = 'pro', pricePoint = null } = {}) {
   const origin = window.location.origin;
   const base   = `${origin}/static/ui/`;
 
@@ -32,6 +35,7 @@ export async function startStripeCheckout({ billingPeriod = 'monthly', plan = 'p
     body: JSON.stringify({
       billing_period: billingPeriod,
       plan,
+      ...(pricePoint != null ? { price_point: pricePoint } : {}),
       success_url:    `${base}?checkout_success=1`,
       cancel_url:     base,
     }),

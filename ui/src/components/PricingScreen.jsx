@@ -193,7 +193,13 @@ export default function PricingScreen({ onClose, onUnlock, trigger, source }) {
     setCheckoutLoading(true);
     setCheckoutError(null);
     try {
-      await startStripeCheckout({ billingPeriod: period });
+      // Send the price the user is actually looking at. The server refuses to
+      // charge a different amount than was displayed (409) rather than falling
+      // back to the base ID, which is the defect this replaces.
+      await startStripeCheckout({
+        billingPeriod: period,
+        pricePoint: period === 'yearly' ? pricing?.price_yearly : pricing?.price_monthly,
+      });
       // redirects on success — code below only runs on error
     } catch (err) {
       setCheckoutError(err.message || 'Something went wrong. Please try again.');

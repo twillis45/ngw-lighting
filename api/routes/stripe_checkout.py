@@ -71,6 +71,9 @@ PRICE_IDS: dict[str, dict[str, Optional[str]]] = {
 class CheckoutSessionRequest(BaseModel):
     billing_period: str = 'monthly'   # 'monthly' | 'yearly'
     plan: str = 'pro'
+    # The price the user was SHOWN, from /api/paywall/adaptive-pricing. Sent so
+    # the server can refuse to charge a different amount -- see _resolve_price_id.
+    price_point: Optional[int] = None
     success_url: str                   # must contain ?checkout_success=1
     cancel_url:  str
     # Paywall attribution — passed through to Stripe session metadata
@@ -123,6 +126,38 @@ async def create_checkout_session(
 
     plan_prices = PRICE_IDS.get(body.plan, {})
     price_id = plan_prices.get(body.billing_period)
+
+    # ── Charge what was shown, or refuse ──────────────────────────────────────
+    # Added 2026-09-03. This route used to ignore the displayed price entirely:
+    # the adaptive ladder showed 39/49/59/79 and line_items always carried the
+    # one fixed Price ID. Production was returning "Unlock Pro -- $59/mo" while
+    # this would have charged the monthly base. In test mode that was invisible;
+    # live it is billing someone an amount they never agreed to.
+    #
+    # A tiered Price ID is opened by setting STRIPE_PRICE_ID_<PLAN>_<PERIOD>_<PT>.
+    # If a caller reports a price point we cannot charge exactly, we FAIL rather
+    # than fall back -- a silent fallback is the bug this replaces.
+    if body.price_point is not None and body.plan == 'pro':
+        _tier_env = f'STRIPE_PRICE_ID_{body.billing_period.upper()}_{body.price_point}'
+        _tier_id = os.getenv(_tier_env)
+        if _tier_id:
+            price_id = _tier_id
+        else:
+            from engine.paywall.adaptive_pricing import PRICE_LADDER
+            # The base differs by period: the yearly figure is the monthly
+            # ladder base x10 (see get_adaptive_pricing's price_yearly). Compare
+            # against the right one, or every yearly checkout 409s -- which is
+            # exactly what this guard did on its first draft.
+            _base = PRICE_LADDER[0] * (10 if body.billing_period == 'yearly' else 1)
+            if body.price_point != _base:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        f'Cannot charge ${body.price_point}: no Stripe price is configured '
+                        f'for it ({_tier_env} is unset). Refusing to charge a different '
+                        f'amount than was displayed.'
+                    ),
+                )
     if not price_id:
         raise HTTPException(
             400,
