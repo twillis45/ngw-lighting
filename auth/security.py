@@ -41,7 +41,28 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    """Verify a password, failing CLOSED on an unreadable stored hash.
+
+    passlib raises rather than returning False when the stored value is not a
+    recognisable hash — UnknownHashError for an empty or malformed string,
+    ValueError for a corrupted bcrypt cost field. That propagated out of the
+    login handler as a 500, which is both an availability bug on the auth
+    boundary and a distinguishable response: a row with a damaged hash answers
+    differently from a row with a good one, which is exactly the shape of an
+    account-enumeration oracle.
+
+    Found 2026-09-03 by tests/test_auth_boundary.py, written as the gate for a
+    library swap and finding this before the swap happened.
+    """
+    if not plain or not hashed:
+        return False
+    try:
+        return pwd_context.verify(plain, hashed)
+    except Exception:
+        # Deliberately broad: the failure modes are library-specific and this
+        # boundary must never answer anything but False for a bad hash.
+        logger.warning("[auth] unreadable password hash — failing closed")
+        return False
 
 
 # ── JWT revocation (in-memory JTI blocklist) ────────────────
