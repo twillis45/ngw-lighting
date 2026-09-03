@@ -226,3 +226,74 @@ class TestTheBoardsFiveProbes:
         without = m.sellable_points("monthly")
         assert with_rung != without, "sellable_points ignores its configuration"
         assert 79 in with_rung and 79 not in without
+
+
+class TestTheServersOwnQuoteOutranksTheClient:
+    """Board condition C2, case C: a client could send a price_point LOWER than
+    it had been shown and be charged that.
+
+    The board proposed reading price_shown back from paywall_impressions. That
+    would not have closed it -- ImpressionPayload.price_shown is an int the
+    CLIENT posts, so trusting it at checkout launders the same untrusted number
+    through a longer path. price_quotes records only what the server computed
+    inside /paywall/adaptive-pricing.
+    """
+
+    @pytest.fixture()
+    def client(self, monkeypatch):
+        from fastapi.testclient import TestClient
+        monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_fake")
+        monkeypatch.setenv("STRIPE_PRICE_ID_MONTHLY", "price_base_39")
+        monkeypatch.setenv("STRIPE_PRICE_ID_MONTHLY_59", "price_tier_59")
+        from main import app
+        from auth.security import get_optional_user
+        import api.routes.stripe_checkout as sc
+        monkeypatch.setattr(sc, "_ALLOWED_ORIGINS", ["https://x.test"], raising=False)
+        app.dependency_overrides[get_optional_user] = lambda: {"id": "u", "email": "u@t.local"}
+        yield TestClient(app)
+        app.dependency_overrides.pop(get_optional_user, None)
+
+    def _quote(self, session_id, price):
+        from db.paywall_analytics import init_paywall_analytics_tables, record_price_quote
+        init_paywall_analytics_tables()
+        record_price_quote(session_id=session_id, price_point=price, value_state="high_intent")
+
+    def _checkout(self, client, session_id, **kw):
+        body = {"billing_period": "monthly", "plan": "pro",
+                "ngw_session_id": session_id,
+                "success_url": "https://x.test/?checkout_success=1",
+                "cancel_url": "https://x.test/"}
+        body.update(kw)
+        return client.post("/api/stripe/create-checkout-session", json=body)
+
+    def test_a_client_claiming_a_lower_price_than_it_was_quoted_is_refused(self, client):
+        """THE case C defect. Shown 59, claims 39."""
+        sid = "sess-lowball"
+        self._quote(sid, 59)
+        r = self._checkout(client, sid, price_point=39)
+        assert r.status_code == 409, (
+            f"client was quoted $59, claimed $39, and got {r.status_code} -- "
+            f"it would have been charged the lower price"
+        )
+        assert "59" in r.text
+
+    def test_omitting_the_price_uses_the_servers_quote_not_the_base(self, client):
+        """Six of seven UI call sites send nothing. They must still get the
+        price this session was actually quoted."""
+        sid = "sess-silent"
+        self._quote(sid, 59)
+        r = self._checkout(client, sid)
+        assert r.status_code != 422, "server had a quote and still demanded one from the client"
+        assert r.status_code != 409, f"server refused its own quote: {r.text[:160]}"
+
+    def test_an_honest_client_agreeing_with_the_quote_passes(self, client):
+        sid = "sess-honest"
+        self._quote(sid, 59)
+        r = self._checkout(client, sid, price_point=59)
+        assert r.status_code not in (409, 422), r.text[:200]
+
+    def test_quotes_are_per_session_not_global(self, client):
+        """A quote for one session must not price another."""
+        self._quote("sess-one", 59)
+        r = self._checkout(client, "sess-two", price_point=39)
+        assert r.status_code != 409, "a different session's quote leaked into this one"

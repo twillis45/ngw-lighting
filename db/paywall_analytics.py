@@ -11,7 +11,11 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
+import logging
+
 from db.database import get_db
+
+logger = logging.getLogger(__name__)
 
 
 # ── Schema init ───────────────────────────────────────────────────────────────
@@ -41,6 +45,29 @@ def init_paywall_analytics_tables() -> None:
         """)
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_pi_session  ON paywall_impressions(session_id)"
+        )
+
+        # ── Server-computed price quotes ──────────────────────────────────
+        # Added 2026-09-03, closing review-board condition C2 case C: a client
+        # could send a LOWER price_point to checkout than it had been shown and
+        # be charged that.
+        #
+        # The board suggested reading price_shown back from paywall_impressions.
+        # That would NOT have closed it -- ImpressionPayload.price_shown is an
+        # int the CLIENT posts (api/routes/paywall.py:220), so trusting it at
+        # checkout launders the same untrusted number through a longer path.
+        # The only value worth trusting is the one the SERVER computed, at the
+        # moment it computed it, which is what this table holds.
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS price_quotes (
+                session_id   TEXT    NOT NULL,
+                price_point  INTEGER NOT NULL,
+                value_state  TEXT,
+                created_at   REAL    NOT NULL
+            )
+        """)
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pq_session ON price_quotes(session_id, created_at DESC)"
         )
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_pi_user     ON paywall_impressions(user_id)"
@@ -179,3 +206,45 @@ def save_pricing_snapshot(days: int = 30) -> None:
             (str(uuid.uuid4()), time.time(), days, json.dumps(snapshot)),
         )
         conn.commit()
+
+
+# ── Price quotes: what the SERVER decided to show ────────────────────────────
+
+def record_price_quote(session_id: Optional[str], price_point: int,
+                       value_state: Optional[str] = None) -> None:
+    """Remember the price this server computed for a session.
+
+    Called from /api/paywall/adaptive-pricing, which is the only place a price
+    is decided. Checkout reads it back, so a client cannot be charged an amount
+    the server never quoted it. Best-effort: a failure here must not take down
+    the paywall, but it does mean checkout will fall back to the base price
+    rather than silently honouring a client-supplied figure.
+    """
+    if not session_id:
+        return
+    try:
+        with get_db() as conn:
+            conn.execute(
+                "INSERT INTO price_quotes (session_id, price_point, value_state, created_at)"
+                " VALUES (?, ?, ?, ?)",
+                (session_id, int(price_point), value_state, time.time()),
+            )
+    except Exception:
+        logger.exception("[paywall] price quote NOT recorded for %s", session_id)
+
+
+def get_latest_price_quote(session_id: Optional[str]) -> Optional[int]:
+    """The most recent price this server quoted that session, or None."""
+    if not session_id:
+        return None
+    try:
+        with get_db() as conn:
+            row = conn.execute(
+                "SELECT price_point FROM price_quotes WHERE session_id = ?"
+                " ORDER BY created_at DESC LIMIT 1",
+                (session_id,),
+            ).fetchone()
+        return int(row[0]) if row else None
+    except Exception:
+        logger.exception("[paywall] price quote lookup failed for %s", session_id)
+        return None

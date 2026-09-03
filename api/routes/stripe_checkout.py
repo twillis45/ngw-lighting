@@ -150,6 +150,32 @@ async def create_checkout_session(
     # risk -- but "agree by construction" was false, and it failed in exactly
     # the way f9b9893 was written to stop: enforced only against a client that
     # cooperates.
+    # The SERVER's own quote outranks whatever the client says it saw. Closes
+    # review-board condition C2 case C: a client could send a LOWER price_point
+    # than it had been shown and be charged that.
+    #
+    # Note the board's suggested source -- paywall_impressions.price_shown --
+    # would NOT have closed this: that column is an int the client POSTs
+    # (api/routes/paywall.py:220), so reading it back is trusting the same
+    # untrusted number through a longer path. price_quotes holds only what
+    # /paywall/adaptive-pricing computed.
+    if body.ngw_session_id:
+        from db.paywall_analytics import get_latest_price_quote
+        _quoted = get_latest_price_quote(body.ngw_session_id)
+        if _quoted is not None:
+            _quoted_for_period = _quoted * (10 if body.billing_period == 'yearly' else 1)
+            if body.price_point is not None and body.price_point != _quoted_for_period:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        f'Price mismatch: this session was quoted '
+                        f'${_quoted_for_period}, not ${body.price_point}. '
+                        f'Refusing to charge an amount the server did not quote.'
+                    ),
+                )
+            # Client said nothing; the server's own quote is authoritative.
+            body.price_point = _quoted_for_period
+
     from engine.paywall.adaptive_pricing import sellable_points as _sellable
     _rungs = _sellable(body.billing_period)
     if body.price_point is None and len(_rungs) > 1:

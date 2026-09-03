@@ -260,6 +260,21 @@ async def adaptive_pricing(
         experiment_variant=body.experiment_variant,
     )
 
+    # Remember what WE decided, so checkout can charge it without asking the
+    # client. Closes review-board condition C2 case C -- a client sending a
+    # lower price_point than it was shown. Best-effort: never fail the paywall
+    # over analytics, but a miss means checkout falls back to base rather than
+    # honouring a client figure.
+    try:
+        from db.paywall_analytics import record_price_quote
+        record_price_quote(
+            session_id=body.session_id,
+            price_point=pricing["price_point"],
+            value_state=state_result["state"],
+        )
+    except Exception:
+        logger.exception("[paywall] failed to record price quote")
+
     return {
         "value_state":   state_result["state"],
         "state_signals": state_result["signals"],
