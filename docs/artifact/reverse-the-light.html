@@ -311,7 +311,7 @@ var STAGES=[["00","Adoption"],["01","Idea → Problem statement"],["02","Scope &
   ["09","Promotion"],["10","Sunset"]];
 /* tr: b = build, m = promotion. s = spine stage. bl = blocked. */
 var ITEMS=[
- {k:"a0",tr:"b",s:0,rec:"skipped",t:"Adoption — not applicable, and recorded rather than omitted",n:"Stage 0 exists for INBOUND projects: something inherited, acquired, or handed over, where the first work is understanding what you have. NGW Lighting was built here from the start, so the stage is skipped by fact rather than by oversight. It is shown, not hidden — a stage that silently disappears cannot be told apart from one nobody checked."},
+ {k:"a0",tr:"b",s:0,rec:"skipped",na:1,t:"Adoption — not applicable, and recorded rather than omitted",n:"Stage 0 exists for INBOUND projects: something inherited, acquired, or handed over, where the first work is understanding what you have. NGW Lighting was built here from the start, so the stage is skipped by fact rather than by oversight. It is shown, not hidden — a stage that silently disappears cannot be told apart from one nobody checked."},
 
  /* ---- MARKETING & PROMOTION ----------------------------------------
     Per doctrine this track starts at STAGE 2, not after deploy: positioning
@@ -419,15 +419,30 @@ var ITEMS=[
    because ticking work in a stage that has not run is how a plan becomes a claim.
    OPEN is live work: a real checkbox, persisted per project. */
 function control(i,done){
-  if(i.rec) return '<span class="mk '+i.rec+'" title="Recorded from the gate record: '+i.rec+'" '+
-                   'aria-label="Recorded — '+i.rec+'">'+(i.rec==='passed'?'\u2713':'\u2013')+'</span>';
+  /* AMENDED 2026-09-02 (path-artifact section 5). This used to render EVERY
+     recorded item as a static span. The distinction is handled vs OWED, not
+     recorded vs open:
+       recorded PASS            -> checkbox, checked AND disabled
+       recorded NOT RUN / OWED  -> a LIVE checkbox: open work wearing a
+                                   recorded label
+       not applicable           -> no checkbox at all (nothing to discharge)
+     The old wording cost the-rooms a page: every unmet obligation was dead
+     text, so seventeen findings had no way to be worked through. */
+  if(i.na) return '<span class="mk '+i.rec+'" title="Not applicable — nothing to discharge" '+
+                  'aria-label="Not applicable">\u2013</span>';
+  if(i.rec==='passed') return '<button class="box rec" role="checkbox" aria-checked="true" disabled '+
+                  'title="Recorded from the gate record: passed" '+
+                  'aria-label="Recorded — passed — '+esc(i.t)+'"></button>';
+  if(i.rec) return '<button class="box owed" role="checkbox" aria-checked="'+(done?'true':'false')+'" '+
+                  'data-k="'+i.k+'" title="Recorded as NOT RUN — this is open work" '+
+                  'aria-label="Owed — '+i.rec+' — '+esc(i.t)+'"></button>';
   if(i.lock) return '<button class="box" role="checkbox" aria-checked="false" disabled '+
                     'title="Stage not yet entered" aria-label="Locked — '+esc(i.t)+'"></button>';
   return '<button class="box" role="checkbox" aria-checked="'+(done?'true':'false')+'" data-k="'+i.k+'" '+
          'aria-label="'+esc(i.t)+'"></button>';
 }
 function esc(s){return String(s).replace(/&(?![a-z#0-9]+;)/g,'&amp;').replace(/</g,'&lt;');}
-function isDone(i){return i.rec==='passed'||(!i.rec&&!i.lock&&!!STATE.done[i.k]);}
+function isDone(i){return i.rec==='passed'||i.na||(!i.lock&&!!STATE.done[i.k]);}  /* an OWED item counts as done only when TICKED */
 function pct(){return{t:ITEMS.length,d:ITEMS.filter(isDone).length};}
 
 function render(){
