@@ -1,3 +1,19 @@
+# Every requirement is PINNED. Nothing floats.
+#
+# Pinned 2026-09-03 on review-board condition C6. Six lines carried >= and were
+# therefore re-resolved on EVERY Render build (Dockerfile installs this file),
+# so two identical commits could produce different production images. The drift
+# was not theoretical:
+#
+#   stripe        declared >=7.0.0   installed 15.1.0   eight majors
+#   openai        declared >=1.30.0  installed 2.36.0
+#   sentry-sdk    declared >=2.0.0   installed 2.59.0
+#
+# The stripe one is the sharpest: the checkout path was fixed for a mischarge
+# on 2026-09-03 and rode an unbounded SDK major while it was being fixed.
+#
+# Versions below are the ones the suite actually passed against, not the newest.
+# tests/test_requirements_are_pinned.py fails if a >= comes back.
 absl-py==2.4.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
@@ -40,9 +56,9 @@ uvicorn==0.41.0
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 bcrypt==3.2.2
-openai>=1.30.0
-python-dotenv>=0.20.0
-stripe>=7.0.0
-PyYAML>=6.0
-sentry-sdk[fastapi]>=2.0.0
-google-auth>=2.28.0
+openai==2.36.0
+python-dotenv==1.2.2
+stripe==15.1.0
+PyYAML==6.0.3
+sentry-sdk[fastapi]==2.59.0
+google-auth==2.52.0
