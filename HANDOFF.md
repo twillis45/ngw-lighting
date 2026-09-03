@@ -14,8 +14,8 @@ Last updated: **September 2, 2026** · deploy verified, `origin/main` == `HEAD`
 | Branch | `main` |
 | HEAD | Read it, do not trust this row: `git log -1 --oneline`. A pinned SHA here is stale the moment the commit recording it lands — this row has been wrong before, by five commits. |
 | Unpushed | **0** — verify with `git rev-list --count origin/main..HEAD` BEFORE writing "shipped" anywhere. On 2026-08-29 that count was 24 while the artifact said SHIPPED, a live rate-limit bypass stayed exploitable and the accuracy page kept hiding a real miss, for a day. |
-| Test suite | **2,930 collected / 2,843 selected across 100 files** (87 deselected by marker — see traps; one of them is the accuracy gate). Counted 2026-09-03, not estimated. **It could not pass in one run until 2026-08-31** — two tests had been red for five months (`/recommend` required `session_id` from 2026-03-25; the tests were last touched twelve days earlier), and one passed alone but failed in the suite because the rate limiter's buckets are process-global and were never reset between tests, so the result depended on ORDERING. Both fixed; `conftest.py` now clears the buckets around every test. |
-| Running it | **~40 minutes** (measured 2026-09-02: 2417.52s), and it prints NOTHING with `-q` while it runs. Run it DETACHED — a foreground call that hits a tool timeout kills the run and leaves no summary, which looks exactly like a hang. That happened twice on 2026-09-02 before it was recognised. `setsid` does not exist on macOS; use the harness's own background mechanism. |
+| Test suite | **2,985 collected / 2,898 selected** (re-counted 2026-09-03 after the board found the previous figure — 2,930/2,843, dated the same day and labelled "not estimated" — off by 47) (87 deselected by marker — see traps; one of them is the accuracy gate). Counted 2026-09-03, not estimated. **It could not pass in one run until 2026-08-31** — two tests had been red for five months (`/recommend` required `session_id` from 2026-03-25; the tests were last touched twelve days earlier), and one passed alone but failed in the suite because the rate limiter's buckets are process-global and were never reset between tests, so the result depended on ORDERING. Both fixed; `conftest.py` now clears the buckets around every test. |
+| Running it | **`.venv/bin/python -m pytest` — 70 seconds.** No `-q`: `pytest.ini` already sets it, so passing it again runs at `-qq` and hides the summary line. The ~40 minutes this row used to claim was 492 live OpenAI calls, removed 2026-09-02; see traps. CI runs the same command on every push and PR (`.github/workflows/tests.yml`). |
 | Production | `https://app.noguessworksystems.com` — `/health` **200** |
 | Deploy target | **Render**, Docker runtime, `render.yaml`. Never Vercel/Netlify. |
 | CI | `.github/workflows/` — `benchmark.yml`, `nightly.yml`, `static-assets.yml` |
@@ -74,16 +74,20 @@ resolved, so a tmp-dir test wrote the real corpus); `pytest .` exiting 3
 (`norecursedirs`); and 492 live calls per run to `api.openai.com` (conftest
 clears the key — measured 492 to 0, zero failures).
 
-- **A default run takes ~40 minutes and prints NOTHING while it does.**
-  Measured 2026-09-02: `2788 passed, 50 skipped, 87 deselected, 3 xfailed,
-  2 xpassed in 2417.52s (0:40:17)`. With `-q` there is no output for the whole
-  run, so it is indistinguishable from a hang — this has been killed by a tool
-  timeout at least three times. It is NOT the network: a full run with all
-  outbound sockets blocked behaved identically. Re-time it now that the VLM
-  guard has landed; the 40:17 predates it.
-  Run it DETACHED and poll:
-  `nohup .venv/bin/python -u -m pytest -v > /tmp/pytest.log 2>&1 &`
-  `-u` matters — without it the log stays empty.
+- **A default run takes 70 SECONDS, and `-q` hides the answer.**
+  Measured 2026-09-03: `2848 passed, 50 skipped, 87 deselected in 69.93s`.
+  **The old figure in this row was ~40 minutes** (2417.52s, 2026-09-02) and it
+  was wrong within hours of being written: that run predates the `conftest.py`
+  guard that removed 492 live calls to `api.openai.com`. The suite was never
+  slow — it was waiting on a network round trip per test. This row even said
+  "re-time it now that the VLM guard has landed" and then kept the 40-minute
+  headline, which sent the next session to detach and poll for forty minutes on
+  a seventy-second command. Caught by the stage-8 review board, not by its
+  author.
+  **Do NOT pass `-q`.** `pytest.ini` already carries it in `addopts`, so `-q`
+  on the command line runs at `-qq` and SUPPRESSES the summary line — a green
+  run and a crashed run then look identical. Just:
+  `.venv/bin/python -m pytest`
 
 - **Bare `pytest` is the SYSTEM Python 3.9, not the venv.** `which pytest` →
   `/usr/local/bin/pytest`, shebang `#!/usr/local/opt/python@3.9/bin/python3.9`.
@@ -123,10 +127,12 @@ clears the key — measured 492 to 0, zero failures).
   turns real gates into green skips. Before claiming accuracy or performance,
   run `.venv/bin/python -m pytest -m "benchmark"` explicitly.
 
-- **`test_face_box_coordinate_space.py` reports 3 xfail and 2 XPASS, and XPASS
-  is not an error.** Narrowed 2026-09-02 from a file-level marker that made all
-  12 tests incapable of failing in either direction. Read it with `-rxX`, not
-  the dot line. If the XPASS count moves off 2, the clamp changed.
+- **RETIRED 2026-09-03 — `test_face_box_coordinate_space.py` no longer has any
+  xfail or XPASS.** This trap told the next session to watch an XPASS count of
+  2. `0de96ef` applied b6, collapsing the two coordinate spaces, and all 12
+  tests now pass unmarked: a run reports **zero xfailed, zero xpassed**. Kept
+  visible rather than deleted because the instruction had already been read
+  once; a stale trap costs more than a missing one.
 
 
 - **OPEN QUESTION — did the seeded benchmark case survive a deploy?** One case

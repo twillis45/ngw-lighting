@@ -1,0 +1,77 @@
+# The test suite, run by a machine instead of by whoever remembers.
+#
+# Added 2026-09-03 on the stage-8 review board's ruling, as its highest-risk
+# finding. Until today NOTHING automatic ran these tests: benchmark.yml,
+# nightly.yml and static-assets.yml existed, and not one of them invoked pytest.
+#
+# The board's reasoning, which is why this is one small file and not a project:
+# the repo's real asset is a set of gates that were broken on purpose and
+# watched go red -- a mischarge clamp on checkout, an enumerating route sweep
+# that catches ungated additions, a decline floor, a paywall copy gate. All of
+# it depended on one person running one command. The moment a second person can
+# push, every one of those stops guarding anything and the first anyone knows is
+# production.
+#
+# It costs 70 seconds. HANDOFF said 40 minutes, measured before the conftest
+# guard removed 492 live api.openai.com calls; the real figure on this suite is
+# 69.93s for 2848 passed / 50 skipped / 87 deselected.
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20   # ~17x the measured runtime; catches a hang, not slowness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # 3.10 matches the Dockerfile (python:3.10-slim) and the local venv.
+          # nightly.yml uses 3.11; that drift is recorded as debt, and this file
+          # deliberately tracks the DEPLOYED interpreter rather than the newest.
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the suite
+        env:
+          # conftest sets a test secret, but auth/security.py raises at IMPORT
+          # time if this is unset, which fails collection rather than a test.
+          NGW_JWT_SECRET: ci-not-a-production-secret-000000000000
+          NGW_DEV_MODE: "0"
+          # Belt and braces with tests/conftest.py: no test may reach a live
+          # provider. 492 such calls were removed on 2026-09-02.
+          OPENAI_API_KEY: ""
+          ANTHROPIC_API_KEY: ""
+        # No -q. pytest.ini already carries it in addopts, so `-q` here runs at
+        # -qq and SUPPRESSES the summary line -- a green run and a crashed run
+        # then look identical in the log.
+        run: python -m pytest
+
+      - name: Gates hidden from a default run
+        # 87 tests are deselected by addopts, including the corpus accuracy
+        # gate. They cost 32 seconds. There is no cost argument for letting
+        # the accuracy gate run only when someone remembers the marker.
+        run: python -m pytest -m "benchmark"
+
+      - name: The tree must be clean after a test run
+        # A suite that writes into tracked files makes `git status` useless as a
+        # signal. This regressed once already: _update_version_count ignored the
+        # dataset_root its callers passed and wrote the real corpus from a
+        # tmp-dir test (fixed 7baea35).
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::the suite modified tracked files:"
+            git status --porcelain
+            git diff
+            exit 1
+          fi
