@@ -83,10 +83,22 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _ensure_dataset_root() -> Path:
-    """Create dataset root and version file if they don't exist."""
-    DATASET_ROOT.mkdir(parents=True, exist_ok=True)
-    version_path = DATASET_ROOT / "_version.json"
+def _ensure_dataset_root(root: Optional[Path] = None) -> Path:
+    """Create dataset root and version file if they don't exist.
+
+    `root` added 2026-09-02. Every public function here resolves
+    `root = dataset_root or DATASET_ROOT` so a test can point at a tmp dir --
+    and then called this helper and `_update_version_count`, both of which read
+    the module GLOBAL and ignored it. So an ingest test using a tmp root still
+    wrote the real repo corpus's _version.json, and every suite run left
+    `M data/reference_dataset/_version.json` in the tree.
+
+    Committing that stamp does not fix it (98b132f tried); the next run dirties
+    it again. Honouring the argument does.
+    """
+    root = root or DATASET_ROOT
+    root.mkdir(parents=True, exist_ok=True)
+    version_path = root / "_version.json"
     if not version_path.exists():
         version_data = {
             "schema_version": "1.0.0",
@@ -186,13 +198,14 @@ def _make_thumbnail(img_bgr: np.ndarray, size: int = THUMBNAIL_SIZE) -> np.ndarr
     return cv2.resize(cropped, (size, size), interpolation=cv2.INTER_AREA)
 
 
-def _update_version_count() -> None:
-    """Recount entries and update _version.json."""
-    version_path = DATASET_ROOT / "_version.json"
+def _update_version_count(root: Optional[Path] = None) -> None:
+    """Recount entries and update _version.json. See _ensure_dataset_root."""
+    root = root or DATASET_ROOT
+    version_path = root / "_version.json"
     version = _load_json(version_path) or {}
     count = 0
-    if DATASET_ROOT.exists():
-        for pattern_dir in DATASET_ROOT.iterdir():
+    if root.exists():
+        for pattern_dir in root.iterdir():
             if pattern_dir.is_dir() and not pattern_dir.name.startswith("_"):
                 for entry_dir in pattern_dir.iterdir():
                     if entry_dir.is_dir() and (entry_dir / "metadata.json").exists():
@@ -515,8 +528,8 @@ def ingest_reference_image(
     _save_json(entry_path / "metadata.json", meta)
 
     # 10. Update version
-    _ensure_dataset_root()
-    _update_version_count()
+    _ensure_dataset_root(root)
+    _update_version_count(root)
 
     return {
         "ok": True,
@@ -943,7 +956,7 @@ def bump_dataset_version(
         Updated version dict.
     """
     root = dataset_root or DATASET_ROOT
-    _ensure_dataset_root()
+    _ensure_dataset_root(root)
     version_path = root / "_version.json"
     version = _load_json(version_path) or {
         "schema_version": "1.0.0",
