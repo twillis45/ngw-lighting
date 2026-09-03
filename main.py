@@ -381,6 +381,12 @@ async def serve_sample_image():
     return FileResponse("static/ui/ghost-rembrandt.jpg", media_type="image/jpeg")
 
 app.mount("/www", StaticFiles(directory="static/www"), name="www")
+# Mounted BEFORE /static so the more specific prefix wins. This is what lets
+# UPLOAD_DIR move to the persistent disk without breaking the
+# "/static/uploads/..." paths already written into database rows.
+from paths import UPLOAD_DIR as _UPLOAD_DIR
+_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static/uploads", StaticFiles(directory=str(_UPLOAD_DIR)), name="uploads")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.middleware("http")

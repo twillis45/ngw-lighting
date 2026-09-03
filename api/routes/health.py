@@ -141,7 +141,9 @@ async def system_health(user=Depends(get_current_user)):
     uptime_secs = round(time.time() - _BOOT_EPOCH, 1)
 
     # ── Upload storage ────────────────────────────────────────────────────
-    uploads_dir = Path("static/uploads")
+    # Was hardcoded "static/uploads" while the uploader read NGW_UPLOAD_DIR.
+    # Setting that variable made this report on a directory nothing wrote to.
+    from paths import UPLOAD_DIR as uploads_dir
     uploads_writable = os.access(uploads_dir, os.W_OK) if uploads_dir.exists() else False
     try:
         disk = shutil.disk_usage(uploads_dir if uploads_dir.exists() else Path("."))

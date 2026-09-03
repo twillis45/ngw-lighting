@@ -67,11 +67,11 @@ class ShootMatchRequest(BaseModel):
     priorAnalysis: Optional[Dict[str, Any]] = None
 
 
-# NGW_UPLOAD_DIR overrides the upload location (e.g. a Render persistent disk path).
-# The returned path is always relative to the project root for static file serving,
-# so point this at the same location that main.py mounts as /static.
-# Default: static/uploads (served at /static/uploads/...)
-UPLOAD_DIR = Path(os.environ.get("NGW_UPLOAD_DIR", "static/uploads"))
+# Defined once in paths.py, because this used to disagree with the copy in
+# api/routes/health.py -- see that module's docstring. Served at
+# /static/uploads/... regardless of where it physically lives, because main.py
+# mounts the resolved directory at that prefix.
+from paths import UPLOAD_DIR  # noqa: E402
 
 _MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 _ALLOWED_IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".tiff", ".tif"}
