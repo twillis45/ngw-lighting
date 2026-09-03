@@ -43,12 +43,36 @@ def test_exact_never_exceeds_hits():
 
 
 def test_unscored_entries_are_not_counted_as_passes():
-    """An absent result is a hypothesis, not a passing one."""
+    """An absent result is a hypothesis, not a passing one.
+
+    Amended 2026-09-03: there are now TWO reasons an entry is excluded from the
+    ratio, and this arithmetic assumed one. The second is an entry whose ground
+    truth is itself "unknown" -- it has no correct answer, lists four common
+    patterns as acceptable, and passed on almost anything, so it was a free hit
+    on the public proof page (review-board condition C5).
+
+    Both exclusions are asserted, and every excluded entry must carry a REASON
+    that holds -- otherwise a future exclusion could quietly shrink the
+    denominator, which is how a ratio gets improved without the engine changing.
+    """
     d = client.get("/api/gallery").json()
-    unscored = [e for e in d["entries"] if e["verdict"]["match"] is None]
-    assert d["count"] - d["scored"] == len(unscored)
-    for e in unscored:
+    no_read     = [e for e in d["entries"] if e["verdict"]["match"] is None]
+    unscoreable = [e for e in d["entries"]
+                   if e["verdict"]["match"] is not None
+                   and not e["verdict"].get("scoreable", True)]
+    excluded = no_read + unscoreable
+    assert d["count"] - d["scored"] == len(excluded), (
+        f"count-scored={d['count'] - d['scored']} but only {len(excluded)} "
+        f"entries have a stated reason for exclusion "
+        f"({len(no_read)} no read, {len(unscoreable)} unscoreable)"
+    )
+    for e in no_read:
         assert e["verdict"]["read"] is None
+    for e in unscoreable:
+        assert e["verdict"]["expected"] == "unknown", (
+            f"{e['id']} excluded as unscoreable but its ground truth is "
+            f"{e['verdict']['expected']!r} -- only an 'unknown' truth qualifies"
+        )
 
 
 def test_only_approved_entries_are_served():
