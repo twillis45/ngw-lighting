@@ -12,6 +12,25 @@ os.environ.setdefault("NGW_JWT_SECRET", "test-secret-value-for-pytest-not-for-pr
 # user whose accumulated analysis count (user:dev-mode) triggers the paywall gate.
 os.environ["NGW_DEV_MODE"] = "0"
 
+# ── No live VLM calls from the suite ─────────────────────────────────────────
+# Measured 2026-09-03 by blocking outbound sockets for a whole run: the suite
+# made 492 connection attempts to api.openai.com (162.159.140.245 /
+# 172.66.0.243). engine/vlm.py probes https://api.openai.com/v1/models on app
+# startup, and every TestClient(app) construction triggers it; paid completions
+# go to the same host through the SDK, so the endpoint mix was not knowable
+# from the outside.
+#
+# ZERO tests failed with all outbound traffic blocked -- nothing in the suite
+# depends on a live provider. So the calls bought nothing and cost latency, a
+# live key on the wire on every run, and an unquantified billing risk.
+#
+# vlm_available() is keyed purely on the env var being non-empty, so clearing
+# it here is the whole fix. Tests that exercise the configured path supply
+# their own fake key (see tests/test_vlm.py::TestVLMAvailable, which patches in
+# "sk-test"), and that still works because patch.dict sets it locally.
+for _k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+    os.environ[_k] = ""
+
 
 # ── Rate-limit isolation ─────────────────────────────────────────────────────
 # The limiter's buckets are process-global and were never reset between tests,
