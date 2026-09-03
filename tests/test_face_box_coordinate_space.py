@@ -152,9 +152,27 @@ from PIL import Image
 # the 34 scored images are small. The published numbers are not wrong about the
 # corpus; they may be optimistic about a customer's file. Its own item.
 #
-pytestmark = pytest.mark.xfail(
+# NARROWED 2026-09-02. This was a FILE-level pytestmark, so all 12 tests in
+# the file were xfail(strict=False) -- which means none of them could fail the
+# suite in EITHER direction. A non-strict xfail that passes reports XPASS and
+# is not an error, so the file produced no signal at all.
+#
+# Measured under --runxfail: exactly THREE tests fail, all of them in
+# test_face_box_lies_inside_source_image (athletic_rim_sculpt, broad,
+# butterfly). Every case of test_face_box_is_usable_by_downstream_passes
+# passes. Five working gates were being masked to cover three real failures.
+#
+# The marker now sits on the one test that actually fails. The downstream test
+# is a live gate: if the clamp starts returning a degenerate box on an image
+# where it currently works, the suite goes red instead of quietly reporting
+# XPASS.
+#
+# The three failures are the b6 item and are NOT fixed here -- the patch costs
+# one point of exact accuracy and needs an owner ruling, recorded above.
+_COORD_BUG = pytest.mark.xfail(
     reason="face_box coordinate bug is load-bearing; fix requires retuning "
-           "the 30+ vision passes calibrated against it",
+           "the 30+ vision passes calibrated against it. Fails on 3 of 6 "
+           "sampled images; see the b6 note above.",
     strict=False,
 )
 
@@ -164,6 +182,7 @@ SMALL = [f for f in sorted(glob.glob("data/reference_dataset/*/*/image.jpg"))
          if max(Image.open(f).size) < 2048]
 
 
+@_COORD_BUG
 @pytest.mark.parametrize("path", SMALL[:6], ids=lambda p: p.split("/")[-2])
 def test_face_box_lies_inside_source_image(path):
     w, h = Image.open(path).size
