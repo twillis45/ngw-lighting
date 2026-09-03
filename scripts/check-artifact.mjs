@@ -83,6 +83,43 @@ for (const theme of ['light', 'dark']) {
   });
 
   if (errs.length) fail.push(...errs.map(e => `JS error on load -- ${e}`));
+
+  // ── Section 6, driven rather than assumed ────────────────────────────────
+  // "The test: tick two boxes, toggle on, and assert every NOT RUN item is
+  // still visible. If that assertion is missing, the toggle is not verified."
+  //
+  // This is the case where sections 5 and 6 collide: section 5 (amended 9/2)
+  // gives an owed item a LIVE checkbox, and a ticked owed item then satisfies
+  // section 6's own definition of "completed". Resolved in favour of 6 -- a
+  // tick is the reader's working note, and only a gate record retires an
+  // obligation -- so this drives the real UI to prove it, instead of trusting
+  // that the filter reads the way it looks like it reads.
+  const hideDone = await page.evaluate(() => {
+    const owed = Array.from(document.querySelectorAll('#stages .box.owed'));
+    const open = Array.from(document.querySelectorAll('#stages .box:not(.owed):not(.rec):not([disabled])'));
+    if (!owed.length) return { skipped: 'no owed item on this page' };
+    owed[0].click();                 // tick the OWED item itself
+    open.slice(0, 2).forEach(b => b.click());   // and two ordinary open ones
+    const btn = document.getElementById('hidedone');
+    if (!btn) return { noToggle: true };
+    btn.click();
+    return {
+      pressed:      btn.getAttribute('aria-pressed'),
+      owedVisible:  document.querySelectorAll('#stages .box.owed').length,
+      openTicked:   open.slice(0, 2).length,
+    };
+  });
+  if (hideDone.noToggle) fail.push(`${theme}: no "Hide completed" toggle -- required on every path artifact`);
+  else if (!hideDone.skipped) {
+    if (hideDone.pressed !== 'true') fail.push(`${theme}: "Hide completed" did not engage (aria-pressed=${hideDone.pressed})`);
+    if (hideDone.owedVisible === 0) fail.push(`${theme}: a TICKED owed item was hidden by "Hide completed" -- section 6 says a NOT RUN item is never hidden, and an artifact that can hide its own unmet obligations is the failure both rules exist to prevent`);
+  }
+  // The clicks above PERSIST to localStorage, and the two themes share an
+  // origin -- so without this the dark run inherits a ticked, hidden state and
+  // its measurements are contaminated. That is precisely what happened on the
+  // first run of this check: dark reported recordedPasses=0 and was read as a
+  // theme-drift bug rather than as test pollution.
+  await page.evaluate(() => { try { localStorage.clear(); } catch (_) {} });
   if (m.stages !== EXPECTED_STAGES) fail.push(`${theme}: rendered ${m.stages} stages, expected ${EXPECTED_STAGES} (script threw? state empty?)`);
   // Presence checks FIRST. Without them the three assertions below are
   // satisfied by an empty NodeList, which is how this gate went vacuous.
