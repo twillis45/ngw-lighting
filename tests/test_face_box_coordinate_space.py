@@ -167,14 +167,23 @@ from PIL import Image
 # where it currently works, the suite goes red instead of quietly reporting
 # XPASS.
 #
-# The three failures are the b6 item and are NOT fixed here -- the patch costs
-# one point of exact accuracy and needs an owner ruling, recorded above.
-_COORD_BUG = pytest.mark.xfail(
-    reason="face_box coordinate bug is load-bearing; fix requires retuning "
-           "the 30+ vision passes calibrated against it. Fails on 3 of 6 "
-           "sampled images; see the b6 note above.",
-    strict=False,
-)
+# RESOLVED 2026-09-03. b6 was applied on the owner's instruction. All twelve
+# tests in this file now pass without any marker, measured under --runxfail.
+# The marker is retired rather than left inert: an xfail on a passing test
+# reports XPASS, which is not a failure, so it would quietly stop guarding the
+# thing it was written for.
+#
+# What it cost, measured over the full 33-image corpus rather than estimated:
+#   exact       18 -> 17
+#   acceptable  30 -> 29
+# and it was +1/-2, not a uniform decline:
+#   reflector_fill    butterfly -> loop             now CORRECT
+#   overfill_flat     flat -> ring_light            now wrong
+#   window_soft_side  window_portrait -> short      now wrong
+def _COORD_BUG(fn):
+    """Retained as a no-op so the decorator sites read as deliberately
+    un-marked rather than as someone having deleted a marker by accident."""
+    return fn
 
 from engine.image_analysis import analyze_image_regions
 

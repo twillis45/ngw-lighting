@@ -1185,6 +1185,7 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
     # away, so clamshell_clean reads 242 before and 3.55 after. The first
     # version of this floor did exactly that and declined two real reads.
     _detail_orig = _image_detail(img)
+    _orig_h, _orig_w = h, w   # b6: captured before h, w are reassigned below
     if _MP_MAX_DIM > 0 and max(h, w) > _MP_MAX_DIM:
         _scale = _MP_MAX_DIM / max(h, w)
         _new_w, _new_h = int(w * _scale), int(h * _scale)
@@ -1357,6 +1358,15 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
         if "image_size" in _fg:
             _fg["image_size"] = (round(_fg["image_size"][0] / _scale), round(_fg["image_size"][1] / _scale))
 
+    # ── b6: normalise the WHOLE payload to original space ───────────────────
+    # The returned dict carries two coordinate groups: a raster group
+    # (_img_bgr, the masks, face_box) in UPSCALED space and a geometry group
+    # (catchlights, face_geometry) in ORIGINAL space. Moving face_box ALONE
+    # costs 10 points of exact accuracy because it leaves the group it agrees
+    # with; this moves the whole raster group with it.
+    if _scale != 1.0 and face_box is not None:
+        face_box = tuple(int(round(v / _scale)) for v in face_box)
+
     # Skin tone guess from skin pixels luma (Y from YCrCb)
     skin_tone = {"ok": False, "reason": "no_skin_pixels"}
     if skin_px.shape[0] >= SKIN.MIN_PIXELS_TONE:
@@ -1451,13 +1461,24 @@ def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dic
     # These are prefixed with underscore to signal internal use — they
     # should be stripped before serializing to API responses.
     if return_masks:
-        result["_masks"] = {
+        _m = {
             "person": person_mask,
             "skin": skin_mask,
             "clothing": clothing_mask,
             "background": background_mask,
         }
-        result["_img_bgr"] = img
+        _im = img
+        # b6: the rest of the raster group, moved with face_box so the payload
+        # is ONE space. Masks are BOOLEAN and cv2.resize refuses that dtype, so
+        # they go through uint8 and back; INTER_NEAREST because they are label
+        # data and must not be interpolated into intermediate values.
+        if _scale != 1.0:
+            _m = {k: cv2.resize(v.astype(np.uint8), (_orig_w, _orig_h),
+                                interpolation=cv2.INTER_NEAREST).astype(bool)
+                  for k, v in _m.items()}
+            _im = cv2.resize(_im, (_orig_w, _orig_h), interpolation=cv2.INTER_AREA)
+        result["_masks"] = _m
+        result["_img_bgr"] = _im
 
     _vp_logger.info("[vision_pipeline] analyze_image_regions: %.1fs (%dx%d)", _time.perf_counter() - _t_pipe_start, w, h)
     return result
