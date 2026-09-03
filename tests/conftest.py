@@ -24,6 +24,13 @@ os.environ["NGW_DEV_MODE"] = "0"
 # depends on a live provider. So the calls bought nothing and cost latency, a
 # live key on the wire on every run, and an unquantified billing risk.
 #
+# CONFIRMED 2026-09-03: a full run under the same socket blocker, with this
+# guard in place, made ZERO outbound attempts (492 -> 0) and still had zero
+# failures. The earlier commit recorded this as unsettled because the first
+# red-proof was inconclusive -- it used test_api.py, which turns out to make no
+# outbound calls either way, so it showed 0 before and 0 after and proved
+# nothing.
+#
 # vlm_available() is keyed purely on the env var being non-empty, so clearing
 # it here is the whole fix. Tests that exercise the configured path supply
 # their own fake key (see tests/test_vlm.py::TestVLMAvailable, which patches in
