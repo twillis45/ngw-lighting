@@ -12,10 +12,10 @@ Last updated: **September 2, 2026** · deploy verified, `origin/main` == `HEAD`
 | | |
 |---|---|
 | Branch | `main` |
-| HEAD | `77e61e4` — the upgrade flow's Google button never rendered |
+| HEAD | Read it, do not trust this row: `git log -1 --oneline`. A pinned SHA here is stale the moment the commit recording it lands — this row has been wrong before, by five commits. |
 | Unpushed | **0** — verify with `git rev-list --count origin/main..HEAD` BEFORE writing "shipped" anywhere. On 2026-08-29 that count was 24 while the artifact said SHIPPED, a live rate-limit bypass stayed exploitable and the accuracy page kept hiding a real miss, for a day. |
-| Test suite | ~2,830 tests across 89 files. **It could not pass in one run until 2026-08-31** — two tests had been red for five months (`/recommend` required `session_id` from 2026-03-25; the tests were last touched twelve days earlier), and one passed alone but failed in the suite because the rate limiter's buckets are process-global and were never reset between tests, so the result depended on ORDERING. Both fixed; `conftest.py` now clears the buckets around every test. |
-| Running it | It takes several minutes. Run it DETACHED — a foreground call that hits a tool timeout kills the run and leaves no summary, which looks exactly like a hang. That happened twice on 2026-09-02 before it was recognised. `setsid` does not exist on macOS; use the harness's own background mechanism. |
+| Test suite | **2,930 collected / 2,843 selected across 100 files** (87 deselected by marker — see traps; one of them is the accuracy gate). Counted 2026-09-03, not estimated. **It could not pass in one run until 2026-08-31** — two tests had been red for five months (`/recommend` required `session_id` from 2026-03-25; the tests were last touched twelve days earlier), and one passed alone but failed in the suite because the rate limiter's buckets are process-global and were never reset between tests, so the result depended on ORDERING. Both fixed; `conftest.py` now clears the buckets around every test. |
+| Running it | **~40 minutes** (measured 2026-09-02: 2417.52s), and it prints NOTHING with `-q` while it runs. Run it DETACHED — a foreground call that hits a tool timeout kills the run and leaves no summary, which looks exactly like a hang. That happened twice on 2026-09-02 before it was recognised. `setsid` does not exist on macOS; use the harness's own background mechanism. |
 | Production | `https://app.noguessworksystems.com` — `/health` **200** |
 | Deploy target | **Render**, Docker runtime, `render.yaml`. Never Vercel/Netlify. |
 | CI | `.github/workflows/` — `benchmark.yml`, `nightly.yml`, `static-assets.yml` |
@@ -63,7 +63,71 @@ quoted outward clears `claim-verification` first.
 
 ## 3. Active traps — the part that pays
 
-Every one of these cost a wrong turn this session.
+Every one of these cost a wrong turn. The block below was re-verified by
+EXECUTION on 2026-09-02/03 — each was reproduced, not remembered — and three
+long-standing traps were fixed outright rather than documented again.
+
+**Fixed 2026-09-03, do not re-add as traps:** the suite dirtying
+`data/reference_dataset/_version.json` on every run (root cause: two helpers in
+`engine/reference_dataset.py` ignored the `dataset_root` their callers
+resolved, so a tmp-dir test wrote the real corpus); `pytest .` exiting 3
+(`norecursedirs`); and 492 live calls per run to `api.openai.com` (conftest
+clears the key — measured 492 to 0, zero failures).
+
+- **A default run takes ~40 minutes and prints NOTHING while it does.**
+  Measured 2026-09-02: `2788 passed, 50 skipped, 87 deselected, 3 xfailed,
+  2 xpassed in 2417.52s (0:40:17)`. With `-q` there is no output for the whole
+  run, so it is indistinguishable from a hang — this has been killed by a tool
+  timeout at least three times. It is NOT the network: a full run with all
+  outbound sockets blocked behaved identically. Re-time it now that the VLM
+  guard has landed; the 40:17 predates it.
+  Run it DETACHED and poll:
+  `nohup .venv/bin/python -u -m pytest -v > /tmp/pytest.log 2>&1 &`
+  `-u` matters — without it the log stays empty.
+
+- **Bare `pytest` is the SYSTEM Python 3.9, not the venv.** `which pytest` →
+  `/usr/local/bin/pytest`, shebang `#!/usr/local/opt/python@3.9/bin/python3.9`.
+  It reports `48 errors during collection` with
+  `TypeError: Unable to evaluate type annotation 'Confidence | None'` — PEP 604
+  unions 3.9 cannot parse. This reads as "the codebase is broken." It is the
+  wrong interpreter. Always `.venv/bin/python -m pytest`, or `make test`.
+
+- **The shell's `grep` silently skips gitignored files, and returns EMPTY, not
+  `0`.** It is a function wrapping `ugrep` with `--ignore-files -I`. Measured:
+  `grep -rn NGW_DEV_MODE .` misses `.env` line 18 entirely; `/usr/bin/grep`
+  finds it. The `-I` half also skips any file containing a single NUL byte —
+  that cost an hour on `skill-index/server.js`, where a literal NUL in a cache
+  key made all 178 KB invisible and led to "the gate model has no source in the
+  repo." No source file in THIS repo currently trips the NUL half. Use
+  `/usr/bin/grep` whenever the answer might live in an ignored file: `.env*`,
+  `ui/*.mjs`, `benchmarks/results/`, `*.log`.
+
+- **`.env` sets `NGW_DEV_MODE=1`, and it poisons the paywall for raw scripts.**
+  `get_optional_user` returns a dev user and `_analysis_key`
+  (`db/database.py:775`) collapses every session to `user:dev-mode`. After 3
+  requests **every** later call 402s forever, even with a fresh `session_id`,
+  because the count is keyed to the user and persists in `data/ngw_users.db`.
+  Measured with five distinct fresh session_ids: `200 200 200 402 402`. The 402
+  is about you, not the code. Use `NGW_DEV_MODE=0`, as `tests/conftest.py` does.
+  Clear a poisoned counter with
+  `delete from session_analysis_counts where session_id='user:dev-mode'`.
+  Also: `/recommend` is mounted at **root, not `/api`** (`main.py:343`).
+
+- **87 tests are invisible to a default run, and one is the accuracy gate.**
+  `addopts` deselects `stress`, `benchmark` and `slow_visual`:
+  `test_benchmark_scorecard.py` 29, `test_lighting_benchmarks.py` 21,
+  `test_benchmark_regression.py` 10, `test_benchmarks.py` 7, `test_stress.py` 7,
+  `test_debug_overlay.py` 7, `e2e/test_accuracy_screen_geometry.py` 5, and
+  **`test_corpus_accuracy_gate.py` 1**. A further 50 skip at runtime, mostly
+  `skipif(not HAS_CV2)` and "reference corpus not present" — a missing corpus
+  turns real gates into green skips. Before claiming accuracy or performance,
+  run `.venv/bin/python -m pytest -m "benchmark"` explicitly.
+
+- **`test_face_box_coordinate_space.py` reports 3 xfail and 2 XPASS, and XPASS
+  is not an error.** Narrowed 2026-09-02 from a file-level marker that made all
+  12 tests incapable of failing in either direction. Read it with `-rxX`, not
+  the dot line. If the XPASS count moves off 2, the clamp changed.
+
 
 - **OPEN QUESTION — did the seeded benchmark case survive a deploy?** One case
   was created in production on 2026-08-31 (`POST /api/lab/benchmarks/cases` →
@@ -112,17 +176,7 @@ Every one of these cost a wrong turn this session.
 - **Corpus runs take ~90s** for 33 images and the full gate ~3 minutes. Background
   them with a log file and poll; a foreground pytest run will hit the tool timeout.
 
-- **`.venv` console scripts had stale shebangs — FIXED 2026-08-29.** I first
-  recorded this as "the venv is broken." That was too broad and cost time. The
-  *interpreter* was always fine: `.venv/bin/python3` resolves to a working
-  Python 3.10.6 and every dependency imports. Only the 23 generated console
-  scripts carried `#!/Users/toddwillis/Code/ngw-core/.venv/bin/python3` — a path
-  from a repo rename — so `.venv/bin/uvicorn` died with `bad interpreter` while
-  `.venv/bin/python3 -m uvicorn` would have worked all along. Shebangs and the
-  three `activate*` scripts are rewritten; the API starts and answers on
-  `/api/health`. **If a venv script ever fails again, check the shebang before
-  concluding the environment is broken** — and prefer `.venv/bin/python3 -m <mod>`,
-  which cannot go stale.
+
 - **`input[0]` is not the first visible field on the login screen.** The username
   input lives in an animated slot that is present-and-`disabled` in every mode
   except register, rather than unmounted. A test that grabs `querySelectorAll(
@@ -186,8 +240,6 @@ Every one of these cost a wrong turn this session.
   representative. The spread is wide because image size drives it, so a
   single figure was always going to be wrong. The point it supports still
   holds: no API spend, same accuracy as the paid path.
-- **A test double that drifts from its real signature fails for the wrong reason.**
-  `_fake_describe` lacked a new kwarg and six tests failed on the signature, not behavior.
 - **One `/lab` route is public by design** — `face-preflight`. Do not copy the
   pattern to a new `/lab` route; the sweep will catch it, but know why.
 
