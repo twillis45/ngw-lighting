@@ -8,13 +8,32 @@ from __future__ import annotations
 from typing import Any, Dict
 
 # State-keyed messaging templates
+#
+# NO SOCIAL PROOF HERE, and none until it is true. Two lines were removed on
+# 2026-09-03 after the stage-8 review board found them live in the paywall:
+#
+#   "Used by photographers who want consistent results."
+#   "Photographers using NGW report 3x faster setup time."
+#
+# The second is a fabricated statistic. There are no users; nobody reported
+# anything; no measurement of setup time has ever been taken. docs/CLAIM_LEDGER.md
+# row 14 had already ruled on this class -- "Delete until true. Reinstate when a
+# named photographer agrees to be quoted" -- and the sentence was reworded
+# instead of deleted, which moved it out of the ledger's sight and INTO the
+# paywall, the one surface where a false claim is doing commercial work.
+#
+# CLAUDE.md section III (SP): never present synthetic/proxy/heuristic values as
+# human-confirmed truth. An adoption claim with no adopters is the plainest
+# possible case. Replacements describe what the product DOES, which is checkable.
+#
+# test_paywall_copy_claims_nothing_about_users.py enforces this.
 _MESSAGING: Dict[str, Dict[str, Any]] = {
     "low_value": {
         "headline":    "Understand your lighting",
         "subheadline": "Get precise setups — no more guessing what works.",
         "cta":         "Start for ${price}/mo",
         "value_frame": "exploration",
-        "proof":       "Used by photographers who want consistent results.",
+        "proof":       "Every read shows its evidence: catchlights, shadow geometry, ratios.",
         "urgency":     None,
     },
     "discovery": {
@@ -30,7 +49,7 @@ _MESSAGING: Dict[str, Dict[str, Any]] = {
         "subheadline": "Save this exact setup. Reproduce it on every shoot.",
         "cta":         "Keep This Result — ${price}/mo",
         "value_frame": "outcome",
-        "proof":       "Photographers using NGW report 3× faster setup time.",
+        "proof":       "Full blueprint: light positions, heights, power ratios, modifiers.",
         "urgency":     "Your setup is ready to save — don't lose it.",
     },
     "high_intent": {

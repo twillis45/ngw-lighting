@@ -137,7 +137,31 @@ async def create_checkout_session(
     # A tiered Price ID is opened by setting STRIPE_PRICE_ID_<PLAN>_<PERIOD>_<PT>.
     # If a caller reports a price point we cannot charge exactly, we FAIL rather
     # than fall back -- a silent fallback is the bug this replaces.
-    if body.price_point is not None and body.plan == 'pro':
+    #
+    # AMENDED 2026-09-03 after the stage-8 board probed five checkout paths and
+    # found three ways past this guard:
+    #   B  client OMITS price_point (the field is Optional) -> guard skipped,
+    #      base charged. Six of the seven startStripeCheckout() call sites in
+    #      the shipped UI pass no arguments at all, so this was the MAJORITY
+    #      path, not an edge case.
+    #   C  client sends a LOWER price_point than it displayed -> base charged.
+    #   E  plan='studio' -> the guard did not run at all.
+    # The divergence undercharges rather than overcharges, so no buyer was at
+    # risk -- but "agree by construction" was false, and it failed in exactly
+    # the way f9b9893 was written to stop: enforced only against a client that
+    # cooperates.
+    from engine.paywall.adaptive_pricing import sellable_points as _sellable
+    _rungs = _sellable(body.billing_period)
+    if body.price_point is None and len(_rungs) > 1:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                'price_point is required: more than one price rung is '
+                f'configured for {body.billing_period} ({_rungs}), so the server '
+                'cannot know which price was displayed. Refusing to guess.'
+            ),
+        )
+    if body.price_point is not None:
         _tier_env = f'STRIPE_PRICE_ID_{body.billing_period.upper()}_{body.price_point}'
         _tier_id = os.getenv(_tier_env)
         if _tier_id:

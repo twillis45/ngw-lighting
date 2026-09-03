@@ -141,3 +141,88 @@ class TestCheckoutGuardAcceptsTheBaseInBothPeriods:
         })
         assert r.status_code == 409
         assert "79" in r.text
+
+
+class TestTheBoardsFiveProbes:
+    """The stage-8 review board (2026-09-03) instrumented Session.create and
+    drove five checkout paths. Three got past the guard. These encode all five
+    so they cannot come back.
+
+      A honest monthly, sends the shown rung      -> charged that rung      OK
+      B client OMITS price_point                  -> charged base           WAS BROKEN
+      C client sends a LOWER price_point          -> charged base           WAS BROKEN
+      D yearly, honest, sends shown yearly figure -> 409, funnel dead       WAS BROKEN
+      E plan='studio'                             -> guard never ran        WAS BROKEN
+
+    B mattered most: six of the seven startStripeCheckout() call sites in the
+    shipped UI pass no arguments, so omission was the majority path.
+    """
+
+    @pytest.fixture()
+    def client(self, monkeypatch):
+        from fastapi.testclient import TestClient
+        monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_fake")
+        monkeypatch.setenv("STRIPE_PRICE_ID_MONTHLY", "price_base_39")
+        monkeypatch.setenv("STRIPE_PRICE_ID_YEARLY", "price_base_390")
+        monkeypatch.setenv("STRIPE_PRICE_ID_MONTHLY_59", "price_tier_59")
+        from main import app
+        from auth.security import get_optional_user
+        import api.routes.stripe_checkout as sc
+        monkeypatch.setattr(sc, "_ALLOWED_ORIGINS", ["https://x.test"], raising=False)
+        app.dependency_overrides[get_optional_user] = lambda: {"id": "u", "email": "u@t.local"}
+        yield TestClient(app)
+        app.dependency_overrides.pop(get_optional_user, None)
+
+    def _post(self, client, **kw):
+        body = {"billing_period": "monthly", "plan": "pro",
+                "success_url": "https://x.test/?checkout_success=1",
+                "cancel_url": "https://x.test/"}
+        body.update(kw)
+        return client.post("/api/stripe/create-checkout-session", json=body)
+
+    def test_B_omitting_price_point_is_refused_when_rungs_exist(self, client):
+        """With a 59 rung configured the server cannot know what was shown."""
+        r = self._post(client)
+        assert r.status_code == 422, (
+            f"omitted price_point was accepted ({r.status_code}); the base would "
+            f"be charged against whatever the page displayed"
+        )
+
+    def test_C_a_price_point_with_no_rung_is_refused_not_downgraded(self, client):
+        r = self._post(client, price_point=79)
+        assert r.status_code == 409
+
+    def test_E_studio_is_guarded_too(self, client):
+        """The guard used to require plan == 'pro'."""
+        r = self._post(client, plan="studio", price_point=79)
+        assert r.status_code == 409, (
+            "studio bypassed the price guard entirely"
+        )
+
+    def test_D_yearly_rung_lookup_uses_the_yearly_variable(self):
+        """sellable_points looked only at monthly vars, so configuring a rung
+        offered an annual price checkout would then refuse."""
+        import importlib, os
+        import engine.paywall.adaptive_pricing as m
+        os.environ["STRIPE_PRICE_ID_YEARLY_590"] = "price_y_590"
+        importlib.reload(m)
+        try:
+            assert 59 in m.sellable_points("yearly")
+        finally:
+            del os.environ["STRIPE_PRICE_ID_YEARLY_590"]
+            importlib.reload(m)
+
+    def test_sellable_points_actually_reads_the_environment(self, monkeypatch):
+        """test_base_is_always_sellable passes even against a function that
+        ignores its inputs entirely -- which is how the vacuous conditional
+        survived. This one fails unless the env is really consulted."""
+        import importlib
+        import engine.paywall.adaptive_pricing as m
+        monkeypatch.setenv("STRIPE_PRICE_ID_MONTHLY_79", "price_79")
+        importlib.reload(m)
+        with_rung = m.sellable_points("monthly")
+        monkeypatch.delenv("STRIPE_PRICE_ID_MONTHLY_79")
+        importlib.reload(m)
+        without = m.sellable_points("monthly")
+        assert with_rung != without, "sellable_points ignores its configuration"
+        assert 79 in with_rung and 79 not in without

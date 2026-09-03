@@ -44,17 +44,41 @@ PRICE_LADDER = [39, 49, 59, 79]
 # Stripe Price ID exists for it. Configure STRIPE_PRICE_ID_MONTHLY_49 and
 # friends to open a rung. With none set, everyone sees the base price, which is
 # what the single fixed ID charges -- display and charge agree by construction.
-def sellable_points() -> list[int]:
+def sellable_points(billing_period: str = "monthly") -> list[int]:
     """Price points backed by a real Stripe Price ID, ascending.
 
-    Always includes the ladder's base: STRIPE_PRICE_ID_MONTHLY is the one that
-    has always existed, and it is what an unconfigured rung falls back to.
+    The line that used to stand here was
+
+        points = {base} if os.getenv("STRIPE_PRICE_ID_MONTHLY") else {base}
+
+    whose branches are identical. It read as a configuration check and was
+    none: it returned the base whether Stripe was wired or not, and a test
+    (test_base_is_always_sellable) asserted that behaviour, so the suite
+    certified it. Found by the stage-8 review board on 2026-09-03, in code
+    written the same day, in the path that takes money. It is the fifth
+    can't-fail check found in this repo this week.
+
+    `billing_period` matters because the rung variables are per period. A
+    yearly checkout resolves STRIPE_PRICE_ID_YEARLY_390, not the monthly one,
+    and the first version of this looked only at monthly -- so configuring a
+    rung offered an annual price the checkout route would then refuse.
     """
     base = PRICE_LADDER[0]
-    points = {base} if os.getenv("STRIPE_PRICE_ID_MONTHLY") else {base}
+    per = (billing_period or "monthly").upper()
+    mult = 10 if per == "YEARLY" else 1
+    points = set()
     for pt in PRICE_LADDER:
-        if os.getenv(f"STRIPE_PRICE_ID_MONTHLY_{pt}"):
+        if os.getenv(f"STRIPE_PRICE_ID_{per}_{pt * mult}"):
             points.add(pt)
+    # The base rung is backed by the original un-suffixed variable, which
+    # predates the ladder entirely.
+    if os.getenv(f"STRIPE_PRICE_ID_{per}"):
+        points.add(base)
+    if not points:
+        # Stripe is not wired at all. Show the base and let checkout fail
+        # loudly with its own "not configured" error, rather than inventing a
+        # ladder over an absent integration.
+        return [base]
     return sorted(points)
 
 
