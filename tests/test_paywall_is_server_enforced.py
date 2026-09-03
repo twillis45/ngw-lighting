@@ -81,3 +81,41 @@ def test_the_shipped_client_does_not_drive_the_count():
     assert not callers, (
         f"the client drives the usage count again, which makes the free tier "
         f"opt-in for whoever edits it: {callers}")
+
+
+def test_a_rejected_request_does_not_consume_a_free_analysis(client):
+    """Ordering guard, added 2026-09-02.
+
+    Making the count server-side introduced this: the increment ran BEFORE
+    `RecommendRequest.model_validate`, so a malformed body was charged a free
+    analysis and then rejected. Six bad requests exhausted the tier, and the
+    seventh — a perfectly good one — got 402.
+
+    Commit 00c6c75 moved the increment below validation and shipped no
+    assertion about it. Worse, the same commit added conftest's
+    `_reset_analysis_counts`, which gives every test a fresh quota and so
+    guarantees the pre-existing malformed-input tests see 422 first and can
+    never surface the ordering. The fixture that made the suite honest
+    elsewhere is what hid this.
+
+    Measured with the increment moved back above validation:
+        rejected   [422,422,422,402,402,402]
+        then valid [402,402,402,402]
+    """
+    sid = "malformed-" + uuid.uuid4().hex[:10]
+
+    rejected = [
+        client.post("/recommend", json={
+            "systems": "not-a-list",
+            "metadata": {"session_id": sid}}).status_code
+        for _ in range(6)
+    ]
+    assert set(rejected) == {422}, (
+        f"malformed bodies stopped being rejected on their own terms: {rejected} "
+        "— a 402 here means the request was CHARGED before it was validated")
+
+    granted = [_analyze(client, sid) for _ in range(4)]
+    assert granted.count(200) == 3, (
+        f"after 6 REJECTED requests the session got {granted.count(200)} free "
+        f"analyses instead of 3: {granted} — invalid input is consuming the "
+        "free tier, so a client with a serialisation bug pays for it")
