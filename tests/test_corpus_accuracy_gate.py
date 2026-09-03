@@ -69,8 +69,14 @@ CORPUS = [p for p in _ALL if _expected(p)]
 #   window_soft_side  window_portrait -> short     lost
 # Net -1 exact, -1 acceptable. Those two losses are open work, not accepted
 # error: the floor goes back to 18/30 when they are recovered.
+# Re-derived 2026-09-03 under ONE scoring rule shared with the buyer-facing
+# gallery (review-board condition C5). Denominator is 32, not 33: the entry
+# mixed_light_failure has expected_pattern "unknown" and lists four common
+# patterns as acceptable, so it scored a free point on almost any answer while
+# measuring nothing. Excluded from both sides.
+#   17 of 32 exact (53.1%) · 28 of 32 acceptable (87.5%)
 BASELINE_EXACT = 17
-BASELINE_ACCEPTABLE = 29
+BASELINE_ACCEPTABLE = 28
 
 
 def test_unscoreable_entries_are_named_not_hidden():
@@ -94,13 +100,15 @@ def _truth(path):
     return meta.get("ground_truth") or {}
 
 
-def _acceptable(pattern, gt):
-    """'unknown' inside acceptable_patterns is excluded on purpose -- otherwise
-    declining to answer scores as a hit and accuracy can be faked by refusing."""
-    if pattern is None:
-        return False
-    allowed = [a for a in (gt.get("acceptable_patterns") or []) if a != "unknown"]
-    return pattern == gt.get("expected_pattern") or pattern in allowed
+# Delegated 2026-09-03 to engine/pattern_scoring.py so this gate and the
+# buyer-facing gallery score by the SAME rule -- review-board condition C5.
+#
+# The version that stood here defeated its own docstring. It filtered "unknown"
+# out of acceptable_patterns, then tested `pattern == expected_pattern` FIRST
+# and unfiltered -- so on the corpus entry whose expected_pattern IS "unknown",
+# an engine that refused to answer scored both acceptable and exact.
+from engine.pattern_scoring import (is_acceptable as _acceptable, is_exact as _exact,
+                                    is_scoreable as _scoreable)  # noqa: E402
 
 
 @pytest.mark.skipif(not CORPUS, reason="reference corpus not present")
@@ -128,8 +136,16 @@ def test_full_corpus_accuracy_holds_baseline():
     regressions = []
     for path in CORPUS:
         gt = _truth(path)
+        # An entry whose expected_pattern is itself "unknown" has no correct
+        # answer to give -- mixed_light_failure lists unknown, flat, rembrandt,
+        # loop and split as acceptable, so it passes on almost anything and was
+        # contributing a free point to the numerator. It is not an accuracy
+        # measurement; it is a record that the photograph cannot be read.
+        # Excluded from BOTH sides, so the ratio means what it says.
+        if not _scoreable(gt):
+            continue
         pattern = analyze_image(path, run_vlm=False).authoritative_pattern
-        if pattern == gt.get("expected_pattern"):
+        if _exact(pattern, gt):
             exact += 1
         if _acceptable(pattern, gt):
             acceptable += 1

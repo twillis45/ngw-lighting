@@ -69,6 +69,11 @@ def _verdict(meta: Dict[str, Any], signals: Optional[Dict[str, Any]],
     Returns the comparison honestly: `match` is None when we have no stored read
     rather than defaulting to a pass. An absent result is not a passing one.
     """
+    # Scored by engine/pattern_scoring.py, the SAME module the corpus gate
+    # uses -- review-board condition C5. This route used to build `acceptable`
+    # with no "unknown" filter at all, while the gate filtered it, so the number
+    # a buyer read and the number engineering defended came from different
+    # rules over different corpora and nothing tied them together.
     gt = meta.get("ground_truth") or {}
     expected = gt.get("expected_pattern")
     acceptable = gt.get("acceptable_patterns") or ([expected] if expected else [])
@@ -92,12 +97,17 @@ def _verdict(meta: Dict[str, Any], signals: Optional[Dict[str, Any]],
     if read_pattern is None:
         return {"expected": expected, "read": None, "match": None,
                 "note": "no stored read for this entry"}
+    from engine.pattern_scoring import is_acceptable, is_exact, is_scoreable
     return {
         "expected": expected,
         "read": read_pattern,
         "confidence": read_confidence,
-        "match": read_pattern in acceptable,
-        "exact": read_pattern == expected,
+        "match": is_acceptable(read_pattern, gt),
+        "exact": is_exact(read_pattern, gt),
+        # False for an entry whose ground truth is itself "unknown": there is
+        # no correct answer to give, so counting it measures nothing. Callers
+        # must keep it out of BOTH sides of the ratio.
+        "scoreable": is_scoreable(gt),
     }
 
 
@@ -128,7 +138,14 @@ def list_gallery() -> Dict[str, Any]:
             "verdict": _verdict(meta, signals, _read_json(d / "resolved.json")),
         })
 
-    scored = [i for i in items if i["verdict"]["match"] is not None]
+    # Two exclusions, both on purpose:
+    #   match is None      -> no stored read; an absent result is not a pass
+    #   scoreable is False -> ground truth is itself "unknown", so there is no
+    #                         correct answer and the entry measures nothing.
+    #                         It was previously counted and passed on almost
+    #                         any answer, inflating hits by one.
+    scored = [i for i in items
+              if i["verdict"]["match"] is not None and i["verdict"].get("scoreable", True)]
     hits = sum(1 for i in scored if i["verdict"]["match"])
     exact = sum(1 for i in scored if i["verdict"].get("exact"))
     return {
