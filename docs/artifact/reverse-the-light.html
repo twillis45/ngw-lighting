@@ -118,6 +118,26 @@ button.hidedone:focus-visible{outline:2px solid var(--key);outline-offset:2px}
   margin:14px 0 0;min-height:15px}
 
 /* ── marketing phases ────────────────────────────────────── */
+/* The phase cards below are STATIC markup and reuse the spine's .stage chrome.
+   `.phase` is kept on them because the track has to be legible in the source,
+   but the older .phase rule further down is a two-column grid built for a
+   layout that no longer exists — reset it here rather than delete a rule other
+   pages may still be modelled on. */
+#phases .phase{display:block;padding:0;gap:0;margin:0 0 22px}
+#phases .phase > h3,#phases .allclear,#phases .pexit{max-width:none}
+#phases .allclear{padding:10px 16px 0}
+#phases .pexit{margin:0;padding:11px 16px 14px}
+ul.phitems{list-style:none;margin:0;padding:0}
+/* .it is display:grid, which outranks the UA [hidden] rule. */
+#phases .it[hidden]{display:none!important}
+#phases .ttl{min-width:0}
+#phases .tag{white-space:normal;overflow-wrap:anywhere}
+#phases .allclear[hidden]{display:none}
+.it.constraint .mk{color:var(--struck)}
+.pexit{border-top:1px solid var(--rule);padding-top:10px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.pexit b{display:block;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:3px;font-weight:700}
+
 .ph{display:flex;flex-direction:column;gap:14px}
 .phase{background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:20px 22px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
@@ -201,7 +221,7 @@ a{color:var(--key)}
 <section>
   <h2>Path to production</h2>
   <p class="h2sub">10-stage spine × tracks · tick to record · <span id="scope">build + promotion</span></p>
-  <p>Stages come from the house methodology: <strong>Idea → Scope → Build → Verify → Security → Deploy → Observe → Maintain → Promotion → Sunset</strong>. Two tracks run <em>alongside</em> the spine, never inside it: <strong>build</strong> and <strong>marketing &amp; promotion</strong>. The marketing track has its own governing rule, recorded at stage 2 — <em>promotion readiness is gated by payment capability, not build state</em> — which is why most of it sits behind one blocker rather than spread across the quarter. An item is ticked only when something checkable says so — a passing gate, a measured number, a screenshot on a real device.</p>
+  <p>Stages come from the house methodology: <strong>Idea → Scope → Build → Verify → Security → Deploy → Observe → Maintain → Promotion → Sunset</strong>. Two tracks run <em>alongside</em> the spine, never inside it: <strong>build</strong>, and the <strong>marketing</strong> roadmap below. The marketing track has its own governing rule, recorded at stage 2 — <em>promotion readiness is gated by payment capability, not build state</em> — which is why most of it sits behind one blocker rather than spread across the quarter. An item is ticked only when something checkable says so — a passing gate, a measured number, a screenshot on a real device.</p>
   <p class="st-legend">
     <span><span class="mk passed">&#10003;</span> Recorded — passed</span>
     <span><span class="mk skipped">&ndash;</span> Recorded — skipped</span>
@@ -231,7 +251,55 @@ a{color:var(--key)}
   <p><strong>Each phase exits on a condition, not a date.</strong> The governing rule sits above all four —
   <em>promotion readiness is gated by payment capability, not build state</em> — so phase 3 blocks everything
   after it however finished the product looks.</p>
-  <div id="phases"></div>
+  <p><strong>The exit condition is what the phase waits on; the items are what has actually happened.</strong>
+  A row recorded <strong>NOT RUN</strong> or owed is never hidden by &ldquo;Hide completed&rdquo; and is not the
+  same as completing it — <strong>producing the asset a test needs is not running the test</strong>, which is why
+  phase 2 is the most-skipped phase in the doctrine. Rows marked &uarr; are findings that constrain this phase
+  and are ticked in the build track above; they open no second box here.</p>
+  <div id="phases">
+      <div class="phase stage" data-ph="1"><h3><span class="n">01</span><span>Say only what is proven</span><span class="st">0/4</span></h3>
+      <p class="allclear" hidden>All 4 recorded — nothing open here.</p>
+        <ul class="phitems">
+          <li class="it" data-k="m1a" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — Buyer bench named, with a canary seat"></button><div class="tx"><div class="ttl">Buyer bench named, with a canary seat</div><p class="n">20 archetypes. The Working Photographer is this bench's canary — a commercial shooter who buys tools, is not impressed, and closes the tab. If a read does not survive that seat, the segment does not matter.</p></div></li>
+          <li class="it" data-k="m1b" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — Acquisition thesis stated: the proof page is the front door"></button><div class="tx"><div class="ttl">Acquisition thesis stated: the proof page is the front door</div><p class="n">Every competitor in this category asks to be trusted. The only asset that cannot be argued with is 29 scored reads against recorded expected patterns, misses visible. If that page does not convince, no landing copy rescues it.</p></div></li>
+          <li class="it" data-k="m2a" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — Claim ledger stands between copy and the buyer"></button><div class="tx"><div class="ttl">Claim ledger stands between copy and the buyer</div><p class="n">docs/CLAIM_LEDGER.md. 14 claims, each paired with the executed check that proves it. Copy ships only against a PROVEN or PARTIAL row.</p></div></li>
+          <li class="it" data-k="m2b" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — EXIT 1 — zero FALSE claims shipping"></button><div class="tx"><div class="ttl">EXIT 1 — zero FALSE claims shipping</div><p class="n">MET 2026-08-27. Two were live: "Nail the shot, every time" (the first sentence a visitor read, contradicted by our own proof page two taps away) and "Trusted by photographers who care about light" (there are no users). Both reworded. "Verified by hand" reworded to what provenance supports — 32 of 34 entries carry a placeholder string, not a person.</p></div></li>
+          <li class="it constraint"><span class="mk skipped" title="Recorded in the build track above — no second box here" aria-label="Constraint, recorded elsewhere">&uarr;</span><div class="tx"><div class="ttl">C4 — the claim ledger is stale, and one PROVEN row is false (blocks stage 9)<span class="tag blocked">constraint</span></div><p class="n">Recorded by the stage-8 board, 2026-09-03. CLAIM_LEDGER.md is stale in six places and false in row 2, and claim-verification was NOT RUN this gate despite the ledger&#39;s own rule that it be rebuilt before copy ships. Nothing in the ledger was re-checked. That is a marketing fact before it is an engineering one: exit 1 is &ldquo;zero FALSE claims shipping&rdquo;, and the instrument that would prove it is itself unverified. Ticked in the build track at stage 8 — no second box here.</p></div></li>
+        </ul>
+      <p class="pexit"><b>Exit condition</b>Zero FALSE claims shipping. Every sentence a buyer reads is paired with the executed check that proves it.</p>
+      </div>
+      <div class="phase stage" data-ph="2"><h3><span class="n">02</span><span>Make the proof reachable</span><span class="st">0/4</span></h3>
+      <p class="allclear" hidden>All 4 recorded — nothing open here.</p>
+        <ul class="phitems">
+          <li class="it" data-k="m2c" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — Positioning wedge recorded: reverse, not forward"></button><div class="tx"><div class="ttl">Positioning wedge recorded: reverse, not forward</div><p class="n">They simulate a room you have not shot; we read a photograph that exists. Different buyer moment, different failure mode — and ours has no simulation to fall back on, so correctness IS the product.</p></div></li>
+          <li class="it" data-k="m9a" data-done="0"><button class="box rec" role="checkbox" aria-checked="true" disabled title="Recorded from the gate record: passed" aria-label="Recorded — passed — Proof reachable without an account"></button><div class="tx"><div class="ttl">Proof reachable without an account</div><p class="n">The accuracy screen sits outside the Studio login gate, entered from "See how accurate it is first →". Verified signed-out on an iPhone 17 Pro Max and in production. Gating the proof behind the signup it exists to justify is circular.</p></div></li>
+          <li class="it" data-k="m9b" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9b" aria-label="EXIT 2 — reachable from OUTSIDE the product"></button><div class="tx"><div class="ttl">EXIT 2 — reachable from OUTSIDE the product<span class="tag blocked">gap</span></div><p class="n">NOT MET. A person who has never signed in must reach the scored reads from a link that is not inside the app. Today nothing external points at it, so the strongest asset we own is invisible to anyone not already using the product.</p></div></li>
+          <li class="it" data-k="m9c" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9c" aria-label="Skin-tone range visible in the proof set"></button><div class="tx"><div class="ttl">Skin-tone range visible in the proof set<span class="tag blocked">blocked</span></div><p class="n">BLOCKED, and this was under-scored as "1 day, curation". 23 of 34 references are monochrome or near-monochrome, and the estimator is luma-based so it reads underexposure as pigmentation. Needs sourced colour references and human tone labels — acquisition, not curation.</p></div></li>
+        </ul>
+      <p class="pexit"><b>Exit condition</b>The proof is reachable from OUTSIDE the product — by someone who has never signed in, from a link that is not inside the app.</p>
+      </div>
+      <div class="phase stage" data-ph="3"><h3><span class="n">03</span><span>Be able to take a payment</span><span class="st">0/3</span></h3>
+      <p class="allclear" hidden>All 3 recorded — nothing open here.</p>
+        <ul class="phitems">
+          <li class="it" data-k="m9d" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9d" aria-label="EXIT 3 — Stripe live on the LLC, one settled transaction"></button><div class="tx"><div class="ttl">EXIT 3 — Stripe live on the LLC, one settled transaction<span class="tag blocked">gap</span></div><p class="n">HALF MET 2026-08-27. A new standalone account is LIVE under No Guesswork Systems LLC — not the legacy livemode:false "Toddwillisphoto" account, and deliberately outside any organization, since an org is a container for multiple entities and there is one. Configured: category Apps, Radar Standard, Climate off, 2FA on, statement descriptor prefix NOGUESSWRK (leaving 10 characters for a per-brand suffix). Nothing copied from sandbox — a clean account was the whole reason for not reusing the old one. STILL OPEN: no transaction has settled, which is the other half of this condition, and it waits on m9e (the pricing ladder) before a Product can honestly be priced.</p></div></li>
+          <li class="it" data-k="m9e" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9e" aria-label="Pricing ladder rebuilt on a real value metric"></button><div class="tx"><div class="ttl">Pricing ladder rebuilt on a real value metric</div><p class="n">OPEN, and now the critical path — Stripe no longer blocks it. "Deep Read" was struck: the VLM changes no answers on 34/34, so it sold latency. Narrowed 2026-09-04 by measuring what the paid tiers can actually DELIVER: 13 of 17 plan-gated routes have no surface in the shipped bundle, so Studio cannot be priced at all yet and VOLUME is the only axis that meters. Perpetual license remains the strongest remaining candidate now that CV-only is proven to cost ~$0 to serve — and it is a volume-free framing, which is the one thing the product can honestly support today.</p></div></li>
+          <li class="it" data-k="m9f" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9f" aria-label="Pricing page quotes the strict number beside the generous one"></button><div class="tx"><div class="ttl">Pricing page quotes the strict number beside the generous one</div><p class="n">OPEN, follows m9e and m2a. 15 of 29 exact must appear next to 27 of 29 acceptable. Quoting only the second is the lie of omission the gallery route already refuses to make.</p></div></li>
+          <li class="it constraint"><span class="mk skipped" title="Recorded in the build track above — no second box here" aria-label="Constraint, recorded elsewhere">&uarr;</span><div class="tx"><div class="ttl">C1 closed, C2 case C open — the price a buyer is charged (conditions precedent to Stripe)<span class="tag blocked">constraint</span></div><p class="n">Recorded by the stage-8 board. C1 CLOSED 2026-09-03: /api/paywall/adaptive-pricing returned price_point 79 to an anonymous caller who supplied session_max_price=79; fixed and verified live, 0/59/79 all return 39. C2 CASE C STILL OPEN: a client can send a price_point LOWER than the one it displayed and be charged that. The board ruled both conditions precedent to Stripe activation, which is this phase&#39;s exit — flipping that key converts every finding into an invoice. Ticked in the build track at stage 8 — no second box here.</p></div></li>
+        </ul>
+      <p class="pexit"><b>Exit condition</b>Stripe live on the LLC and one settled transaction, against a pricing ladder built on a value metric the product can actually deliver.</p>
+      </div>
+      <div class="phase stage" data-ph="4"><h3><span class="n">04</span><span>One cohort, one channel, one asset</span><span class="st">0/5</span></h3>
+      <p class="allclear" hidden>All 5 recorded — nothing open here.</p>
+        <ul class="phitems">
+          <li class="it" data-k="m4a" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m4a" aria-label="A working photographer says the setup is shootable"></button><div class="tx"><div class="ttl">A working photographer says the setup is shootable<span class="tag blocked">gap</span></div><p class="n">NEVER RUN. Gate Zero G0.14: five commercial shooters, three outputs each, none calling it impractical. This is the check the entire product rests on and it has no result.</p></div></li>
+          <li class="it" data-k="m4b" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m4b" aria-label="Read against photographs we did not choose"></button><div class="tx"><div class="ttl">Read against photographs we did not choose<span class="tag blocked">gap</span></div><p class="n">NEVER RUN. Gate Zero G0.15. Every accuracy number to date comes from a 34-image corpus we assembled ourselves. 20 photographer-supplied frames, scored blind against their own account of the setup.</p></div></li>
+          <li class="it" data-k="m9g" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9g" aria-label="Ten strangers can say what this does in ten seconds"></button><div class="tx"><div class="ttl">Ten strangers can say what this does in ten seconds<span class="tag blocked">gap</span></div><p class="n">NEVER RUN. Gate Zero G0.1. The protocol is written; the strangers do not exist. Until then the wedge is our sentence, not theirs.</p></div></li>
+          <li class="it" data-k="m9h" data-done="0"><button class="box" role="checkbox" aria-checked="false" data-k="m9h" aria-label="One channel, one asset — a single read broken down, misses included"></button><div class="tx"><div class="ttl">One channel, one asset — a single read broken down, misses included</div><p class="n">OPEN. Not a campaign. The bench names 20 archetypes and no channel; pick the canary seat and ship one breakdown of one reference read.</p></div></li>
+          <li class="it" data-k="m10a" data-done="0"><button class="box" role="checkbox" aria-checked="false" disabled title="Stage not yet entered" aria-label="Locked — EXIT 4 — a named first cohort, before any broad push"></button><div class="tx"><div class="ttl">EXIT 4 — a named first cohort, before any broad push<span class="tag blocked">gap</span></div><p class="n">promote-surface treats the second user as the moment every assumption made for one user becomes a defect. A named cohort is reversible; a public launch is not. No broad push until a photographer who is not us has said the setup is shootable.</p></div></li>
+        </ul>
+      <p class="pexit"><b>Exit condition</b>A named first cohort, before any broad push. Continuous, not terminal: when it stops being true, the push stops.</p>
+      </div>
+  </div>
 </section>
 
 <section>
@@ -462,6 +530,31 @@ function isDone(i){return i.rec==='passed'||i.na||(!i.lock&&!!STATE.done[i.k]);}
 function isOwed(i){return !!i.rec && i.rec!=='passed' && !i.na;}
 function pct(){return{t:ITEMS.length,d:ITEMS.filter(isDone).length};}
 
+var BYK={}; ITEMS.forEach(function(i){BYK[i.k]=i;});
+/* Sync the static phase rows with STATE. Rows without a data-k are CONSTRAINT
+   pointers — findings whose box lives in the build track — so they are counted
+   nowhere and hidden never. */
+function renderPhases(){
+  var hd=!!STATE.hideDone;
+  Array.prototype.forEach.call(document.querySelectorAll('#phases .phase'),function(card){
+    var rows=card.querySelectorAll('.it[data-k]'), dn=0, shown=0;
+    Array.prototype.forEach.call(rows,function(row){
+      var i=BYK[row.dataset.k]; if(!i) return;
+      var done=isDone(i);
+      if(done) dn++;
+      row.setAttribute('data-done', done?'1':'0');
+      var box=row.querySelector('.box[data-k]');
+      if(box) box.setAttribute('aria-checked', done?'true':'false');
+      /* Section 6: a NOT RUN / owed row stays visible however it is ticked. */
+      var hide = hd && done && !isOwed(i);
+      row.hidden=hide;
+      if(!hide) shown++;
+    });
+    var st=card.querySelector('.st'); if(st) st.textContent=dn+'/'+rows.length;
+    var ac=card.querySelector('.allclear'); if(ac) ac.hidden = shown>0;
+  });
+}
+
 function render(){
   var tr=STATE.track||'all';
   document.getElementById('scope').textContent = tr==='b'?'build':tr==='m'?'marketing & promotion':'build + marketing';
@@ -505,30 +598,12 @@ function render(){
   });
   document.getElementById('stages').innerHTML=html;
 
-  // Marketing phases — same items, grouped by the roadmap rather than the spine.
-  var PH=[[1,'Say only what is proven'],[2,'Make the proof reachable'],
-          [3,'Be able to take a payment'],[4,'One cohort, one channel, one asset']];
-  var ph='';
-  PH.forEach(function(pp){
-    var all=ITEMS.filter(function(i){return i.ph===pp[0];});
-    if(!all.length) return;  /* every stage has items; none are hidden */
-    var dn=all.filter(isDone).length;
-    var its = hd ? all.filter(function(i){return !isDone(i)||isOwed(i);}) : all;
-    var state = dn===all.length ? 'met' : dn ? 'part' : 'blocked';
-    ph+='<div class="stage"><h3><span class="n">0'+pp[0]+'</span><span>'+pp[1]+'</span>'+
-        '<span class="st">'+dn+'/'+all.length+'</span></h3>';
-    if(!its.length) ph+='<p class="allclear">All '+all.length+' recorded — nothing open here.</p>';
-    its.forEach(function(i){
-      var done=isDone(i)?1:0;
-      ph+='<div class="it" data-done="'+done+'">'+ control(i,done)+
-        '<div class="tx"><div class="ttl">'+esc(i.t)+
-          (i.tag==='gap'?'<span class="tag blocked">gap</span>':'')+
-          (i.bl?'<span class="tag blocked">blocked</span>':'')+
-        '</div><p class="n">'+esc(i.n||'')+'</p></div></div>';
-    });
-    ph+='</div>';
-  });
-  var pel=document.getElementById('phases'); if(pel) pel.innerHTML=ph;
+  /* The four marketing phases are STATIC markup in the section above, not built
+     here. path-artifact step 3: a page whose cards are built by script fails
+     silently and completely if the script throws, and reading the source will
+     not tell you. The track that exists to catch unverified claims should not
+     itself be a claim about a DOM nobody can read. This only keeps them in sync. */
+  renderPhases();
   var p=pct();
   document.getElementById('bar').style.width=(p.t?Math.round(p.d/p.t*100):0)+'%';
   document.getElementById('cnt').textContent=p.d+' / '+p.t+' closed';
@@ -565,12 +640,14 @@ document.getElementById('hidedone').addEventListener('click',function(){
   }catch(e){/* private window or blocked storage — the toggle still works */}
 });
 
-document.getElementById('stages').addEventListener('click',function(e){
+function boxClick(e){
   var b=e.target.closest('.box'); if(!b) return;
-  var k=b.dataset.k;
+  var k=b.dataset.k; if(!k) return;
   if(STATE.done[k]) delete STATE.done[k]; else STATE.done[k]=1;
   render(); persist();
-});
+}
+document.getElementById('stages').addEventListener('click',boxClick);
+document.getElementById('phases').addEventListener('click',boxClick);
 Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){
   b.addEventListener('click',function(){STATE.track=b.dataset.tr;render();persist();});
 });
