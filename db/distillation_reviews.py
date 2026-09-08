@@ -92,6 +92,13 @@ def init_distillation_reviews_table() -> None:
                 rationale       TEXT,
                 notes           TEXT,
 
+                -- setup_family was added by scripts/migrate_setup_family_column.py
+                -- and never made it into this CREATE TABLE, so every FRESH database
+                -- was one column short and only the migration could fix it. Added
+                -- here 2026-09-08; the migration stays for databases that predate it,
+                -- since ADD COLUMN is what an existing table needs.
+                setup_family    TEXT NULL DEFAULT NULL,
+
                 -- Audit timestamps.
                 created_at      REAL NOT NULL,
                 updated_at      REAL NOT NULL

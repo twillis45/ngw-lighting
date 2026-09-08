@@ -1,0 +1,24 @@
+# Test-only dependencies. Pinned, for the same reason requirements.txt is:
+# tests/test_requirements_are_pinned.py scans this file too.
+#
+# WHY THIS FILE EXISTS. On 2026-09-03 two sound changes landed the same day:
+#
+#   1. requirements-lock.txt was DELETED. It was locking the wrong set — it
+#      omitted stripe, python-jose, passlib and more — so deleting it was
+#      right. But it was ALSO the only file that named pytest.
+#   2. tests.yml was added, on the stage-8 board's highest-risk finding, with
+#      an Install step of `pip install -r requirements.txt`.
+#
+# Neither change was wrong. Together they produced a CI workflow that has
+# NEVER passed: every run since — 5 on main and 1 on a PR — died at
+# "No module named pytest" before collecting a single test. The board's
+# highest-risk finding was that nothing automatic ran the tests, and the fix
+# for it did not run them either, for five days, with nobody looking.
+#
+# pytest's own dependencies were in requirements.txt the whole time —
+# iniconfig, pluggy, tomli, Pygments, exceptiongroup — which is what made it
+# invisible: the install log looked like pytest was being installed.
+#
+# NOT merged into requirements.txt on purpose: the Dockerfile installs that
+# file, and a test runner has no business in the production image.
+pytest==8.4.2
