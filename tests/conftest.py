@@ -1,5 +1,6 @@
 """Global pytest configuration — sets required env vars before any app import."""
 import os
+from pathlib import Path
 
 # Must be set before main.py / auth/security.py is imported, otherwise the
 # RuntimeError("NGW_JWT_SECRET is not set...") fires at collection time.
@@ -50,6 +51,44 @@ for _k in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
 # sees 429s. Nothing was wrong with the endpoint or the test — the suite was
 # simply not isolated, which is why it had never been runnable clean.
 import pytest
+
+
+# ── The schema has to exist, and nothing was creating it ─────────────────────
+# Found 2026-09-08, the first time this suite ever ran in CI. 19 tests failed
+# with `sqlite3.OperationalError: no such table: admin_changelog` (also
+# image_ground_truth, feedback_aggregates, benchmark_baselines) and
+# `table gold_set_entries has no column named setup_family`.
+#
+# WHY IT PASSED FOR FIVE MONTHS ON ONE MACHINE. main.py creates every table in
+# its startup handler. But `TestClient(app)` built at MODULE level — which
+# test_admin.py, test_lab.py and others do — never fires that handler; only
+# `with TestClient(app)` does. So the suite never created the schema. It
+# passed anyway wherever data/ngw_users.db already existed from having RUN the
+# app, and failed on any fresh checkout. Deleting the local db reproduces all
+# 19 immediately.
+#
+# That is the same defect as a test asserting a path only one laptop has, and
+# it stayed invisible because CI could not start: tests.yml installed no
+# pytest, so nothing ever ran these on a clean disk.
+#
+# This mirrors main.py's startup block rather than inventing a fixture schema —
+# a test-only CREATE TABLE would drift from production silently, which is the
+# failure one layer along.
+@pytest.fixture(scope="session", autouse=True)
+def _create_schema():
+    from db.database import init_db
+    from db.benchmark import init_benchmark_tables
+    from db.benchmark_baseline import init_baseline_tables
+    from db.signals import init_signals_tables, seed_signals
+    from db.experiments import init_experiments_tables
+
+    Path("data").mkdir(parents=True, exist_ok=True)
+    init_db()
+    init_benchmark_tables()
+    init_baseline_tables()
+    init_signals_tables()
+    seed_signals()          # no-op if rows already exist
+    init_experiments_tables()
 
 
 @pytest.fixture(autouse=True)

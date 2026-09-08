@@ -101,6 +101,15 @@ class TestCheckoutGuardAcceptsTheBaseInBothPeriods:
         # another way these assertions could pass without reaching the guard.
         import api.routes.stripe_checkout as sc
         monkeypatch.setattr(sc, "_ALLOWED_ORIGINS", ["https://x.test"], raising=False)
+        # PRICE_IDS is built from os.getenv at MODULE IMPORT time, so the
+        # setenv calls above never reach it -- the module was already imported
+        # by the time this fixture ran. Before 2026-09-08 this test passed only
+        # where a real .env supplied STRIPE_PRICE_ID_MONTHLY before import, and
+        # returned 400 "No Stripe Price ID configured" anywhere else, including
+        # every CI runner. Patch the resolved table, the same way
+        # _ALLOWED_ORIGINS is patched two lines up.
+        monkeypatch.setitem(sc.PRICE_IDS["pro"], "monthly", "price_fake_monthly")
+        monkeypatch.setitem(sc.PRICE_IDS["pro"], "yearly", "price_fake_yearly")
         app.dependency_overrides[get_optional_user] = lambda: {
             "id": "price-guard-test-user", "email": "guard@test.local",
         }
