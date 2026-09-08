@@ -41,6 +41,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # requirements-dev.txt carries pytest. Without this line the next
+          # step dies at "No module named pytest" before collecting a single
+          # test — which is what every run of this workflow did from the day
+          # it was added until 2026-09-08.
+          pip install -r requirements-dev.txt
 
       - name: Run the suite
         env:

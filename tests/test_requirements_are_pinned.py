@@ -23,7 +23,12 @@ from pathlib import Path
 
 import pytest
 
-REQ = Path("requirements.txt")
+# Both files, not just the deployed one. requirements-dev.txt was added
+# 2026-09-08 to carry pytest, and a second requirements file that escapes this
+# gate is precisely the failure the docstring above describes: a file whose
+# name asserts reproducibility while nothing checks it.
+REQ_FILES = [Path("requirements.txt"), Path("requirements-dev.txt")]
+REQ = REQ_FILES[0]
 
 # A requirement line, ignoring blanks, comments and inline comments -- the
 # comment case is not incidental: a scanner in this repo went false-green on
@@ -32,16 +37,19 @@ _FLOAT = re.compile(r"^\s*([A-Za-z0-9_.\-]+)(\[[^\]]+\])?\s*(>=|>|~=)\s*", )
 
 
 def _requirement_lines():
-    for i, raw in enumerate(REQ.read_text().splitlines(), 1):
-        line = raw.split("#", 1)[0].strip()
-        if line:
-            yield i, line
+    for path in REQ_FILES:
+        if not path.exists():
+            continue
+        for i, raw in enumerate(path.read_text().splitlines(), 1):
+            line = raw.split("#", 1)[0].strip()
+            if line:
+                yield f"{path}:{i}", line
 
 
 def test_no_requirement_floats():
     floating = [(i, l) for i, l in _requirement_lines() if _FLOAT.match(l)]
     assert not floating, "unpinned requirements (re-resolved on every deploy):\n" + "\n".join(
-        f"  requirements.txt:{i}  {l}" for i, l in floating
+        f"  {i}  {l}" for i, l in floating
     )
 
 
@@ -51,7 +59,7 @@ def test_every_requirement_is_pinned_with_double_equals():
         if "==" not in l and not l.startswith("-")
     ]
     assert not unpinned, "requirements without an == pin:\n" + "\n".join(
-        f"  requirements.txt:{i}  {l}" for i, l in unpinned
+        f"  {i}  {l}" for i, l in unpinned
     )
 
 
