@@ -81,3 +81,16 @@ certs/*.pem
 /ui/Users/
 # Review screenshots live here by convention and are not versioned.
 /review-artifacts/
+
+# L2, 2026-09-08. 532 third-party photographs under tests/reference images/,
+# in directories named for the photographers they were scraped from (Herb
+# Ritts, Patrick Demarchelier, Steven Klein, Mert Alas & Marcus Piggott,
+# Steven Meisel, Greg Kadel, Richard Avedon). No provenance or licence exists
+# for any of them, including the ten at the top level — four are named Steven
+# Meisel and the rest are download artifacts (1024.webp, Unknown.jpeg, _.jpeg).
+# Dockerfile:23 is `COPY . .`, so they also shipped in the image.
+#
+# NOTE, and it is the whole reason this comment is long: ignoring does NOT
+# untrack. These were committed, so `git rm --cached` is what removes them,
+# and this entry only stops them coming back.
+tests/reference images/

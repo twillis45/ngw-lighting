@@ -32,3 +32,8 @@ static/uploads/
 # Docs / scripts (not needed at runtime)
 docs/
 scripts/
+
+# L2, 2026-09-08. Dockerfile:23 is `COPY . .`, so 532 scraped third-party
+# photographs under tests/reference images/ were shipped into the image and
+# served from Render. data/uploads/ was already excluded here; this was not.
+tests/reference images/
