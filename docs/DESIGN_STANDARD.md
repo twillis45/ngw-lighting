@@ -2,7 +2,7 @@
 
 > **Permanent rule of the road.** Part of the master system.
 > Referenced in CLAUDE.md.
-> Last updated: 2026-04-28
+> Last updated: 2026-09-10 (Rule 0 model tiers; body unchanged since 2026-04-28)
 
 ---
 
@@ -15,20 +15,50 @@ MODEL: <model name and version>
 WHY: <one sentence — why this model is appropriate for this specific task>
 ```
 
-**NGW model tiers:**
+**NGW model tiers — refreshed September 10, 2026.** This table previously named Sonnet 4.5 and
+Opus 4.1, both retired. The 8/15/2026 brand audit flagged it as stale and it stayed stale for
+26 days, which is the argument for dating a table rather than trusting it.
 
 | Model | Role |
 |-------|------|
-| **Sonnet 4.5** | Default execution model — implementation, mechanical parity, visual verification, routine fixes |
-| **Opus 4.1** | Escalation model — flagship direction, iconic visual language, creative direction, any task where weak taste or weak strategic judgment would create expensive downstream mediocrity |
+| **Sonnet 5** | Default execution — implementation, mechanical parity, visual verification, routine fixes |
+| **Opus 5** | Escalation — flagship direction, iconic visual language, creative direction, any task where weak taste or weak strategic judgment would create expensive downstream mediocrity |
+| **Fable 5.1** | Reserved. The most capable model available, for the hardest reasoning and long-horizon work. Priced above the Opus tier, so it is a deliberate spend, not a default |
+| **Haiku 4.5** | Bulk and subagent work where no judgment call is open |
 
-Escalate to Opus 4.1 when: the task sets visual language, defines direction other work will follow, judges iconic potential, makes creative direction calls, or produces output that will be hard or costly to reverse if the taste call is wrong.
+Escalate to Opus 5 when: the task sets visual language, defines direction other work will
+follow, judges iconic potential, makes creative direction calls, or produces output that will be
+hard or costly to reverse if the taste call is wrong.
 
-Stay on Sonnet 4.5 when: the task is mechanical execution of an already-locked direction, a spacing/copy fix, a parity check, or a validation pass with no open creative judgment calls.
+Stay on Sonnet 5 when: the task is mechanical execution of an already-locked direction, a
+spacing/copy fix, a parity check, or a validation pass with no open creative judgment calls.
 
-This applies to: design critiques, Figma passes, social object design, export format work, creative direction, visual reviews, parity passes, and any task producing visible output judgment.
+**A second lever now exists, and the rule is weaker without it.** Current models take an
+`effort` setting — `low` / `medium` / `high` / `xhigh` / `max` — which controls reasoning depth
+independently of which model runs. `high` is the default. Guidance from the current API
+reference: `xhigh` suits most coding and agentic work; `max` when correctness matters more than
+cost; `low` for subagents and simple tasks.
 
-The model declaration is not boilerplate. It is a forcing function: if you cannot justify Sonnet for a direction task, use Opus.
+That changes what this rule is asking. Two dials, not one:
+
+| The task | Model | Effort |
+|---|---|---|
+| Mechanical execution of a locked direction | Sonnet 5 | `low`–`medium` |
+| Normal design work with judgment in it | Opus 5 | `high` |
+| Setting a visual language others will follow | Opus 5 | `xhigh`–`max` |
+| A taste call that would be expensive to reverse | Opus 5 or Fable 5.1 | `max` |
+
+Lower effort on a newer model frequently beats high effort on an older one, so **reaching for a
+bigger model is not automatically the stronger move** — raising effort on the one already chosen
+often is, and it costs less.
+
+This applies to: design critiques, Figma passes, social object design, export format work,
+creative direction, visual reviews, parity passes, and any task producing visible output
+judgment.
+
+The declaration is not boilerplate. It is a forcing function: if you cannot justify Sonnet for a
+direction task, use Opus — and now, state the effort too, because "Opus 5 at `low`" and "Opus 5
+at `max`" are different instruments and the declaration should say which one ran.
 
 ---
 
