@@ -20,13 +20,15 @@ export const accent = (a) => `rgba(200,155,69,${a})`;
 
 // ─── Warm / Dusty Bronze tokens (Figma canonical Tier 1 attention) ──────────
 // Figma palette 1318:2 section "ACCENT — WARM". Dusty Bronze replaces pure gold
-// for cinematic teal-and-orange grading. Use for KEY arrows, modifier silhouettes,
-// hero CTA gradients, ACTIVE chips, readout numerals — anywhere Tier 1 attention
-// is needed.  The existing `accent()` amber gold remains for backward compat;
-// new work should prefer `warm()` and WARM_* constants.
+// for cinematic teal-and-orange grading.
 //
-// Migration: screens will transition from `accent()`/KEY_ACCENT to `warm()`/
-// WARM_PRIMARY over successive passes. Both coexist safely.
+// AMENDED 2026-09-11 — this block used to read "KEY arrows, modifier
+// silhouettes, hero CTA gradients, ACTIVE chips, readout numerals — anywhere
+// Tier 1 attention is needed", and to say the two accents "coexist safely".
+// Measurement says otherwise on both counts. Readout numerals and chip labels
+// are TEXT, and no bronze value can carry text on panel. The two accents
+// coexist only where their roles do not overlap, which is fills versus type.
+// The corrected split is the ruling immediately below.
 // ─── RULED 2026-09-11: bronze is a NON-TEXT family ──────────────────────────
 // Review board, on measured contrast against the Studio Matte surfaces. The
 // numbers, WCAG ratio then APCA Lc, on canvas #141518 / panel #242b31:
