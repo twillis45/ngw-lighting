@@ -20,16 +20,40 @@ export const accent = (a) => `rgba(200,155,69,${a})`;
 
 // ─── Warm / Dusty Bronze tokens (Figma canonical Tier 1 attention) ──────────
 // Figma palette 1318:2 section "ACCENT — WARM". Dusty Bronze replaces pure gold
-// for cinematic teal-and-orange grading. Use for KEY arrows, modifier silhouettes,
-// hero CTA gradients, ACTIVE chips, readout numerals — anywhere Tier 1 attention
-// is needed.  The existing `accent()` amber gold remains for backward compat;
-// new work should prefer `warm()` and WARM_* constants.
+// for cinematic teal-and-orange grading.
 //
-// Migration: screens will transition from `accent()`/KEY_ACCENT to `warm()`/
-// WARM_PRIMARY over successive passes. Both coexist safely.
-export const WARM_PRIMARY = '#A06D4A';  // key arrows, active chip, hero CTA
+// AMENDED 2026-09-11 — this block used to read "KEY arrows, modifier
+// silhouettes, hero CTA gradients, ACTIVE chips, readout numerals — anywhere
+// Tier 1 attention is needed", and to say the two accents "coexist safely".
+// Measurement says otherwise on both counts. Readout numerals and chip labels
+// are TEXT, and no bronze value can carry text on panel. The two accents
+// coexist only where their roles do not overlap, which is fills versus type.
+// The corrected split is the ruling immediately below.
+// ─── RULED 2026-09-11: bronze is a NON-TEXT family ──────────────────────────
+// Review board, on measured contrast against the Studio Matte surfaces. The
+// numbers, WCAG ratio then APCA Lc, on canvas #141518 / panel #242b31:
+//
+//   WARM_PRIMARY #A06D4A   4.16 / -30.5   3.26 / -27.5   fails AA, below headline
+//   WARM_HOVER   #7F5536   2.83 / -19.2   2.22 / -16.1   near the absolute floor
+//   WARM_TEXT    #C88A63   6.32 / -46.0   4.96 / -42.9   AA passes, APCA does not on panel
+//   amber        #ef962e   7.89 / -56.0   6.19 / -52.9   clears headline everywhere
+//
+// No member of this family clears APCA's headline threshold on PANEL, which is
+// the surface most text sits on. So:
+//
+//   USE bronze for   fills, key arrows, modifier silhouettes, hero CTA gradients
+//   NEVER for        readout numerals, chip labels, body, meta — any text
+//
+// The readout case is the one that matters. A readout IS the data; an
+// unreadable one is a broken instrument rather than a styled one. Text roles
+// stay on amber #ef962e, ruled canonical 2026-09-10.
+//
+// WARM_TEXT is misnamed for what it can do — it fails the text threshold on
+// panel. Restrict it to canvas and screen backgrounds, or rename it.
+// Full record: ngw-os/docs/superpowers/specs/2026-09-09-visual-system-design.md (b11)
+export const WARM_PRIMARY = '#A06D4A';  // key arrows, active chip FILL, hero CTA — never text
 export const WARM_HOVER   = '#7F5536';
-export const WARM_TEXT    = '#C88A63';   // on-dark body/label text
+export const WARM_TEXT    = '#C88A63';   // canvas/screen only — fails APCA headline on PANEL (Lc -42.9). See the ruling above.
 export const warm = (a) => `rgba(160,109,74,${a})`;
 
 // Canonical KEY_ACCENT — single export so screens stop hardcoding the hex.
