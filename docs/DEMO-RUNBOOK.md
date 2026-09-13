@@ -146,20 +146,54 @@ For a second pattern on screen, `lab_2c8db8ac426f.jpg` returns `clamshell` at
 |---|---|
 | `lab_3367b42584f1.jpg` | `rembrandt` 0.39 **weak**, `BOUNDED`, 4 contradictions |
 | `lab_0178aa4b409e.jpg` | `INSUFFICIENT`; headline pattern `projected` while its own candidate list holds `loop` and `rembrandt` |
-| `lab_03779d17f931.jpg` · `lab_061d944dff53.jpg` | `triangle` **0.95 strong** — but 3 contradictions each, flagged for review |
 
-### The finding that matters for what's on screen
+`lab_03779d17f931.jpg` and `lab_061d944dff53.jpg` return `triangle` **0.95
+strong** with 3 contradictions each and `needs_review=True`. These were on the
+avoid list until the UI was checked — see below. They are now **good demo
+material**, because the screen names the disagreement out loud.
 
-Those last two are the warning. **`0.95 strong` appears on a clean result and on
-a result carrying three contradictions and a review flag — the confidence number
-does not encode contradiction state.** If the results screen shows confidence
-without also showing `needs_review` / contradiction count, a contradicted read
-is visually indistinguishable from a clean one.
+### RESOLVED 2026-09-13 — the UI does disclose the uncertainty
 
-That is the `DT — Display Threshold Honesty` guardrail in `CLAUDE.md` §III:
-display labels must not imply behavioral truth. Worth knowing before a
-photographer in the room asks how certain the system really is. **Check what the
-UI renders for `lab_03779d17f931.jpg` before demoing any confidence figure.**
+An earlier revision of this file warned that `0.95 strong` appears both on a
+clean result and on one carrying three contradictions, and that a contradicted
+read might therefore be indistinguishable on screen. **That was checked against
+the running UI and it is wrong. Do not carry the warning forward.**
+
+`lab_03779d17f931.jpg` was uploaded through the real sign-in and crop flow on an
+iPad Pro 11 viewport (`POST /api/analyze` → 200). The results screen renders,
+directly beneath the pattern name and above the fold:
+
+```
+Triangle
+Confident
+WHAT THE ENGINE SAW
+  Lights                3 sources
+WHERE IT WAS NOT CERTAIN
+  Two readings disagreed — loop vs projected
+  clamshell was just as credible — worth a second look
+WHAT LIMITED THIS READ
+  Highlights are clipped — the brightest falloff is unrecoverable
+```
+
+The disagreement is named in plain photographer language, the alternate
+candidate is named, and the limiting condition is stated. This is the `DT`
+guardrail being *honored*, not broken — **demo it deliberately.** It is the most
+credible thing on the screen to a working photographer, and it is exactly the
+"trustworthy under ambiguity" claim in `CLAUDE.md` §X, shipped.
+
+### Still open — a real inconsistency on the same screen
+
+The Dispatch panel and the main panel disagree about light count for the same
+analysis:
+
+| Panel | Says |
+|---|---|
+| Dispatch (right) | `Triangle · 95% · **2 lights** · catchlights + shadow geometry` |
+| Main read (left) | `Lights  **3 sources**` |
+
+Two numbers for one analysis, both visible at once without scrolling. A
+photographer will notice. Confirm which is correct before demoing this screen,
+or avoid showing both panels together.
 
 One more to verify, not assert: seven of fourteen returned the same pattern
 (`loop`) at the same confidence (`0.95`). That may be correct for this sample —
