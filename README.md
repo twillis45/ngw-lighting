@@ -53,7 +53,7 @@ stops — nothing after that line arrives. Workaround:
 pip install --ignore-installed PyYAML -r requirements.txt
 ```
 
-**2. mediapipe imports, then fails on first use**
+**2. mediapipe fails on first use — only if you are OFF the pin**
 
 ```
 OSError: libEGL.so.1: cannot open shared object file      # then, after fixing that:
@@ -61,26 +61,37 @@ OSError: libGLESv2.so.2: cannot open shared object file
 ```
 
 Raised from `ctypes.CDLL` in `mediapipe/tasks/python/core/mediapipe_c_bindings.py`
-on the first `mp.Image(...)`. Fix:
+on the first `mp.Image(...)`.
+
+**This is a symptom of having installed mediapipe unpinned.** A bare
+`pip install mediapipe` currently resolves to 1.0.1, and the two releases do not
+ship the same native library at all:
+
+| | `mediapipe==0.10.32` (pinned here) | `mediapipe==1.0.1` |
+|---|---|---|
+| `tasks/c/libmediapipe.so` | 28,650,160 bytes | 114,335,992 bytes |
+| `NEEDED libEGL.so.1` | no | **yes** |
+| `NEEDED libGLESv2.so.2` | no | **yes** |
+
+So the real fix is to install from `requirements.txt` and stay on 0.10.32, which
+needs no GL libraries. If you deliberately want a current mediapipe:
 
 ```bash
 apt-get install -y libegl1 libgles2
 ```
 
-**Unexplained, and deliberately left that way.** `objdump -p`, `ldd` and
-`strings` over `mediapipe/tasks/c/libmediapipe.so` show no reference to either
-library, in `0.10.32` or `1.0.1` — whose `libmediapipe.so` files are in fact
-byte-identical (28,650,160 bytes). The requirement is real and reproducible;
-its mechanism was not established, so no claim about it is made here.
+**The `Dockerfile` is correct as it stands.** It installs `libgl1` and
+`libglib2.0-0` and no EGL/GLES packages, which is exactly right for the pinned
+version — verified by reading the ELF headers of both wheels, not by building
+the image, as no container runtime was available.
 
-Two consequences:
-
-- Because both versions ship the same native library, this applies to the
-  pinned `mediapipe==0.10.32` as much as to current releases.
-- **The `Dockerfile` installs `libgl1` and `libglib2.0-0` but not `libegl1` or
-  `libgles2` — and that image was NOT tested**, as no container runtime was
-  available where this was found. It may already be fine. Whether to add them
-  is an open question, not a known gap.
+An earlier version of this note said the two releases shipped byte-identical
+libraries and that the requirement therefore applied to the pin as well. That
+was wrong, and wrong for a specific reason worth recording: the comparison was
+run against the *installed* library, which `pip install -r requirements.txt` had
+already downgraded to 0.10.32. It compared 0.10.32 with 0.10.32 and reported a
+match. Always compare the artifacts you name, not the one that happens to be
+installed.
 
 Without these, `analyze_image_regions` returns
 `{"ok": false, "error": "opencv-python and mediapipe are required"}` — correct,
