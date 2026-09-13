@@ -6290,14 +6290,38 @@ def analyze_image(
     # the safeguard, and this comment is where to look if a real photograph is
     # ever wrongly declined.
     _detail = (result.vision_data or {}).get("image_detail")
+    _has_pattern = result.authoritative_pattern not in (None, "", "unknown")
+
     if (isinstance(_detail, (int, float)) and _detail < _MIN_IMAGE_DETAIL
-            and result.authoritative_pattern not in (None, "", "unknown")):
+            and _has_pattern):
         logger.info(
             "[decline] no image structure (detail=%.2f < %.1f) — withholding pattern %r",
             _detail, _MIN_IMAGE_DETAIL, result.authoritative_pattern,
         )
         result.authoritative_pattern = "unknown"
         result.authoritative_pattern_source = "decline:no_structure"
+
+    # _image_detail returns None when it could not measure at all — cv2 absent,
+    # or the frame failed to decode. Added 9/13/2026 alongside that change.
+    #
+    # **Still a decline, and deliberately so.** Proceeding on an unmeasured
+    # image would trade a misleading message for a real risk, which is the
+    # wrong direction. What changes is the REASON: the previous abstention
+    # value of 0.0 fell through the branch above and told the photographer
+    # "no image structure" about a photograph that may be perfectly detailed.
+    # A decline caused by our missing library is not a fact about their image.
+    #
+    # The two sources are distinct in the payload so a support question —
+    # "why was my shot declined?" — has a truthful answer either way.
+    elif _detail is None and _has_pattern:
+        logger.warning(
+            "[decline] image detail UNMEASURABLE (instrument unavailable, not a "
+            "property of the image) — withholding pattern %r. Check that cv2 "
+            "imported in engine.vision_pipeline.",
+            result.authoritative_pattern,
+        )
+        result.authoritative_pattern = "unknown"
+        result.authoritative_pattern_source = "decline:detail_unmeasurable"
 
     # ── Decline floor 3 — zero signals extracted ─────────────────────────
     # b5 catches "no evidence" via confidence 0.0. b8 catches "no structure to

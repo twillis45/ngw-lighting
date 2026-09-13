@@ -21,11 +21,30 @@ import os as _os
 
 _vp_logger = _logging.getLogger(__name__)
 
+# SEPARATE try blocks, one per dependency, and that is the whole point.
+#
+# These were one block. mediapipe is a heavy native package — on a clean Linux
+# container it also needs libEGL.so.1 and libGLESv2.so.2 before its bindings
+# will load — while cv2 is a wheel that installs almost anywhere. Coupled, a
+# missing mediapipe set cv2 to None as well, and four helpers here that use
+# cv2 and never touch mediapipe stopped working on a machine that had
+# everything they needed:
+#
+#     _kmeans_palette  _ycbcr_skin_mask  _detect_background_environment
+#     _image_detail
+#
+# analyze_image_regions guards on both and refuses cleanly, so the main path
+# was never wrong — but every direct caller of those four lost a capability
+# for a dependency it was not using. Found 9/13/2026 by an external consumer
+# that called _image_detail on four images and got 0.0 for all of them.
 try:
     import cv2
-    import mediapipe as mp
 except Exception:  # pragma: no cover
     cv2 = None  # type: ignore
+
+try:
+    import mediapipe as mp
+except Exception:  # pragma: no cover
     mp = None  # type: ignore
 
 _MODEL_DIR = Path(__file__).resolve().parent.parent / "data" / "mp_models"
@@ -1135,13 +1154,29 @@ def _detect_catchlights(img_bgr: np.ndarray, face_box: Optional[Tuple[int, int, 
     }
 
 
-def _image_detail(img_bgr) -> float:
+def _image_detail(img_bgr) -> Optional[float]:
     """Variance of the Laplacian — how much structure the image actually has.
 
     Size-normalised: without it a large photograph scores higher than a small
     one purely for being large, which is not what the number is meant to mean.
-    Returns 0.0 rather than raising on anything unexpected; a metric that can
-    fail the whole pipeline is worse than one that abstains.
+
+    **Returns None, not 0.0, when it cannot measure.** It abstained into 0.0
+    until 9/13/2026, and the reasoning for that was sound as far as it went —
+    a metric that can fail the whole pipeline is worse than one that abstains.
+    The flaw was the CHOSEN abstention value: 0.0 sits inside this function's
+    own output range, at the exact end that means "no structure at all", so a
+    failure was indistinguishable from a measurement of a blank image.
+
+    Downstream that mattered. orchestrator's decline floor reads this number
+    and withholds a pattern below 10.0, logging "no image structure" — so a
+    cv2 failure on a perfectly good photograph told the photographer their
+    photograph had no structure. The decline was right; the reason was false.
+    tests/test_decline_on_no_evidence.py has the same shape: with cv2 absent
+    it reported "least detailed real photograph scores 0.0", blaming the
+    corpus for a missing library.
+
+    None keeps the abstention and moves it out of the value range. Callers
+    must handle it; the two in this repo do.
     """
     try:
         g = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY) if img_bgr.ndim == 3 else img_bgr
@@ -1150,7 +1185,7 @@ def _image_detail(img_bgr) -> float:
             g = cv2.resize(g, (int(g.shape[1] * _s), int(g.shape[0] * _s)))
         return float(cv2.Laplacian(g, cv2.CV_64F).var())
     except Exception:
-        return 0.0
+        return None
 
 
 def analyze_image_regions(image_path: str, *, return_masks: bool = False) -> Dict[str, Any]:

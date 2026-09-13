@@ -118,6 +118,20 @@ def test_the_structure_floor_has_real_headroom():
     if not srcs:
         pytest.skip("reference corpus not present")
     vals = [(p, _image_detail(cv2.imread(p))) for p in srcs]
+
+    # _image_detail returns None when it could not measure — cv2 absent, or a
+    # frame that failed to decode. Caught explicitly, because this assertion is
+    # about the CORPUS and None is a fact about the environment. It abstained
+    # into 0.0 until 9/13/2026, and this test then reported "least detailed
+    # real photograph scores 0.0", blaming the reference images for a missing
+    # library. min() over a None would also raise a TypeError naming neither.
+    unmeasured = [p for p, v in vals if v is None]
+    assert not unmeasured, (
+        f"{len(unmeasured)} of {len(vals)} reference images could not be "
+        f"measured at all (e.g. {unmeasured[0]}). This is NOT a statement "
+        f"about the corpus — _image_detail abstained, which means cv2 did not "
+        f"import in engine.vision_pipeline or the frame failed to decode.")
+
     worst = min(vals, key=lambda v: v[1])
     assert worst[1] > _MIN_IMAGE_DETAIL * 3, (
         f"least detailed real photograph {worst[0]} scores {worst[1]:.1f}, "
