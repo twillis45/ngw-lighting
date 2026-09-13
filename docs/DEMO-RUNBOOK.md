@@ -202,6 +202,34 @@ before claiming pattern range on screen.
 
 ---
 
+## 4c. Two recipe filters are empty — do not tap them
+
+Measured 2026-09-13 against the running app, Lighting Recipes:
+
+| Filter | Setups |
+|---|---|
+| All | 31 |
+| Headshot | 22 |
+| Studio | 15 |
+| Creative | 4 |
+| **Event** | **0 — "No recipes in this category yet."** |
+| **Video** | **0 — same empty state** |
+
+Two of six chips lead to an empty state. Tapping either on camera reads as a
+broken product rather than an unfinished category. Demo `Headshot` or `Studio`.
+
+## 4d. The recorded walkthrough
+
+A 1:59 screen recording of the real app (not a mockup) covers five workflows in
+order: sign in → analyze a photograph → lighting recipes with filters → build a
+setup from scratch → lighting journal. Recorded at 1194×834, iPad Pro 11
+landscape, against a local server with `NGW_ADMIN_EMAILS` set so the paywall
+never interrupts.
+
+It exists as a fallback for the latency risk in §4: if a live analysis runs
+long in the room, play the recording and say plainly that it was recorded
+earlier. Do not narrate it as live.
+
 ## 5. Check before the room
 
 - [ ] **Time two real analyses on the demo machine.** §4 — this is the one
