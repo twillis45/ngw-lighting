@@ -903,6 +903,25 @@ const LightingDiagram = forwardRef(function LightingDiagram({ result, compact = 
           fill={st(0.40)} fontSize={compact ? 6 : 7} fontWeight="600" letterSpacing="0.3"
           fontFamily="Inter, system-ui, sans-serif">{Math.abs(Math.round(kAngleDeg))}°</text>
       )}
+      {/* Coverage note. This diagram is a single-key model: one key, an optional
+          fill, an optional rim. The engine can infer more sources than that —
+          a `triangle` read is two flanking keys plus a low fill, light_count 3 —
+          and when it does, the drawing silently showed fewer and read as though
+          that were the whole setup. It cannot invent the missing positions,
+          because the engine does not measure them (catchlight_intelligence
+          returned a single catchlight for that read), so it says so instead. */}
+      {(() => {
+        const engineCount = Number(li?.light_count) || 0;
+        const placed = 1 + (fillAlpha > 0 ? 1 : 0) + (rimAlpha > 0 ? 1 : 0);
+        if (!engineCount || engineCount <= placed) return null;
+        return (
+          <text x={5} y={H - 4} textAnchor="start"
+            fill={st(0.42)} fontSize={compact ? 6 : 7} fontWeight="600" letterSpacing="0.3"
+            fontFamily="Inter, system-ui, sans-serif">
+            {placed} of {engineCount} sources placed
+          </text>
+        );
+      })()}
       {(() => {
         const elev = (keyElevation || '').toLowerCase();
         const isMed = elev === 'medium' || elev === 'mid' || !elev || elev === 'unknown';
