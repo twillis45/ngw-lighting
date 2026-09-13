@@ -890,10 +890,18 @@ const LightingDiagram = forwardRef(function LightingDiagram({ result, compact = 
       <text x={keyLabelX} y={_keyLabelY + (compact ? 4 : 5)} textAnchor={keyLabelSide}
         fill={st(0.55)} fontSize={compact ? 7 : 8} fontWeight="700" letterSpacing="0.8"
         fontFamily="Inter, system-ui, sans-serif">KEY</text>
+      {/* The printed angle MUST be the angle the key marker is actually drawn
+          at. This used to render `180 - reconKeyDeg`, an inversion applied to
+          the label and to nothing else, so the number and the picture came
+          from different formulas and could disagree outright: a `triangle`
+          read whose own recreation_setup said "camera-right, ~45°, elevated"
+          printed 110° — a key behind the subject, which no triangle uses.
+          kAngleDeg is what positions the marker, so labelling its magnitude
+          keeps caption and geometry true to each other by construction. */}
       {reconKeyDeg != null && (
         <text x={keyLabelX} y={_keyLabelY + (compact ? 13 : 15)} textAnchor={keyLabelSide}
           fill={st(0.40)} fontSize={compact ? 6 : 7} fontWeight="600" letterSpacing="0.3"
-          fontFamily="Inter, system-ui, sans-serif">{Math.round(180 - reconKeyDeg)}°</text>
+          fontFamily="Inter, system-ui, sans-serif">{Math.abs(Math.round(kAngleDeg))}°</text>
       )}
       {(() => {
         const elev = (keyElevation || '').toLowerCase();
