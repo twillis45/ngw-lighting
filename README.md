@@ -35,6 +35,57 @@ cd ui && npm install && npm run dev
 - API docs: http://localhost:8000/docs
 - Health: http://localhost:8000/health
 
+### Two install failures seen on a clean Debian/Ubuntu container (9/13/2026)
+
+Both are **observations with a working fix**, not explained mechanisms.
+
+**1. `pip install -r requirements.txt` aborts on PyYAML**
+
+```
+ERROR: Cannot uninstall PyYAML 6.0.1, RECORD file not found.
+       Hint: The package was installed by debian.
+```
+
+The distro's PyYAML has no `RECORD`, so pip will not replace it and the install
+stops — nothing after that line arrives. Workaround:
+
+```bash
+pip install --ignore-installed PyYAML -r requirements.txt
+```
+
+**2. mediapipe imports, then fails on first use**
+
+```
+OSError: libEGL.so.1: cannot open shared object file      # then, after fixing that:
+OSError: libGLESv2.so.2: cannot open shared object file
+```
+
+Raised from `ctypes.CDLL` in `mediapipe/tasks/python/core/mediapipe_c_bindings.py`
+on the first `mp.Image(...)`. Fix:
+
+```bash
+apt-get install -y libegl1 libgles2
+```
+
+**Unexplained, and deliberately left that way.** `objdump -p`, `ldd` and
+`strings` over `mediapipe/tasks/c/libmediapipe.so` show no reference to either
+library, in `0.10.32` or `1.0.1` — whose `libmediapipe.so` files are in fact
+byte-identical (28,650,160 bytes). The requirement is real and reproducible;
+its mechanism was not established, so no claim about it is made here.
+
+Two consequences:
+
+- Because both versions ship the same native library, this applies to the
+  pinned `mediapipe==0.10.32` as much as to current releases.
+- **The `Dockerfile` installs `libgl1` and `libglib2.0-0` but not `libegl1` or
+  `libgles2` — and that image was NOT tested**, as no container runtime was
+  available where this was found. It may already be fine. Whether to add them
+  is an open question, not a known gap.
+
+Without these, `analyze_image_regions` returns
+`{"ok": false, "error": "opencv-python and mediapipe are required"}` — correct,
+and easy to misread as a missing pip install when the wheel is right there.
+
 ## Make Targets
 
 ```
