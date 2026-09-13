@@ -98,19 +98,73 @@ account, and that account then cannot be reset without the SQL above.
 | Measurement | Value | Source |
 |---|---|---|
 | CV-only analysis | 1.4–9.4s, median **4.6s** | n=5, warm, M3 Max, 2026-09-02 |
+| CV-only analysis | 0.92–2.47s, median **~1.2s** | n=14, warm, this container, 2026-09-13 |
+| Stage split (CV) | `describe_image` **74%** · `extended_pipeline` **26%** | `stage_timings`, 2026-09-13 |
 | Full analysis **with VLM** | **not measured** | — |
 | Server timeout | **90s** | `api/routes/lab.py:114` |
 | Cloudflare origin timeout | 100s | server fails first, by design |
 
-The handoff records the VLM as "~97% of analysis wall time." Taken literally
-against a 4.6s CV leg, that implies a full analysis well over two minutes —
-which would exceed the 90s timeout. **That inference has never been tested, and
-the real figure is unknown.** Treat it as the open risk it is:
+The handoff records the VLM as "~97% of analysis wall time." That ratio is too
+loose to plan with, and the two CV baselines show why: against the 4.6s M3 Max
+median it implies a **~153s** total, comfortably past the 90s timeout; against
+the ~1.2s median measured here it implies **~40s**, comfortably inside it. The
+same claim lands on both sides of the limit depending on which CV figure you
+pair it with, which means **the full-analysis number is genuinely unknown, not
+merely unrecorded.** Treat it as the open risk it is:
 
 - Run **two full analyses on the actual demo machine and network** before the
   room, and time them. That is the number that decides whether this demos live.
 - If it runs long, prepare a pre-analyzed result to open instead, and say plainly
   that the analysis was run earlier — do not narrate a cached result as live.
+
+---
+
+## 4b. Which image to demo with — measured, not guessed
+
+Fourteen sample images from `data/uploads/lab/` were analyzed CV-only on
+2026-09-13 (container, not the demo machine). Screening criterion: no recorded
+contradictions, not flagged for review, `CLASSICAL` mode, confidence ≥ 0.70.
+
+**Seven passed.** All seven returned `loop` at `0.95 (strong)` in 0.92–1.25s:
+
+```
+lab_104abe6e8d00.jpg   loop   0.95 strong   0.93s
+lab_1c6201ba31d9.jpg   loop   0.95 strong   0.92s
+lab_252186bf7d7d.jpg   loop   0.95 strong   0.96s
+lab_16db0328cb12.jpg   loop   0.95 strong   1.00s
+lab_0cc3c7fffd11.jpg   loop   0.95 strong   1.03s
+lab_0fe579d58e3e.jpg   loop   0.95 strong   1.14s
+lab_057579bdbedb.jpg   loop   0.95 strong   1.25s
+```
+
+For a second pattern on screen, `lab_2c8db8ac426f.jpg` returns `clamshell` at
+`0.91 (strong)` in 1.22s with one contradiction but **not** flagged for review.
+
+**Do not demo these:**
+
+| Image | Why |
+|---|---|
+| `lab_3367b42584f1.jpg` | `rembrandt` 0.39 **weak**, `BOUNDED`, 4 contradictions |
+| `lab_0178aa4b409e.jpg` | `INSUFFICIENT`; headline pattern `projected` while its own candidate list holds `loop` and `rembrandt` |
+| `lab_03779d17f931.jpg` · `lab_061d944dff53.jpg` | `triangle` **0.95 strong** — but 3 contradictions each, flagged for review |
+
+### The finding that matters for what's on screen
+
+Those last two are the warning. **`0.95 strong` appears on a clean result and on
+a result carrying three contradictions and a review flag — the confidence number
+does not encode contradiction state.** If the results screen shows confidence
+without also showing `needs_review` / contradiction count, a contradicted read
+is visually indistinguishable from a clean one.
+
+That is the `DT — Display Threshold Honesty` guardrail in `CLAUDE.md` §III:
+display labels must not imply behavioral truth. Worth knowing before a
+photographer in the room asks how certain the system really is. **Check what the
+UI renders for `lab_03779d17f931.jpg` before demoing any confidence figure.**
+
+One more to verify, not assert: seven of fourteen returned the same pattern
+(`loop`) at the same confidence (`0.95`). That may be correct for this sample —
+it is a lab upload folder, not a balanced corpus — but it is worth one look
+before claiming pattern range on screen.
 
 ---
 
