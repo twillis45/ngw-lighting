@@ -290,7 +290,18 @@ export default function SocialExportPanel({
 
   const hasPhoto = !!imagePreview;
   const hasCamera = !!(camera && (camera.aperture || camera.iso || camera.shutter));
-  const lightCount = lights.length;
+  // The engine's own light_count is the authority for how many sources were in
+  // the room. `lights` above is the DIAGRAM's drawable set — a single-key model
+  // that cannot represent a multi-key setup — so counting it reported the
+  // drawing's limitation as if it were an observation. On a `triangle` read
+  // (two flanking keys + low fill) the engine reports 3 and the diagram draws
+  // 2, and this panel captioned "2 lights" directly beside the main panel's
+  // "3 sources", for one analysis, both visible without scrolling.
+  // Same field the main read uses — see _shared/lightingEvidence.js:90.
+  const engineLightCount = result?._raw?.lighting_inference?.light_count;
+  const lightCount = Number.isFinite(engineLightCount) && engineLightCount > 0
+    ? engineLightCount
+    : lights.length;
 
   // Same signal path as ResultScreen confEvidence — only real fired signals, no fallback bluff.
   const confEvidence = useMemo(() => {
@@ -307,7 +318,7 @@ export default function SocialExportPanel({
   }, [result]);
 
   // Derived caption and hashtags — reactive; update when judgment or variant changes
-  const captionText = useMemo(() => buildCaption(captionVariant, { pattern, confPct: Math.round(confidence * 100), lightCount: lights.length, confEvidence, judgment }), [captionVariant, pattern, confidence, lights.length, confEvidence, judgment]); // eslint-disable-line react-hooks/exhaustive-deps
+  const captionText = useMemo(() => buildCaption(captionVariant, { pattern, confPct: Math.round(confidence * 100), lightCount, confEvidence, judgment }), [captionVariant, pattern, confidence, lightCount, confEvidence, judgment]); // eslint-disable-line react-hooks/exhaustive-deps
   const hashtags    = useMemo(() => buildHashtags(judgment), [judgment]);
 
   // Wire judgment selection to the intelligence pipeline.
