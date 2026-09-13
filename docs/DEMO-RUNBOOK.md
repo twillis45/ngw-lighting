@@ -269,3 +269,43 @@ The product analyzes and gates correctly. It **cannot take a payment today**,
 and that is a paperwork blocker (Stripe activation), not an engineering one. Say
 that plainly if asked — it is a better answer than a vague one, and the
 alternative is clicking an upgrade button that does nothing.
+
+---
+
+## 8. The lighting diagram cannot draw a triangle
+
+Found 2026-09-13, in the demo itself.
+
+`triangle` in this taxonomy is a **three-source Hurley setup** — two flanking
+keys at 10 and 2 o'clock plus a low fill, giving three catchlights per eye.
+`engine/patterns.py` states it directly: *"Two flanking keys + low fill creating
+triangle catchlights"* (line 33), *"Three catchlights in a triangle — two upper
+(10 and 2 o'clock), one lower (5–6 o'clock)"* (line 228).
+
+`LightingDiagram.jsx` renders **one key**, and derives the fill position by
+mirroring that key across the subject (`fillX = subX - (kX - subX) * 0.80`). It
+is a single-key portrait model. For a triangle read it draws one source where
+there are three, in a geometry the pattern does not use.
+
+**The engine is not wrong here.** It reports `3 sources` correctly. The drawing
+cannot represent them.
+
+### For a demo
+
+- **Do not show the diagram on a `triangle` read.** The recorded walkthrough has
+  that beat cut for this reason.
+- The diagram **is** correct for single-key patterns — `loop`, `rembrandt`,
+  `clamshell`, `split`, `broad`, `short`. Show it on one of those.
+- A photographer is the most likely person in the room to catch this.
+
+### Two fixes already landed, neither sufficient
+
+1. The key-angle caption rendered `180 - reconKeyDeg`, an inversion applied to
+   the label and nothing else, so it printed `110°` — a key behind the subject —
+   while the marker was drawn elsewhere. It now prints the drawn angle.
+2. The ±85° clamp was gated on a hardcoded list of 8 pattern names against a
+   34-value enum, so 25 patterns skipped it. Now inverted: only rim, silhouette,
+   backlight and negative-fill patterns may exceed 90°.
+
+Both were real. Neither addresses the topology, which needs the engine to supply
+per-source positions and the diagram to stop deriving fill by mirroring.
