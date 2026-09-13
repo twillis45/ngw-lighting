@@ -160,8 +160,19 @@ const LightingDiagram = forwardRef(function LightingDiagram({ result, compact = 
     // even when a tonal overlay (low_key, high_key) is the authoritative pattern.
     // e.g. auth=low_key + geometric_base=rembrandt → use rembrandt for diagram.
     const _pat = (raw.geometric_base || raw.authoritative_pattern || '').toLowerCase();
-    const isStandardPortrait = ['loop','rembrandt','butterfly','split','broad','short','clamshell','paramount'].some(p => _pat.includes(p));
-    const clamped = isStandardPortrait ? Math.min(reconKeyDeg, 85) : reconKeyDeg;
+    // Clamp by PHYSICS, not by name. This used to be an allow-list of eight
+    // pattern names that got the clamp; anything unlisted rendered raw. The
+    // enum carries 34 values, so 25 of them — `triangle` among them — fell
+    // through and could draw a key BEHIND a front-lit subject. Measured:
+    // `triangle` at 0.95 confidence rendered a 110° key, which no Hurley
+    // triangle has ever used.
+    //
+    // Inverted: a key past 90° is only physical when the pattern IS a back,
+    // rim or silhouette setup. Everything else is front-lit and clamps. New
+    // enum values now default to the safe side instead of the raw side.
+    const KEY_MAY_BE_BEHIND = ['rim', 'silhouette', 'backlight', 'negative_fill'];
+    const keyMayBeBehind = KEY_MAY_BE_BEHIND.some(p => _pat.includes(p));
+    const clamped = keyMayBeBehind ? reconKeyDeg : Math.min(reconKeyDeg, 85);
     kAngleDeg = sign * clamped;
   } else {
     kAngleDeg = sideToAngle(keySide, keyElevation);
