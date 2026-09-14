@@ -309,3 +309,52 @@ cannot represent them.
 
 Both were real. Neither addresses the topology, which needs the engine to supply
 per-source positions and the diagram to stop deriving fill by mirroring.
+
+---
+
+## 9. Click-sweep of every control on the demo path
+
+Run 2026-09-14 against the running app, real mouse clicks, not assertions about
+markup. Eighteen controls exercised.
+
+### Working
+
+`TRY A SAMPLE` · `SEE THE LIGHT` (POST /api/analyze 200) · `Save Light Card` ·
+`Build This Light` · `Close Read` · diagram expand (body and label) · recipe
+card expand · recipe filters · `BUILD FROM INTENT` · `LAST RESULT` · all seven
+nav items (Recipes, Saved Setups, Build a Setup, My Kit, Journal, Look Library,
+From Video).
+
+### Broken — the Journal's thumbnails all 403
+
+`ui/src/data/sessionLogApi.js:55` builds each journal thumbnail as:
+
+```
+/api/lab/analysis/{analysis_id}/image?token=...
+```
+
+That route calls `assert_lab_access` (`auth/dev_guard.py:56`), which fails
+closed: with `NGW_DEV_EMAILS` unset **nobody** is authorized, so every thumbnail
+returns 403 and the cards render blank.
+
+**A customer-facing screen is sourcing its images from a developer-only Lab
+endpoint.** Adding the demo account to `NGW_DEV_EMAILS` makes it work for the
+demo while every real customer still sees blank cards — that is masking, not
+fixing. The fix is to serve those thumbnails from a customer-accessible route.
+
+**Until then, do not show the Journal in a demo.** It is the weakest of the five
+workflows and the only one visibly broken.
+
+### Not bugs, though they look like it
+
+- `Nailed It` / `Missed It` change no page text — visual selection state only.
+- `405 OPTIONS /api/analyze` on every page: the preflight is unhandled but the
+  POST succeeds. Cosmetic while the UI and API share an origin.
+- `403 /api/lab/status`: a Lab probe, correctly refused for a non-dev account.
+
+### A caution about testing this way
+
+Two controls first appeared broken and were not. Both were clicked at
+document coordinates while sitting outside the 900px viewport, so the click
+landed somewhere else. Scroll the target into view before clicking by
+coordinate, or use Playwright's own `.click()`, which scrolls first.
