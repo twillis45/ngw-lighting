@@ -46,11 +46,18 @@ export async function fetchAnalysisDetail(analysisId) {
 }
 
 /**
- * Get the image URL for an analysis (uses lab image serving endpoint).
+ * Get the image URL for one of the signed-in user's own analyses.
+ *
+ * This used to point at `/lab/analysis/{id}/image`, which gates on the
+ * developer allowlist and fails closed: with NGW_DEV_EMAILS unset nobody is
+ * authorized, so every Journal thumbnail returned 403 and the cards rendered
+ * blank — for customers and for the account that created the analyses alike.
+ * The customer route authorizes by ownership instead.
+ *
  * @param {string} analysisId
  * @returns {string}
  */
 export function getAnalysisImageUrl(analysisId) {
   const token = localStorage.getItem('ngw_auth_token') || '';
-  return `${API_BASE}/lab/analysis/${encodeURIComponent(analysisId)}/image?token=${encodeURIComponent(token)}`;
+  return `${API_BASE}/analysis/${encodeURIComponent(analysisId)}/image?token=${encodeURIComponent(token)}`;
 }

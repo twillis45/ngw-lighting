@@ -1298,48 +1298,104 @@ def get_analysis_replay_image(
     - Returns 404 if the image is missing, path is outside safe bases,
       or the analysis record doesn't exist
     """
-    # Authenticate: try header first, then query param
+    # Authorization. This route hand-rolls token EXTRACTION because an <img src>
+    # cannot send an Authorization header — but the authorization RULE is
+    # shared, not copied. Its previous copy read
+    # `if allowed and (email not in allowed)`, which with NGW_DEV_EMAILS unset
+    # evaluates False and granted access to any registered account, while every
+    # sibling Lab route returned 403 on the same token. The comment above it
+    # said "same as get_dev_user"; it was the opposite.
+    from auth.dev_guard import assert_lab_access
+
+    user = _authenticate_image_request(request, token)
+    assert_lab_access(user)          # handles dev-mode internally
+    row = _analysis_image_row(analysis_id)
+    if not row or not row["image_path"]:
+        raise HTTPException(status_code=404, detail="No image path for this analysis")
+    return _serve_analysis_image(row)
+
+
+@analyze_router.get("/analysis/{analysis_id}/image")
+def get_own_analysis_image(
+    analysis_id: str,
+    request: Request,
+    token: Optional[str] = Query(None),
+):
+    """Serve a customer their OWN analysis image. Authorized by ownership.
+
+    The Journal is customer-facing and its thumbnails used to be fetched from
+    the Lab route above, which gates on `assert_lab_access` — a developer
+    allowlist that fails closed. With NGW_DEV_EMAILS unset nobody is
+    authorized, so every thumbnail 403'd and the Journal rendered blank cards
+    for every user including the account that created the analyses.
+
+    Putting the demo account on the dev allowlist would have hidden that rather
+    than fixed it, so this route exists instead and asks the question a
+    customer screen should ask: *is this analysis yours*. Token extraction is
+    shared with the Lab route; the authorization decision deliberately is not,
+    because the two routes answer different questions.
+
+    Returns 404 rather than 403 for someone else's analysis — a 403 would
+    confirm the id exists.
+    """
+    user = _authenticate_image_request(request, token)
+    row = _analysis_image_row(analysis_id)
+    if not row or not row["image_path"]:
+        raise HTTPException(status_code=404, detail="No image for this analysis")
+
+    owner = (row["user_email"] or "").strip().lower()
+    caller = (user.get("email") or "").strip().lower()
+    # An unowned row (older anonymous analyses) belongs to nobody, so it is
+    # served to nobody. Absence of an owner is not a grant of access.
+    if not owner or not caller or owner != caller:
+        raise HTTPException(status_code=404, detail="Analysis not found")
+
+    return _serve_analysis_image(row)
+
+
+def _authenticate_image_request(request: Request, token: Optional[str]) -> Dict[str, Any]:
+    """Resolve the caller for an <img src> request, or raise 401.
+
+    Extraction only — no authorization decision is made here. An <img> cannot
+    send an Authorization header, so the token may arrive as a query param;
+    both image routes need that, and both then apply their own rule.
+    """
     from auth.security import decode_token as _decode, _dev_mode_active, _DEV_MODE_USER
     from db.database import get_user_by_id as _get_user
 
-    user = None
     if _dev_mode_active():
-        user = _DEV_MODE_USER
-    else:
-        # Try Authorization header
-        auth_header = request.headers.get("authorization", "")
-        bearer_token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else None
-        jwt_token = bearer_token or token  # fallback to query param
-        if not jwt_token:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        user_id = _decode(jwt_token)
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
-        user = _get_user(user_id)
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
+        return _DEV_MODE_USER
 
-        # Authorization. This route hand-rolls token extraction because an
-        # <img src> cannot send an Authorization header — but the AUTHORIZATION
-        # RULE is shared, not copied. Its previous copy read
-        # `if allowed and (email not in allowed)`, which with NGW_DEV_EMAILS
-        # unset evaluates False and granted access to any registered account,
-        # while every sibling Lab route returned 403 on the same token. The
-        # comment above it said "same as get_dev_user"; it was the opposite.
-        from auth.dev_guard import assert_lab_access
-        assert_lab_access(user)
+    auth_header = request.headers.get("authorization", "")
+    bearer_token = auth_header[len("Bearer "):] if auth_header.startswith("Bearer ") else None
+    jwt_token = bearer_token or token
+    if not jwt_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    user_id = _decode(jwt_token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    user = _get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+
+def _analysis_image_row(analysis_id: str):
+    """Image path and owner for a stored analysis, or None."""
     with get_db() as conn:
-        row = conn.execute(
-            "SELECT image_path FROM analysis_results WHERE analysis_id = ?",
+        return conn.execute(
+            "SELECT image_path, user_email FROM analysis_results WHERE analysis_id = ?",
             (analysis_id,),
         ).fetchone()
 
-    if not row or not row["image_path"]:
-        raise HTTPException(status_code=404, detail="No image path for this analysis")
 
+def _serve_analysis_image(row) -> FileResponse:
+    """Resolve, path-check and serve a stored analysis image.
+
+    The path comes from the database, never from client input, and is resolved
+    and checked against the approved bases before anything is read.
+    """
     image_path = Path(row["image_path"])
-
-    # Resolve symlinks and normalize before safety check
     if not image_path.is_absolute():
         image_path = (DATA_DIR / image_path).resolve()
     else:
@@ -1350,13 +1406,11 @@ def get_analysis_replay_image(
             status_code=404,
             detail="Image path is outside approved directories",
         )
-
     if not image_path.exists():
         raise HTTPException(status_code=404, detail="Image file not found on disk")
 
     suffix = image_path.suffix.lower()
     media_type = _REPLAY_IMAGE_MEDIA_TYPES.get(suffix, "application/octet-stream")
-
     return FileResponse(str(image_path), media_type=media_type)
 
 
